@@ -26,7 +26,7 @@ return array(
 	|
 	*/
 
-	'url' => 'http://localhost',
+	'url' => $_ENV['WEB_URL'],
 
 	/*
 	|--------------------------------------------------------------------------
@@ -39,7 +39,7 @@ return array(
 	|
 	*/
 
-	'timezone' => 'UTC',
+	'timezone' => 'Asia/Shanghai',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -78,7 +78,7 @@ return array(
 	|
 	*/
 
-	'key' => 'GQqJ6tyUiVuJ3UrpaHq5urvXh68wPAvA',
+	'key' => $_ENV['ENCRYPTION_KEY'],
 
 	'cipher' => MCRYPT_RIJNDAEL_128,
 
@@ -121,7 +121,8 @@ return array(
 		'Illuminate\Validation\ValidationServiceProvider',
 		'Illuminate\View\ViewServiceProvider',
 		'Illuminate\Workbench\WorkbenchServiceProvider',
-
+        'TwigBridge\ServiceProvider',
+        'Barryvdh\Debugbar\ServiceProvider',
 	),
 
 	/*
@@ -188,7 +189,8 @@ return array(
 		'URL'               => 'Illuminate\Support\Facades\URL',
 		'Validator'         => 'Illuminate\Support\Facades\Validator',
 		'View'              => 'Illuminate\Support\Facades\View',
-
+        'Twig' => 'TwigBridge\Facade\Twig',
+        'Debugbar' => 'Barryvdh\Debugbar\Facade',
 	),
 
 );

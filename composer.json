@@ -24,7 +24,7 @@
 			"app/tests/TestCase.php"
 		],
 		"psr-4": {
-				"Deploy\\" : "app/packages"
+				"Deploy\\" : "app/Deploy"
 		}
 	},
 	"scripts": {
