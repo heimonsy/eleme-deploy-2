@@ -11,15 +11,12 @@
 |
 */
 
-App::before(function($request)
-{
-	//
+App::before(function($request) {
+    //
 });
 
-
-App::after(function($request, $response)
-{
-	//
+App::after(function($request, $response) {
+    //
 });
 
 /*
@@ -33,41 +30,37 @@ App::after(function($request, $response)
 |
 */
 
-Route::filter('auth', function()
-{
-	if (Auth::guest())
-	{
-		if (Request::ajax())
-		{
-			return Response::make('Unauthorized', 401);
-		}
-		else
-		{
-			return Redirect::guest('login');
-		}
-	}
+Route::filter('auth', function () {
+    if (!Sentry::checkLogin()) {
+        if (Request::ajax()) {
+            return Response::make('Unauthorized', 401);
+        }
+
+        return Redirect::guest('login');
+    }
 });
 
-
-Route::filter('auth.basic', function()
-{
-	return Auth::basic();
+Route::filter('guest', function () {
+    if (Sentry::checkLogin()) {
+        return Redirect::route('dashboard');
+    }
 });
 
-/*
-|--------------------------------------------------------------------------
-| Guest Filter
-|--------------------------------------------------------------------------
-|
-| The "guest" filter is the counterpart of the authentication filters as
-| it simply checks that the current user is not logged in. A redirect
-| response will be issued if they are, which you may freely change.
-|
-*/
+Route::filter('normal', function () {
+    $user = Sentry::loginUser();
+    if (!$user->isWaiting()) {
+        return Redirect::route('dashboard');
+    }
+});
 
-Route::filter('guest', function()
-{
-	if (Auth::check()) return Redirect::to('/');
+Route::filter('waiting', function () {
+    $user = Sentry::loginUser();
+    if ($user->isWaiting()) {
+        if (Request::ajax()) {
+            return Response::make('User Status Error', 403);
+        }
+        return Redirect::route('wait');
+    }
 });
 
 /*
@@ -81,10 +74,8 @@ Route::filter('guest', function()
 |
 */
 
-Route::filter('csrf', function()
-{
-	if (Session::token() !== Input::get('_token'))
-	{
-		throw new Illuminate\Session\TokenMismatchException;
-	}
+Route::filter('csrf', function() {
+    if (Session::token() !== Input::get('_token')) {
+        throw new Illuminate\Session\TokenMismatchException;
+    }
 });

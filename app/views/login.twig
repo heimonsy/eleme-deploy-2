@@ -1,0 +1,20 @@
+{% extends 'layout.login' %}
+{% block main %}
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+                <div class="login-panel panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Please Sign In</h3>
+                    </div>
+                    <div class="panel-body">
+                        <form role="form">
+                            <fieldset>
+                                <!-- Change this to a button or input when using this as a form -->
+                                <a href="/github/signin" class="btn btn-lg btn-block btn-social btn-github"><i class="fa fa-github"></i> Sign in with Github</a>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock main %}

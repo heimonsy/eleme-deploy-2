@@ -1,17 +1,42 @@
 <?php
 
-/*
-|--------------------------------------------------------------------------
-| Application Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register all of the routes for an application.
-| It's a breeze. Simply tell Laravel the URIs it should respond to
-| and give it the Closure to execute when that URI is requested.
-|
-*/
+Route::group(array('before' =>  'guest'), function () {
+    Route::get('/login', array(
+        'as' => 'login',
+        'uses' => 'LoginController@login'
+    ));
 
-Route::get('/', function()
-{
-	return Response::make('hello');
+    Route::get('/github/signin', array(
+        'as' => 'signin',
+        'uses' => 'LoginController@signin'
+    ));
+
+    Route::get('/github/callback', array(
+        'uses' => 'LoginController@callback'
+    ));
 });
+
+Route::group(array('before' => array('auth')), function () {
+    Route::get('/wait', array(
+        'before' => 'normal',
+        'as' => 'wait',
+        'uses' => 'LoginController@wait'
+    ));
+
+    Route::get('/is-waiting', function () {
+        $user = Sentry::loginUser();
+        return Response::json(array('res' => 0, 'data' => $user->isWaiting()));
+        //return Response::json(array('res' => 0, 'data' => false));
+    });
+});
+
+Route::group(array('before' => array('auth', 'waiting')), function () {
+    Route::get('/', array(
+        'as' => 'dashboard',
+        'uses' => 'SystemController@dashboard'
+    ));
+
+    Route::get('/logout', 'LoginController@logout');
+});
+
+
