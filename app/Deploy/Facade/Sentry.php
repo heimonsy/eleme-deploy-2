@@ -1,9 +1,9 @@
 <?php
-namespace Deploy\Sentry;
+namespace Deploy\Facade;
 
 use Illuminate\Support\Facades\Facade;
 
-class SentryFacade extends Facade
+class Sentry extends Facade
 {
     /**
      * {@inheritDoc}

@@ -123,7 +123,7 @@ return array(
 		'Illuminate\Workbench\WorkbenchServiceProvider',
         'TwigBridge\ServiceProvider',
         'Barryvdh\Debugbar\ServiceProvider',
-        'Deploy\Sentry\SentryServiceProvider',
+        'Deploy\ServiceProvider\Sentry',
 	),
 
 	/*
@@ -192,7 +192,7 @@ return array(
 		'View'              => 'Illuminate\Support\Facades\View',
         'Twig' => 'TwigBridge\Facade\Twig',
         'Debugbar' => 'Barryvdh\Debugbar\Facade',
-        'Sentry' => 'Deploy\Sentry\SentryFacade',
+        'Sentry' => 'Deploy\Facade\Sentry',
 	),
 
 );

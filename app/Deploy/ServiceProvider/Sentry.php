@@ -1,14 +1,15 @@
 <?php
-namespace Deploy\Sentry;
+namespace Deploy\ServiceProvider;
 
 use Illuminate\Support\ServiceProvider;
+use Deploy\Sentry\Login;
 
-class SentryServiceProvider extends ServiceProvider
+class Sentry extends ServiceProvider
 {
     public function register()
     {
         $this->app->bindShared('sentry', function ($app) {
-            return new Sentry(
+            return new \Deploy\Sentry\Sentry(
                 new Login()
             );
         });
