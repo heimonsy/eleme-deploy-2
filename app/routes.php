@@ -1,6 +1,6 @@
 <?php
 
-Route::group(array('before' =>  'guest'), function () {
+Route::group(array('before' => 'guest'), function () {
     Route::get('/login', array(
         'as' => 'login',
         'uses' => 'LoginController@login'
@@ -18,9 +18,20 @@ Route::group(array('before' =>  'guest'), function () {
 
 Route::group(array('before' => array('auth')), function () {
     Route::get('/wait', array(
-        'before' => 'normal',
+        'before' => 'no.wait',
         'as' => 'wait',
         'uses' => 'LoginController@wait'
+    ));
+
+    Route::get('/register', array(
+        'before' => 'no.register',
+        'as' => 'register',
+        'uses' => 'LoginController@register'
+    ));
+
+    Route::post('/user/register', array(
+        'as' => 'post.register',
+        'uses' => 'UserController@register',
     ));
 
     Route::get('/is-waiting', function () {

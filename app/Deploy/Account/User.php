@@ -8,8 +8,11 @@ class User extends Eloquent
 {
     const STATUS_DELETE = 0;
     const STATUS_NORMAL = 1;
+    // 等待录入通知邮箱和姓名
+    const STATUS_REGISTER = 9;
     // 等待拉取数据
     const STATUS_WAITING = 10;
+
     /**
      * The database table used by the model.
      *
@@ -41,5 +44,20 @@ class User extends Eloquent
     public function isWaiting()
     {
         return $this->status == self::STATUS_WAITING;
+    }
+
+    public function isDeleted()
+    {
+        return $this->status == self::STATUS_DELETE;
+    }
+
+    public function isRegister()
+    {
+        return $this->status == self::STATUS_REGISTER;
+    }
+
+    public function isNormal()
+    {
+        return $this->status == self::STATUS_NORMAL;
     }
 }

@@ -35,7 +35,7 @@ class Login
     public function checkLogin()
     {
         if ($this->user || $this->checkFromSession() || $this->checkFromCookies()) {
-            return true;
+            return !$this->user->isDeleted();
         }
 
         return false;

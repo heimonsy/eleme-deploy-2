@@ -38,6 +38,7 @@ Route::filter('auth', function () {
 
         return Redirect::guest('login');
     }
+
 });
 
 Route::filter('guest', function () {
@@ -46,20 +47,26 @@ Route::filter('guest', function () {
     }
 });
 
-Route::filter('normal', function () {
+Route::filter('waiting', function () {
+    $user = Sentry::loginUser();
+    if ($user->isWaiting()) {
+        return Redirect::route('wait');
+    } elseif ($user->isRegister()) {
+        return Redirect::route('register');
+    }
+});
+
+Route::filter('no.wait', function () {
     $user = Sentry::loginUser();
     if (!$user->isWaiting()) {
         return Redirect::route('dashboard');
     }
 });
 
-Route::filter('waiting', function () {
+Route::filter('no.register', function () {
     $user = Sentry::loginUser();
-    if ($user->isWaiting()) {
-        if (Request::ajax()) {
-            return Response::make('User Status Error', 403);
-        }
-        return Redirect::route('wait');
+    if (!$user->isRegister()) {
+        return Redirect::route('dashboard');
     }
 });
 

@@ -42,15 +42,21 @@ class LoginController extends Controller
         $email = isset($userJson['email']) ? $userJson['email'] : '';
 
         $user = User::firstOrNew(array('login' => $userJson['login']));
-        $user->name = $user->name ?: $userJson['login'];
         $user->email = $email;
         $user->token = $accessToken;
-        $user->status = User::STATUS_NORMAL;
+        if ($user->status === null) {
+            $user->status = User::STATUS_REGISTER;
+            $route = 'register';
+        } elseif ($user->isNormal()) {
+            $user->status = User::STATUS_WAITING;
+            $route = 'wait';
+            // todo 添加刷新用户权限
+        }
         $user->save();
 
         $cookie = Sentry::login($user);
 
-        return Redirect::to('/wait')->withCookie($cookie);
+        return Redirect::route($route)->withCookie($cookie);
     }
 
     public function wait()
@@ -62,5 +68,16 @@ class LoginController extends Controller
     {
         $cookie = Sentry::logout();
         return Redirect::route('login')->withCookie($cookie);
+    }
+
+    public function register()
+    {
+        return Response::view('register', array(
+            'data' => json_encode(array(
+                'login' => 'heimonsy',
+                'name' => '',
+                'email' => 'heimonsy@gmail.com',
+            )),
+        ));
     }
 }
