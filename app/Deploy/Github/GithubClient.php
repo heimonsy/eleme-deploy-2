@@ -17,8 +17,8 @@ class GithubClient
         $this->access_token = $access_token;
 
         $defaults = array();
-        if ($proxy != null) {
-            $defaults['proxy'] = $_ENV['GITHUB_CLIENT_PROXY'];
+        if ($proxy !== null) {
+            $defaults['proxy'] = $proxy;
         }
 
         $this->client = new Client(array('defaults' => $defaults));

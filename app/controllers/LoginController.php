@@ -47,10 +47,12 @@ class LoginController extends Controller
         if ($user->status === null) {
             $user->status = User::STATUS_REGISTER;
             $route = 'register';
-        } elseif ($user->isNormal()) {
+        } elseif (!$user->isDeleted()) {
             $user->status = User::STATUS_WAITING;
             $route = 'wait';
             // todo 添加刷新用户权限
+        } else {
+            App::abort(403, '用户已被删除');
         }
         $user->save();
 
