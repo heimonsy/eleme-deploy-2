@@ -12,7 +12,8 @@
 		"eleme/rlock": "0.3.*",
 		"heimonsy/sshprocess": "0.1.*",
 		"heimonsy/hipchat-laravel": "0.1.*",
-		"guzzlehttp/guzzle": "~5.1"
+		"guzzlehttp/guzzle": "~5.1",
+		"knplabs/github-api": "~1.4"
 	},
 	"autoload": {
 		"classmap": [
