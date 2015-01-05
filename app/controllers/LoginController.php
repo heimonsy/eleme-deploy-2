@@ -39,6 +39,24 @@ class LoginController extends Controller
         $client = new GithubClient($accessToken, $proxy);
 
         $userJson = $client->request('user');
+
+        //获取orgs
+        $orgs = $client->request('user/orgs');
+        $flag = false;
+        $organization = Config::get('github.organization');
+        foreach ($orgs as $org) {
+            if ($org['login'] === $organization) {
+                $flag = true;
+                break;
+            }
+        }
+
+        if (!$flag) {
+            // todo 添加operation日志
+            Log::error("[haven't access right] github user {$userJson['login']} try to login.");
+            return Response::make('用户无权限访问', 403);
+        }
+
         $email = isset($userJson['email']) ? $userJson['email'] : '';
 
         $user = User::firstOrNew(array('login' => $userJson['login']));
@@ -51,8 +69,10 @@ class LoginController extends Controller
             $user->status = User::STATUS_WAITING;
             $route = 'wait';
             // todo 添加刷新用户权限
+
         } else {
-            App::abort(403, '用户已被删除');
+            Log::error("[user has been deleted] github user {$userJson['login']} try to login");
+            return Response::make('用户已被删除', 403);
         }
         $user->save();
 
