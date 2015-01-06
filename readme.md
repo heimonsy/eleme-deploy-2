@@ -1,5 +1,11 @@
 ## eleme deploy version 2
 
+### requirements
+```
+npm install -g react-tools
+apt-get install extract
+```
+
 ### config
 
 ```

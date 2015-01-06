@@ -1,4 +1,4 @@
-
+;
 var WaitProgressComponent = React.createClass({
     loadStatusFromServer: function () {
         $.getJSON('/is-waiting', function (data) {
@@ -81,3 +81,68 @@ var RegisterFormComponent = React.createClass({
         );
     }
 });
+
+
+var NavUlLiComponent = React.createClass({
+    render: function () {
+        var data = this.props.data;
+        if (data.children == undefined) {
+            var aClass = data.active === true ? 'active' : '';
+            if (data.fa == undefined) {
+                return (
+                    <li><a className={aClass} href={data.url}>{data.name}</a></li>
+                );
+            } else {
+                var faClass = "fa " + data.fa + " fa-fw";
+                return (
+                    <li><a className={aClass} href={data.url}><i className={faClass}></i> {data.name}</a></li>
+                );
+            }
+        } else {
+            var liClass = '';
+            for(var i in data.children) {
+                if (data.children[i].active === true) {
+                    liClass = 'active';
+                    break;
+                }
+            }
+            return (
+                <li className={liClass}>
+                    <a href={data.url}><i className="fa fa-wrench fa-fw"></i> {data.name}<span className="fa arrow"></span></a>
+                    <NavUlComponent extraClassName="nav-second-level" lists={data.children}/>
+                </li>
+            );
+        }
+    }
+});
+
+var NavUlComponent = React.createClass({
+    render: function () {
+        var navNodes = this.props.lists.map(function (list) {
+            return (
+                <NavUlLiComponent key={list.name} data={list}/>
+            );
+        });
+
+        var className = this.props.extraClassName == undefined ? 'nav' : 'nav ' + this.props.extraClassName;
+        var id = this.props.id == undefined ? '' : this.props.id;
+        return (
+            <ul className={className} id={id}>
+                {navNodes}
+            </ul>
+        );
+    }
+});
+
+
+var SideBarNavComponent = React.createClass({
+    render: function () {
+        return (
+            <div className="sidebar-nav navbar-collapse">
+                <NavUlComponent id="side-menu" lists={this.props.data}/>
+            </div>
+        );
+    }
+});
+
+;

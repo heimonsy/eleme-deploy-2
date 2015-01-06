@@ -5,4 +5,8 @@ requirements:
 	@echo "\n--------------> requirements <--------------\n"
 	composer install
 
-deploy: requirements
+complie:
+	@echo "\n--------------> complie <--------------\n"
+	jsx public/packages/src/js/ public/packages/dist/js/
+
+deploy: requirements complie
