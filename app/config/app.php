@@ -124,6 +124,7 @@ return array(
         'TwigBridge\ServiceProvider',
         'Barryvdh\Debugbar\ServiceProvider',
         'Deploy\ServiceProvider\Sentry',
+        'Deploy\ServiceProvider\Worker',
 	),
 
 	/*
@@ -193,6 +194,7 @@ return array(
         'Twig' => 'TwigBridge\Facade\Twig',
         'Debugbar' => 'Barryvdh\Debugbar\Facade',
         'Sentry' => 'Deploy\Facade\Sentry',
+        'Worker' => 'Deploy\Facade\Worker',
 	),
 
 );
