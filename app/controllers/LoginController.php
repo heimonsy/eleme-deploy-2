@@ -4,6 +4,7 @@ use Deploy\Github\GithubClient;
 use Deploy\Github\GithubAuth;
 use Deploy\Account\User;
 use Eleme\Deploy\Exception\RequestException;
+use Deploy\Worker\Job;
 
 class LoginController extends Controller
 {
@@ -68,7 +69,12 @@ class LoginController extends Controller
         } elseif (!$user->isDeleted()) {
             $user->status = User::STATUS_WAITING;
             $route = 'wait';
-            // todo 添加刷新用户权限
+            Worker::push('Deploy\Worker\Jobs\UpdateUserTeams', Job::TYPE_USER, "Update User {$userJson['login']}",
+                array(
+                    'id' => 1,
+                    'status' => Deploy\Account\User::STATUS_WAITING
+                )
+            );
 
         } else {
             Log::error("[user has been deleted] github user {$userJson['login']} try to login");

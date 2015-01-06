@@ -41,6 +41,21 @@ class User extends Eloquent
         return $fakeId - $offset;
     }
 
+    public function teams()
+    {
+        return $this->belongsToMany('Deploy\Account\Team', 'team_user', 'user_id', 'team_id');
+    }
+
+    public function repos()
+    {
+         return $this->hasManyThrough('Deploy\Account\Repo', 'Deploy\Account\Team', 'user_id', 'team_id');
+    }
+
+    public function scopeNormal($query)
+    {
+        return $query->where('status', '=', self::STATUS_NORMAL);
+    }
+
     public function isWaiting()
     {
         return $this->status == self::STATUS_WAITING;

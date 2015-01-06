@@ -1,6 +1,7 @@
 <?php
 
 use Deploy\Account\User;
+use Deploy\Worker\Job;
 
 class UserController extends Controller
 {
@@ -21,7 +22,12 @@ class UserController extends Controller
         $user->status = User::STATUS_WAITING;
         $user->save();
 
-        // todo 添加刷新用户权限
+        Worker::push('Deploy\Worker\Jobs\UpdateUserTeams', Job::TYPE_USER, "Update User {$user->login}",
+            array(
+                'id' => 1,
+                'status' => User::STATUS_WAITING
+            )
+        );
 
         return Response::json(array('res' => 0, 'info' => route('wait')));
     }
