@@ -1,0 +1,110 @@
+{% extends 'layout.master' %}
+{% block main %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h2 class="page-header">角色管理</h2>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+
+    <div class="row">
+        <div class="col-lg-12" id="roleAddFormWrapper">
+        </div>
+    </div>
+
+    <br> <br>
+    <div class="row">
+        <div class="col-lg-12">
+            <table id="rolesTable" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>角色名</th>
+                        <th>类型</th>
+                        <th>是否管理角色</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+    <!-- /.row -->
+    <div id="roleModalWrapper">
+    </div>
+{% endblock main%}
+{% block footer_js%}
+<script>
+    var csrfToken = "{{ csrf_token() }}";
+    $(function () {
+
+        var table = $('#rolesTable').DataTable({
+            ajax: '/api/role',
+            paging: false,
+            ordering: false,
+            info: false,
+            columns: [
+                {data: 'id'},
+                {data: 'name'},
+                {data: 'type'},
+                {data: 'is_admin_role'},
+                {data: 'id'}
+            ],
+            columnDefs:
+            [
+                {
+                    render: function (data, type, row) {
+                        var canModify = row.type == 'system' ? '' : '<button data-id="' + data + '" class="btn btn-primary btn-xs btnEditRole">修改</button>&nbsp;' +
+                            '<button data-loading-text="正在删除" data-name="' + row.name + '" data-id="' + data + '" class="btn btn-warning btn-xs btnDeleteRole">删除</button>';
+                        return canModify;
+                    },
+                    targets: 4
+                },
+                {
+                    render: function (data, type, row) {
+                        return data == 0 ? '<span class="label label-default">否</span>' : '<span class="label label-success">是</span>';
+                    },
+                    targets: 3
+                },
+                {
+                    render: function (data, type, row) {
+                        return data == 'system' ? '系统角色' : '用户定义';
+                    },
+                    targets: 2
+                }
+            ]
+        });
+
+        $('#rolesTable').on('click', '.btnEditRole', function (e) {
+            var btn = $(this);
+            btn.button('loading');
+            $.getJSON('/api/role/' + btn.attr('data-id'), function (data) {
+                if (data.code == 0) {
+                    renderRoleModal(document.getElementById('roleModalWrapper'), data.data, table.ajax.reload);
+                }
+                btn.button('reset');
+            });
+        });
+
+        $('#rolesTable').on('click', '.btnDeleteRole', function (e) {
+            var btn = $(this);
+            if (confirm("确定要删除角色\"" + btn.attr('data-name') + "\"吗？")) {
+                btn.button('loading');
+                $.post('/api/role/' + btn.attr('data-id'), {
+                    _method : 'DELETE'
+                }, function (data) {
+                    btn.button('reset');
+                    if (data.code == 0) {
+                        table.ajax.reload();
+                    } else {
+                        alert(data.msg);
+                    }
+                }, 'json');
+            }
+        });
+
+
+        renderRoleForm(document.getElementById('roleAddFormWrapper'), table.ajax.reload);
+    });
+</script>
+{% endblock footer_js%}

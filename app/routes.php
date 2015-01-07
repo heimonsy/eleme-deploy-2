@@ -50,4 +50,31 @@ Route::group(array('before' => array('auth', 'waiting')), function () {
     Route::get('/logout', 'LoginController@logout');
 });
 
+// Manger Group
+Route::group(
+    array(
+        'before' => array('auth', 'admin'),
+        'prefix' => 'manager',
+    ),
+    function () {
+        Route::get('role', 'ManagerController@role');
+    }
+);
 
+// Mangaer REST API
+
+Route::model('role', 'Deploy\Account\Role', function () {
+    throw new \Deploy\Exception\ResourceNotFoundException('角色不存在');
+});
+
+Route::group(
+    array(
+        'before' => array('auth', 'api', 'admin'),
+        'prefix' => 'api',
+    ),
+    function () {
+        Route::resource('role', 'RoleController', array(
+            'only' => array('index', 'show', 'store', 'destroy', 'update')
+        ));
+    }
+);

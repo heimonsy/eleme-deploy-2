@@ -36,4 +36,15 @@ var renderSideNavBar = function (element, menuData, path) {
     );
 };
 
+var renderRoleForm = function (element, callback) {
+    React.render(<RoleAddFormComponent reloadCallback={callback}/>, element);
+};
+
+
+var renderRoleModal = function (element, data, updateCallback) {
+    $(element).html("");
+    var c = React.render(<RoleEditModalComponent data={data} updateCallback={updateCallback}/>, element);
+    c.handleToggle();
+};
+
 ;

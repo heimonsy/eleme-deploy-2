@@ -1,4 +1,22 @@
 ;
+
+/*******************
+ *
+ * React Bootstrap Component Define
+ *
+ ********************/
+var Input = ReactBootstrap.Input;
+var Button = ReactBootstrap.Button;
+var Modal = ReactBootstrap.Modal;
+var OverlayMixin= ReactBootstrap.OverlayMixin;
+
+
+/*******************
+ *
+ * Components
+ *
+ ********************/
+
 var WaitProgressComponent = React.createClass({
     loadStatusFromServer: function () {
         $.getJSON('/is-waiting', function (data) {
@@ -62,7 +80,6 @@ var RegisterFormComponent = React.createClass({
         return this.props.data;
     },
     render: function () {
-        console.log(this.state.name.isEmpty());
         return (
                 <form role="form" onSubmit={this.handleSubmit}>
                     <fieldset>
@@ -141,6 +158,177 @@ var SideBarNavComponent = React.createClass({
             <div className="sidebar-nav navbar-collapse">
                 <NavUlComponent id="side-menu" lists={this.props.data}/>
             </div>
+        );
+    }
+});
+
+
+var InlineFormAlertComponent = React.createClass({
+    render: function () {
+        var alertType = this.props.alertType;
+        var className = alertType == null ? 'hidden' : alertType == 'error' ? 'text-danger' : 'text-success';
+        var msg = this.props.alertMsg;
+        return (
+             <span className={className}>{msg}</span>
+        );
+    }
+});
+
+var RoleAddFormComponent = React.createClass({
+    changeHandle: function(e) {
+        var t = e.target;
+        var state = this.state;
+        state[t.name] = t.value;
+        if (t.name == 'roleName') {
+            state.roleNameError = false;
+            state.alertType = null;
+        }
+        this.setState(state);
+    },
+    emptySubmitHandle: function (e) {
+        e.preventDefault();
+    },
+    submitHandle: function (e) {
+        e.preventDefault();
+        var btn = e.currentTarget;
+        var state = this.state;
+        if (this.state.roleName.isEmpty()) {
+            state.alertMsg = "角色名不能为空";
+            state.alertType = 'error';
+            state.roleNameError = true;
+            this.setState(state);
+            return ;
+        }
+
+        $(btn).button("loading");
+        $.post('/api/role', {
+            roleName: this.state.roleName,
+            roleType: this.state.roleType,
+        }, function (data) {
+            if (data.code == 0) {
+                state.roleName = '';
+                state.roleType = 0;
+                state.roleNameError = false;
+                state.alertMsg = data.msg;
+                state.alertType = 'success';
+                this.props.reloadCallback == null ? '' : this.props.reloadCallback();
+            } else {
+                state.alertMsg = data.msg;
+                state.alertType = 'error';
+            }
+            this.setState(state);
+            $(btn).button("reset");
+        }.bind(this), 'json');
+    },
+    getInitialState: function () {
+        return {roleNameError: false, roleName: '', roleType: 0, alertMsg: null, alertType: null};
+    },
+    render: function () {
+        return (
+            <form className="form-inline" role="form" onSubmit={this.emptySubmitHandle}>
+                <Input name="roleName" value={this.state.roleName} onChange={this.changeHandle} type="text" bsStyle={this.state.roleNameError ? 'error' : null} label="角色名" labelClassName="sr-only" placeholder="角色名"/>
+                &nbsp;
+                <Input type="select" name="roleType" label="是否管理角色" onChange={this.changeHandle} labelClassName="sr-only" value={this.state.roleType}>
+                     <option value="0">普通角色</option>
+                     <option value="1">管理角色</option>
+                </Input>
+                &nbsp;
+                <Button bsStyle="primary" data-loading-text="加载中..." onClick={this.submitHandle} autoComplete="off"><i className="fa fa-plus fa-fw"></i>{" 添加角色"}</Button>
+                &nbsp; &nbsp;
+                <InlineFormAlertComponent alertType={this.state.alertType} alertMsg={this.state.alertMsg}/>
+            </form>
+        );
+    }
+});
+
+var RoleEditModalComponent = React.createClass({
+    changeHandle: function(e) {
+        var t = e.target;
+        var state = this.state;
+        state[t.name] = t.value;
+        if (t.name == 'roleName') {
+            state.roleNameError = false;
+            state.alertType = null;
+        }
+        this.setState(state);
+    },
+    emptySubmitHandle: function (e) {
+        e.preventDefault();
+    },
+    handleToggle: function () {
+        $("#roleModal").modal("show");
+    },
+    getInitialState: function () {
+        console.log(this.props.data);
+        return {
+            roleNameError: false,
+            roleName: this.props.data.name,
+            roleType: this.props.data.is_admin_role,
+            alertMsg: null,
+            alertType: null
+        };
+    },
+    submitHandle: function (e) {
+        e.preventDefault();
+        var btn = e.currentTarget;
+        var state = this.state;
+        if (this.state.roleName.isEmpty()) {
+            state.alertMsg = "角色名不能为空";
+            state.alertType = 'error';
+            state.roleNameError = true;
+            this.setState(state);
+            return ;
+        }
+
+        $(btn).button("loading");
+        $.post('/api/role/' + this.props.data.id, {
+            _method: "PUT",
+            roleName: this.state.roleName,
+            roleType: this.state.roleType,
+        }, function (data) {
+            if (data.code == 0) {
+                $("#roleModal").modal('hide');
+                this.props.updateCallback == null ? '' : this.props.updateCallback();
+            } else {
+                state.roleNameError = true;
+                state.alertMsg = data.msg;
+                state.alertType = 'error';
+            }
+            this.setState(state);
+            $(btn).button("reset");
+        }.bind(this), 'json');
+    },
+    render: function () {
+        return (
+    <div className="modal fade" id="roleModal" tabIndex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div className="modal-dialog">
+            <div className="modal-content">
+                <div className="modal-header">
+                    <button type="button" className="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 className="modal-title" id="myModalLabel">修改角色</h4>
+                </div>
+                <div className="modal-body">
+                    <div className="row">
+                        <div className="col-lg-12">
+                            <form role="form" onSubmit={this.emptySubmitHandle}>
+                                <Input name="roleName" value={this.state.roleName} onChange={this.changeHandle} type="text" bsStyle={this.state.roleNameError ? 'error' : null} label="角色名" placeholder="角色名"/>
+                                <Input type="select" name="roleType" label="角色类型" onChange={this.changeHandle} value={this.state.roleType}>
+                                     <option value="0">普通角色</option>
+                                     <option value="1">管理角色</option>
+                                </Input>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div className="modal-footer">
+                    <InlineFormAlertComponent alertType={this.state.alertType} alertMsg={this.state.alertMsg}/>
+                    &nbsp; &nbsp;
+                    <button type="button" className="btn btn-default" data-dismiss="modal">关闭</button>&nbsp;
+                    <button type="button" className="btn btn-primary" onClick={this.submitHandle}><i className="fa fa-save fa-fw"></i> 保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
         );
     }
 });

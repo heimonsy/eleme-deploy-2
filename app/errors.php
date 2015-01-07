@@ -1,6 +1,12 @@
 <?php
 use Deploy\Exception\RequestException;
 use Deploy\Exception\GithubException;
+use Deploy\Exception\ResourceNotFoundException;
+
+App::error(function (ResourceNotFoundException $e) {
+    Log::error(sprintf('Client IP: %s Url: %s  %s ', Input::ip(), Input::url(), $e->getMessage()));
+    return Response::json(array('code' => 1, 'msg' => $e->getUserMessage()));
+});
 
 if ($env !== 'local') {
     App::error(function (RequestException $e) {

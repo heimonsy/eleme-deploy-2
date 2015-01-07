@@ -16,6 +16,6 @@ class Sentry
             return call_user_func_array(array($this->login, $method), $parameters);
         }
 
-        throw \BadMethodCallException("Mothod {$method} is not supported by Sentry");
+        throw new \BadMethodCallException("Mothod {$method} is not supported by Sentry");
     }
 }

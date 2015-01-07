@@ -86,3 +86,16 @@ Route::filter('csrf', function() {
         throw new Illuminate\Session\TokenMismatchException;
     }
 });
+
+
+// api
+//
+Route::filter('api', function () {
+    //if (!Request::ajax()) {
+        //return Response::json(array('res' => 0, 'info' => 'Bad Request'), 400);
+    //}
+});
+
+Route::filter('admin', function () {
+    // todo finish admin permission
+});
