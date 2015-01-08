@@ -69,7 +69,7 @@ Route::model('role', 'Deploy\Account\Role', function () {
 
 Route::group(
     array(
-        'before' => array('auth', 'api', 'admin'),
+        'before' => array('auth', 'admin'),
         'prefix' => 'api',
     ),
     function () {
@@ -78,3 +78,7 @@ Route::group(
         ));
     }
 );
+
+Route::when('api/role', 'csrf', array('post'));
+Route::when('api/role/*', 'csrf', array('put', 'delete'));
+

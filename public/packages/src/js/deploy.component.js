@@ -202,6 +202,7 @@ var RoleAddFormComponent = React.createClass({
 
         $(btn).button("loading");
         $.post('/api/role', {
+            _token: csrfToken,
             roleName: this.state.roleName,
             roleType: this.state.roleType,
         }, function (data) {
@@ -282,6 +283,7 @@ var RoleEditModalComponent = React.createClass({
 
         $(btn).button("loading");
         $.post('/api/role/' + this.props.data.id, {
+            _token: csrfToken,
             _method: "PUT",
             roleName: this.state.roleName,
             roleType: this.state.roleType,

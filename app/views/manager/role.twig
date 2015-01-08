@@ -91,6 +91,7 @@
             if (confirm("确定要删除角色\"" + btn.attr('data-name') + "\"吗？")) {
                 btn.button('loading');
                 $.post('/api/role/' + btn.attr('data-id'), {
+                    _token: csrfToken,
                     _method : 'DELETE'
                 }, function (data) {
                     btn.button('reset');

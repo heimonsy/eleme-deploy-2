@@ -82,6 +82,7 @@ Route::filter('no.register', function () {
 */
 
 Route::filter('csrf', function() {
+    Log::info('csrf');
     if (Session::token() !== Input::get('_token')) {
         throw new Illuminate\Session\TokenMismatchException;
     }
