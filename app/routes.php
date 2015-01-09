@@ -59,6 +59,7 @@ Route::group(
     function () {
         Route::get('role', 'ManagerController@role');
         Route::get('hosttypecatalogs', 'ManagerController@hosttypecatalogs');
+        Route::get('sites', 'ManagerController@sites');
     }
 );
 
@@ -76,6 +77,10 @@ Route::Model('hosttypecatalog', 'Deploy\Hosts\HostTypeCatalog', function () {
     throw new \Deploy\Exception\ResourceNotFoundException('发布环境不存在');
 });
 
+Route::Model('site', 'Deploy\Site\Site', function () {
+    throw new \Deploy\Exception\ResourceNotFoundException('项目不存在');
+});
+
 Route::group(
     array(
         'before' => array('auth', 'admin'),
@@ -91,6 +96,10 @@ Route::group(
         ));
 
         Route::resource('hosttypecatalog', 'HostTypeCatalogController', array(
+            'only' => array('index', 'show', 'store', 'destroy', 'update')
+        ));
+
+        Route::resource('site', 'SiteController', array(
             'only' => array('index', 'show', 'store', 'destroy', 'update')
         ));
     }

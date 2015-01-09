@@ -549,4 +549,115 @@ var HostTypeAddComponent = React.createClass({
         );
     }
 });
+
+
+var SiteEditComponent = React.createClass({
+    handleToggle: function () {
+        $("#ctModal").modal("show");
+    },
+    handleChange: function (e) {
+        var state = this.state;
+        var t = e.target;
+        state[t.name] = t.value;
+        state[t.name + 'Error'] = false;
+        state.alertType = null;
+        this.setState(state);
+    },
+
+    getInitialState: function () {
+        if (this.props.type == 'edit') {
+            return {name: this.props.data.name, repo_git: this.props.data.repo_git, repo_gitError: false, nameError: false, modalTitle: '修改项目', btn: "保存", alertType: null, alertMsg: ''};
+        }
+        return {name: '', repo_git: '', nameError: false, repo_gitError: false, modalTitle: '新建项目', btn: "新建", alertType: null, alertMsg: ''};
+    },
+
+    emptySubmitHandle: function (e) {
+        e.preventDefault();
+    },
+
+    handleSubmit: function (btn) {
+        btn = $(btn);
+        var state = this.state;
+        if (this.state.name.isEmpty()) {
+            state.nameError = 'error';
+            state.alertType = 'danger';
+            state.alertMsg = '项目名不能为空';
+            this.setState(state);
+            return ;
+        }
+
+        if (this.props.type == 'new') {
+            if (! /^git@(.+)/i.test(this.state.repo_git.trim())) {
+                state.repo_gitError = 'error';
+                state.alertType = 'danger';
+                state.alertMsg = 'Fetch Url格式不正确';
+                this.setState(state);
+                return ;
+            }
+            btn.button('loading');
+            $.post('/api/site', {
+                _token: csrfToken,
+                name: this.state.name,
+                repo_git: this.state.repo_git,
+            }, function (data) {
+                state.alertMsg = data.msg;
+                if (data.code == 0) {
+                    state.alertType = 'success';
+                    setTimeout(function () {$("#ctModal").modal("hide")}, 1000);
+                    this.props.updateCallback == null ? '' : this.props.updateCallback();
+                } else {
+                    for (i in data.fields) {
+                        state[data.fields[i] + 'Error'] = true;
+                    }
+                    state.alertType = 'danger';
+                }
+                this.setState(state);
+                btn.button('reset');
+            }.bind(this), 'json');
+        } else {
+            btn.button('loading');
+            $.post('/api/site/' + this.props.id, {
+                _token: csrfToken,
+                _method: 'PUT',
+                name: this.state.name,
+            }, function (data) {
+                state.alertMsg = data.msg;
+                if (data.code == 0) {
+                    state.alertType= 'success';
+                    setTimeout(function () {$("#ctModal").modal("hide")}, 1000);
+                    this.props.updateCallback == null ? '' : this.props.updateCallback();
+                } else {
+                    for (i in data.fields) {
+                        state[data.fields[i] + 'Error'] = true;
+                    }
+                    state.alertType = 'danger';
+                }
+                this.setState(state);
+                btn.button('reset');
+            }.bind(this), 'json');
+        }
+    },
+
+    render: function () {
+        var repoInput = this.props.type == 'edit' ? (<Input name="repo_git" value={this.state.repo_git} type="text" label="Fetch Url" disabled/> ) : (<Input name="repo_git" value={this.state.repo_git} onChange={this.handleChange} type="text" bsStyle={this.state.repo_gitError ? 'error' : null} label ="Fetch Url" placeholder="Fetch Url"/>);
+        return (
+             <DeployModal id="ctModal" title={this.state.modalTitle} btn={this.state.btn} clickCallback={this.handleSubmit}>
+                <div className="row">
+                    <div className="col-lg-12">
+                        <BlockAlert msgType={this.state.alertType}>{this.state.alertMsg}</BlockAlert>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-lg-12">
+                        <form role="form" onSubmit={this.emptySubmitHandle}>
+                            <Input name="name" value={this.state.name} onChange={this.handleChange} type="text" bsStyle={this.state.nameError ? 'error' : null} label="项目名 " placeholder="项目名"/>
+                            {repoInput}
+                        </form>
+                    </div>
+                </div>
+            </DeployModal>
+        );
+   }
+});
+
 ;

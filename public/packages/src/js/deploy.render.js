@@ -58,4 +58,10 @@ var renderHostTypeCatalogModal = function (element, type, data, updateCallback) 
     c.handleToggle();
 };
 
+var renderSiteModal = function (element, type, data, updateCallback) {
+    $(element).html("");
+    var c = React.render(<SiteEditComponent id={data.id} type={type} data={data} updateCallback={updateCallback}/>, element);
+    c.handleToggle();
+};
+
 ;

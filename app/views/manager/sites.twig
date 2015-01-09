@@ -1,0 +1,104 @@
+{% extends 'layout.master' %}
+{% block main %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h2 class="page-header">项目管理</h2>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+
+    <div class="row">
+        <div class="col-lg-12">
+            <button class="btn btn-primary" id="btnNew"><i class="fa fa-plus fa-fw"></i> 新增</button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <table id="dataTable" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>项目名</th>
+                        <th>Fetch Url</th>
+                        <th>修改</th>
+                        <th>删除</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+
+{% endblock main %}
+{% block footer_js %}
+<script>
+var csrfToken = "{{ csrf_token() }}";
+$(function () {
+    var table = $('#dataTable').DataTable({
+            ajax: '/api/site',
+            paging: false,
+            ordering: false,
+            info: false,
+            columns: [
+                {data: 'id'},
+                {data: 'name'},
+                {data: 'repo_git'},
+                {data: 'id'},
+                {data: 'id'}
+            ],
+            columnDefs:
+            [
+            {
+                render: function (data, type, row) {
+                    return "<button data-id='" + data + "' class='btn btn-primary btn-xs btnEdit'>修改</button>";
+                },
+                targets: 3,
+            },
+            {
+                render: function (data, type, row) {
+                    return "<button  data-name='" + row.name + "' data-id='" + data + "' class='btn btn-warning btn-xs btnDelete'>删除</button>";
+                },
+                targets: 4,
+            }
+            ]
+    });
+    $("#btnNew").click(function (e) {
+        renderSiteModal(normalModalWrapper, "new", {}, table.ajax.reload);
+    });
+
+    $("#dataTable").on('click', '.btnDelete', function (e) {
+        var btn = $(this);
+        if (confirm("确定要删除站点“" + btn.attr("data-name") + "”吗？")) {
+            btn.button('loading');
+            $.post('/api/site/' + btn.attr("data-id"), {
+                _token: csrfToken,
+                _method: 'DELETE',
+            }, function (data) {
+                if (data.code == 0) {
+                    table.ajax.reload();
+                } else {
+                    alert(data.msg);
+                }
+                btn.button('reset');
+            }, 'json');
+        }
+    });
+
+    $("#dataTable").on('click', '.btnEdit', function (e) {
+        var btn = $(this);
+        btn.button('loading');
+        $.getJSON('/api/site/' + btn.attr("data-id"), function (data) {
+            btn.button('reset');
+            if (data.code == 0) {
+                renderSiteModal(normalModalWrapper, "edit", data.data, table.ajax.reload);
+            } else {
+                alert(data.msg);
+            }
+        });
+    })
+
+});
+</script>
+{% endblock footer_js %}
