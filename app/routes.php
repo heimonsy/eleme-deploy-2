@@ -58,6 +58,7 @@ Route::group(
     ),
     function () {
         Route::get('role', 'ManagerController@role');
+        Route::get('hosttypecatalogs', 'ManagerController@hosttypecatalogs');
     }
 );
 
@@ -65,6 +66,14 @@ Route::group(
 
 Route::model('role', 'Deploy\Account\Role', function () {
     throw new \Deploy\Exception\ResourceNotFoundException('角色不存在');
+});
+
+Route::Model('hosttype', 'Deploy\Hosts\HostType', function () {
+    throw new \Deploy\Exception\ResourceNotFoundException('Host Type不存在');
+});
+
+Route::Model('hosttypecatalog', 'Deploy\Hosts\HostTypeCatalog', function () {
+    throw new \Deploy\Exception\ResourceNotFoundException('发布环境不存在');
 });
 
 Route::group(
@@ -76,9 +85,17 @@ Route::group(
         Route::resource('role', 'RoleController', array(
             'only' => array('index', 'show', 'store', 'destroy', 'update')
         ));
+
+        Route::resource('hosttype', 'HostTypeController', array(
+            'only' => array('index', 'show', 'store', 'destroy', 'update')
+        ));
+
+        Route::resource('hosttypecatalog', 'HostTypeCatalogController', array(
+            'only' => array('index', 'show', 'store', 'destroy', 'update')
+        ));
     }
 );
 
-Route::when('api/role', 'csrf', array('post'));
-Route::when('api/role/*', 'csrf', array('put', 'delete'));
+Route::when('api/*', 'csrf', array('post'));
+Route::when('api/*/*', 'csrf', array('put', 'delete'));
 

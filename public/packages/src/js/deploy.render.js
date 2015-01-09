@@ -40,10 +40,21 @@ var renderRoleForm = function (element, callback) {
     React.render(<RoleAddFormComponent reloadCallback={callback}/>, element);
 };
 
-
 var renderRoleModal = function (element, data, updateCallback) {
     $(element).html("");
     var c = React.render(<RoleEditModalComponent data={data} updateCallback={updateCallback}/>, element);
+    c.handleToggle();
+};
+
+var renderHostTypeCatalog = function (element, type, data, updateCallback) {
+    $(element).html("");
+    var c = React.render(<RoleEditModalComponent data={data} updateCallback={updateCallback}/>, element);
+    c.handleToggle();
+};
+
+var renderHostTypeCatalogModal = function (element, type, data, updateCallback) {
+    $(element).html("");
+    var c = React.render(<HostTypeCatalogEditComponent id={data.id} type={type} data={data} updateCallback={updateCallback}/>, element);
     c.handleToggle();
 };
 

@@ -115,7 +115,10 @@
     </div>
     <!-- /#wrapper -->
 
+<div id="normalModalWrapper"></div>
+
 <script>
+var normalModalWrapper = document.getElementById('normalModalWrapper');
 
 var sideNavMenuData = [
 {
@@ -133,8 +136,8 @@ var sideNavMenuData = [
         name: '基础配置',
     },
     {
-        url: '/hosttypes',
-        name: 'HostType 管理',
+        url: '/manager/hosttypecatalogs',
+        name: '发布环境',
     }
     ]
 },
@@ -164,6 +167,7 @@ var sideNavMenuData = [
 renderSideNavBar(document.getElementById('side-nav-menu'), sideNavMenuData, location.pathname);
 </script>
     {% block footer_js %}{% endblock footer_js %}
+
 </body>
 
 </html>

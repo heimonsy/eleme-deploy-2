@@ -1,0 +1,103 @@
+{% extends 'layout.master' %}
+{% block main %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h2 class="page-header">发布环境管理</h2>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+
+    <div class="row">
+        <div class="col-lg-12">
+            <button class="btn btn-primary" id="btnNewHostTypeCatalog"><i class="fa fa-plus fa-fw"></i> 新增</button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <table id="hostTypeCatalog" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>环境名</th>
+                        <th>修改</th>
+                        <th>删除</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+
+
+{% endblock main%}
+{% block footer_js%}
+<script>
+var csrfToken = "{{ csrf_token() }}";
+
+$(function () {
+
+    var table = $('#hostTypeCatalog').DataTable({
+            ajax: '/api/hosttypecatalog',
+            paging: false,
+            ordering: false,
+            info: false,
+            columns: [
+                {data: 'id'},
+                {data: 'name'},
+                {data: 'id'},
+                {data: 'id'}
+            ],
+            columnDefs:
+            [
+            {
+                render: function (data, type, row) {
+                    return "<button class='btn btn-primary btn-xs btnEdit' data-id='"+data+"'>修改</button>";
+                },
+                targets: 2
+            },
+            {
+                render: function (data, type, row) {
+                    return "<button class='btn btn-warning btn-xs btnDel' data-name=" + row.name + " data-id='"+data+"'>删除</button>";
+                },
+                targets: 3
+            }
+            ]
+    });
+
+    $("#btnNewHostTypeCatalog").click(function (e) {
+        renderHostTypeCatalogModal(normalModalWrapper, 'new', {}, table.ajax.reload);
+    });
+
+    $('#hostTypeCatalog').on('click', '.btnDel', function (e) {
+        var btn = $(this);
+        if (confirm("确定要删除发布环境“" + btn.attr('”data-name') + "吗？")) {
+            btn.button('loading');
+            $.post('/api/hosttypecatalog/' + btn.attr("data-id"), {
+                _method: 'DELETE',
+                _token: csrfToken
+            }, function (data) {
+                if (data.code == 0) {
+                    table.ajax.reload();
+                } else {
+                    alert(data.msg);
+                }
+                btn.button('reset');
+            }, 'json');
+        }
+    });
+
+    $('#hostTypeCatalog').on('click', '.btnEdit', function (e) {
+        var btn = $(this);
+        btn.button('loading');
+        $.getJSON('/api/hosttypecatalog/' + btn.attr("data-id"), function (data) {
+            if (data.code == 0) {
+                renderHostTypeCatalogModal(normalModalWrapper, 'edit', data.data, table.ajax.reload);
+            }
+            btn.button("reset");
+        });
+    });
+});
+</script>
+{% endblock footer_js%}

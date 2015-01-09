@@ -9,4 +9,9 @@ class ManagerController extends Controller
     {
         return Response::view('manager.role');
     }
+
+    public function hosttypecatalogs()
+    {
+        return Response::view('manager.hosttypecatalogs');
+    }
 }

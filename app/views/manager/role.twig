@@ -23,6 +23,7 @@
                         <th>角色名</th>
                         <th>类型</th>
                         <th>是否管理角色</th>
+                        <th width="60">权限</th>
                         <th>操作</th>
                     </tr>
                 </thead>
@@ -48,17 +49,24 @@
                 {data: 'name'},
                 {data: 'type'},
                 {data: 'is_admin_role'},
+                {data: 'id'},
                 {data: 'id'}
             ],
             columnDefs:
             [
                 {
                     render: function (data, type, row) {
+                        return '<button data-id="' + data + '" class="btn btn-primary btn-xs">权限</button>';
+                    },
+                    targets: 4,
+                },
+                {
+                    render: function (data, type, row) {
                         var canModify = row.type == 'system' ? '' : '<button data-id="' + data + '" class="btn btn-primary btn-xs btnEditRole">修改</button>&nbsp;' +
                             '<button data-loading-text="正在删除" data-name="' + row.name + '" data-id="' + data + '" class="btn btn-warning btn-xs btnDeleteRole">删除</button>';
                         return canModify;
                     },
-                    targets: 4
+                    targets: 5
                 },
                 {
                     render: function (data, type, row) {

@@ -9,6 +9,7 @@ var Input = ReactBootstrap.Input;
 var Button = ReactBootstrap.Button;
 var Modal = ReactBootstrap.Modal;
 var OverlayMixin= ReactBootstrap.OverlayMixin;
+var Alert = ReactBootstrap.Alert;
 
 
 /*******************
@@ -335,4 +336,217 @@ var RoleEditModalComponent = React.createClass({
     }
 });
 
+var DeployModal = React.createClass({
+    handleMainBtn: function (e) {
+        e.preventDefault();
+        if (typeof this.props.clickCallback == 'function') {
+            this.props.clickCallback(e.currentTarget);
+        }
+    },
+    render: function (e) {
+        var btnStyle ={marginLeft: "16px"};
+        var mainBtn = this.props.btn == undefined ? '' : (<button type="button" style={btnStyle} className="btn btn-primary" onClick={this.handleMainBtn}>{this.props.btn}</button>);
+        return (
+        <div className="modal fade" id={this.props.id} tabIndex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div className="modal-dialog">
+            <div className="modal-content">
+                <div className="modal-header">
+                    <button type="button" className="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 className="modal-title" id="myModalLabel">{this.props.title}</h4>
+                </div>
+                <div className="modal-body">
+                    {this.props.children}
+                </div>
+                <div className="modal-footer">
+                    <button type="button" className="btn btn-default" data-dismiss="modal">关闭</button>
+                    {mainBtn}
+                </div>
+            </div>
+        </div>
+        </div>
+       )
+    }
+});
+
+var BlockAlert = React.createClass({
+    getInitialState: function() {
+        return {
+            alertVisible: true
+        };
+    },
+
+    render: function() {
+        if (this.props.msgType !=null && this.state.alertVisible) {
+            return (
+                <Alert bsStyle={this.props.msgType} onDismiss={this.handleAlertDismiss} >
+                    <div dangerouslySetInnerHTML={{__html: this.props.children.toString()}}></div>
+                </Alert>
+            );
+        }
+        return (<span />);
+    },
+
+    handleAlertDismiss: function() {
+        this.setState({alertVisible: false});
+    },
+});
+
+var HostTypeCatalogEditComponent = React.createClass({
+    changeHandle: function (e) {
+        var state = this.state;
+        state.name = e.target.value;
+        state.nameError = false;
+        state.alertType = null;
+        this.setState(state);
+    },
+    emptySubmitHandle: function (e) {
+        e.preventDefault();
+    },
+    handleSubmit: function (btn) {
+        btn = $(btn);
+        var state = this.state;
+        if (this.state.name.isEmpty()) {
+            state.nameError = true;
+            state.alertType = 'danger';
+            state.alertMsg = '发布环境名称不能为空';
+            this.setState(state);
+            return ;
+        }
+        btn.button('loading');
+        if (this.props.type == 'new') {
+            $.post('/api/hosttypecatalog', {
+                _token: csrfToken,
+                name: this.state.name
+            }, function (data) {
+                btn.button('reset');
+                state.alertMsg = data.msg;
+                if (data.code == 0) {
+                    state.alertType = 'success';
+                    setTimeout(function () {$("#ctModal").modal("hide")}, 1000);
+                    this.props.updateCallback == null ? '' : this.props.updateCallback();
+                } else {
+                    state.nameError = true;
+                    state.alertType = 'danger';
+                }
+                this.setState(state);
+            }.bind(this), 'json');
+        } else {
+            $.post('/api/hosttypecatalog/' + this.props.data.id, {
+                _method: 'PUT',
+                _token: csrfToken,
+                name: this.state.name
+            }, function (data) {
+                btn.button('reset');
+                state.alertMsg = data.msg;
+                if (data.code == 0) {
+                    state.alertType = "success";
+                    setTimeout(function () {$("#ctModal").modal("hide")}, 1000);
+                    this.props.updateCallback == null ? '' : this.props.updateCallback();
+                } else {
+                    state.nameError = true;
+                    state.alertType = "danger";
+                }
+                this.setState(state);
+            }.bind(this), 'json');
+        }
+    },
+    handleToggle: function () {
+        $("#ctModal").modal("show");
+    },
+    getInitialState: function (e) {
+        if (this.props.type == 'edit') {
+            return {name: this.props.data.name, nameError: false, modalTitle: '修改发布环境', btn: "保存", alertType: null, alertMsg: ''};
+        }
+        return {name: '', nameError: false, modalTitle: '新建发布环境', btn: "新建", alertType: null, alertMsg: ''};
+    },
+    render: function (e) {
+        return (
+            <DeployModal id="ctModal" title={this.state.modalTitle} btn={this.state.btn} clickCallback={this.handleSubmit}>
+                <div className="row">
+                    <div className="col-lg-12">
+                        <BlockAlert msgType={this.state.alertType}>{this.state.alertMsg}</BlockAlert>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-lg-12">
+                        <form role="form" onSubmit={this.emptySubmitHandle}>
+                            <Input name="name" value={this.state.name} onChange={this.changeHandle} type="text" bsStyle={this.state.nameError ? 'error' : null} label="环境名称" placeholder="环境名称"/>
+                        </form>
+                    </div>
+                </div>
+            </DeployModal>
+        );
+    },
+});
+
+var HostTypeAddComponent = React.createClass({
+    changeHandle: function(e) {
+        var t = e.target;
+        var state = this.state;
+        state[t.name] = t.value;
+        if (t.name == 'name') {
+            state.nameError = false;
+            state.alertType = null;
+        }
+        this.setState(state);
+    },
+
+    emptySubmitHandle: function (e) {
+        e.preventDefault();
+    },
+
+    submitHandle: function (e) {
+        e.preventDefault();
+        if (this.state.name.isEmpty()) {
+        }
+    },
+
+
+    getInitialState: function () {
+        if (this.props.type == 'new') {
+            return {name: '', catalog: '', alertType: null, alertMsg: ''};
+        }
+        return {name: this.props.data.name, catalog: this.props.data.catalog, alertType: null, alertMsg: ''};
+    },
+
+    render: function () {
+        var titleName = this.props.type == 'new' ? '新建Host Type' : '修改Host Type';
+        var btnName = this.props.type == 'new' ? '新增' : '修改';
+        return (
+    <div className="modal fade" id="roleModal" tabIndex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div className="modal-dialog">
+            <div className="modal-content">
+                <div className="modal-header">
+                    <button type="button" className="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 className="modal-title" id="myModalLabel">{titleName}</h4>
+                </div>
+                <div className="modal-body">
+                    <div className="row">
+                        <div className="col-lg-12"><div class="alert">hi</div></div>
+                    </div>
+                    <div className="row">
+                        <div className="col-lg-12">
+                            <form role="form" onSubmit={this.emptySubmitHandle}>
+                                <Input name="name" value={this.state.name} onChange={this.changeHandle} type="text" bsStyle={this.state.name ? 'error' : null} label="Host Type" placeholder="Host Type"/>
+                                <Input type="select" name="catalog" label="角色类型" onChange={this.changeHandle} value={this.state.catalog}>
+                                     <option value="0">请选择分类..</option>
+                                     <option value="1">管理角色</option>
+                                </Input>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div className="modal-footer">
+                    <InlineFormAlertComponent alertType={this.state.alertType} alertMsg={this.state.alertMsg}/>
+                    &nbsp; &nbsp;
+                    <button type="button" className="btn btn-default" data-dismiss="modal">关闭</button>&nbsp;
+                    <button type="button" className="btn btn-primary" onClick={this.submitHandle}><i className="fa fa-save fa-fw"></i> {btnName}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        );
+    }
+});
 ;
