@@ -60,6 +60,7 @@ Route::group(
         Route::get('role', 'ManagerController@role');
         Route::get('hosttypecatalogs', 'ManagerController@hosttypecatalogs');
         Route::get('sites', 'ManagerController@sites');
+        Route::get('users', 'ManagerController@users');
     }
 );
 
@@ -79,6 +80,14 @@ Route::Model('hosttypecatalog', 'Deploy\Hosts\HostTypeCatalog', function () {
 
 Route::Model('site', 'Deploy\Site\Site', function () {
     throw new \Deploy\Exception\ResourceNotFoundException('项目不存在');
+});
+
+Route::bind('user', function ($value, $route) {
+    $user = User::where('id', $value)->normal()->first();
+    if (!$user) {
+        throw new \Deploy\Exception\ResourceNotFoundException('用户不存在');
+    }
+    return $user;
 });
 
 Route::group(
@@ -101,6 +110,10 @@ Route::group(
 
         Route::resource('site', 'SiteController', array(
             'only' => array('index', 'show', 'store', 'destroy', 'update')
+        ));
+
+        Route::resource('user', 'UserController', array(
+            'only' => array('index', 'destroy')
         ));
     }
 );

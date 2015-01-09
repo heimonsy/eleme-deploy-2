@@ -15,6 +15,11 @@ class ManagerController extends Controller
         return Response::view('manager.hosttypecatalogs');
     }
 
+    public function users()
+    {
+        return Response::view('manager.users');
+    }
+
     public function sites()
     {
         return Response::view('manager.sites');

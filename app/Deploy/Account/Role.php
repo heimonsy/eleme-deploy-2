@@ -12,4 +12,8 @@ class Role extends Eloquent
 
     protected $guarded = array('id');
 
+    public function users()
+    {
+        return $this->belongsToMany('Deploy\Account\Account', 'role_user', 'role_id', 'user_id');
+    }
 }

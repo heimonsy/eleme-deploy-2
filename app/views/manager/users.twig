@@ -1,0 +1,70 @@
+{% extends 'layout.master' %}
+{% block main %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h2 class="page-header">用户管理</h2>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+
+    <div class="row">
+        <div class="col-lg-12">
+            <table id="dataTable" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>login</th>
+                        <th>名字</th>
+                        <th>email</th>
+                        <th>角色</th>
+                        <th>删除</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+{% endblock main %}
+{% block footer_js %}
+<script>
+var csrfToken = "{{ csrf_token() }}";
+$(function () {
+    var table = $('#dataTable').DataTable({
+            ajax: '/api/user',
+            paging: false,
+            ordering: false,
+            info: false,
+            columns: [
+                {data: 'id'},
+                {data: 'login'},
+                {data: 'name'},
+                {data: 'notify_email'},
+                {data: 'id'},
+                {data: 'id'}
+            ],
+            columnDefs:
+            [
+            {
+                render: function (data, type, row) {
+                    return "<button  data-name='" + row.name + "' data-id='" + data + "' class='btn btn-warning btn-xs btnDelete'>删除</button>";
+                },
+                targets: 5
+            },
+            {
+                render: function (data, type, row) {
+                    var html = '';
+                    for (var i in row.roles) {
+                        var role = row.roles[i];
+                        var clss = role.is_admin_role ? 'label-danger' : 'label-default';
+                        html += "<span class=\"tag label " + clss + "\"> <span>" + role.name + "</span> <a><i class=\"remove glyphicon glyphicon-remove-sign glyphicon-white\"></i></a> </span>";
+                    }
+                    return html + " &nbsp;<a class=\"btn btn-primary btn-xs\">+</a>";
+                },
+                targets: 4
+            }
+            ]
+    });
+});
+</script>
+{% endblock %}

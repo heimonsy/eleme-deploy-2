@@ -41,6 +41,11 @@ class User extends Eloquent
         return $fakeId - $offset;
     }
 
+    public function roles()
+    {
+        return $this->belongsToMany('Deploy\Account\Role', 'role_user', 'user_id', 'role_id');
+    }
+
     public function teams()
     {
         return $this->belongsToMany('Deploy\Account\Team', 'team_user', 'user_id', 'team_id');

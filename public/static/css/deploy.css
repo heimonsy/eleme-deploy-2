@@ -1,24 +1,25 @@
 .tag {
-  font-size: 14px;
+    font-size: 12px;
     padding: .3em .4em .4em;
-  margin: 0 .1em;
-  }
+    margin: 0 .1em;
+    font-weight: normal;
+}
 .tag a {
     color: #bbb;
-  cursor: pointer;
+    cursor: pointer;
     opacity: 0.6;
 }
 .tag a:hover {
-  opacity: 1.0
-  }
+    opacity: 1.0
+}
 .tag .remove {
     vertical-align: bottom;
-  top: 0;
-  }
+    top: 0;
+}
 .tag a {
-    margin: 0 0 0 .3em;
+    margin: 0 0 0 .1em;
 }
 .tag a .glyphicon-white {
-  color: #fff;
-    margin-bottom: 2px;
+    color: #fff;
+    margin-bottom: 5px;
 }

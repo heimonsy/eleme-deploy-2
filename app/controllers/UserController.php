@@ -5,6 +5,27 @@ use Deploy\Worker\Job;
 
 class UserController extends Controller
 {
+    public function index()
+    {
+        return Response::json(array(
+            'code' => 0,
+            'data' => User::normal()->with(array('roles' => function ($query) {
+                          $query->select('roles.id', 'name', 'is_admin_role');
+                      }))->get()
+        ));
+    }
+
+    public function destroy(User $user)
+    {
+        $user->STATUS = User::STATUS_DELETE;
+        $user->save();
+
+        return Response::json(array(
+            'code' => 0,
+            'msg' => '删除成功',
+        ));
+    }
+
     public function register()
     {
         $input = Input::only('name', 'email');
