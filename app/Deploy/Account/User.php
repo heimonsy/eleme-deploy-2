@@ -80,4 +80,20 @@ class User extends Eloquent
     {
         return $this->status == self::STATUS_NORMAL;
     }
+
+    public function isAdmin()
+    {
+        static $isAdmin = null;
+
+        if ($isAdmin === null) {
+            $isAdmin = false;
+            foreach ($this->roles as $role) {
+                if ($role->is_admin_role == 1) {
+                    $isAdmin = true;
+                    break;
+                }
+            }
+        }
+        return $isAdmin;
+    }
 }

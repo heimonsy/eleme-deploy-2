@@ -2,6 +2,7 @@
 
 use Deploy\Account\User;
 use Deploy\Worker\Job;
+use Deploy\Account\Role;
 
 class UserController extends Controller
 {
@@ -40,16 +41,22 @@ class UserController extends Controller
         $user = Sentry::loginUser();
         $user->notify_email = $input['email'];
         $user->name = $input['name'];
-        $user->status = User::STATUS_WAITING;
+        //$user->status = User::STATUS_WAITING;
+        $user->status = User::STATUS_NORMAL;
         $user->save();
 
-        Worker::push('Deploy\Worker\Jobs\UpdateUserTeams', Job::TYPE_USER, "Update User {$user->login}",
-            array(
-                'id' => 1,
-                'status' => User::STATUS_WAITING
-            )
-        );
+        if ($user->id == 1) {
+            $role = Role::where(array('is_admin_role' => 1))->first();
+            $user->roles()->attach($role->id);
+        }
 
-        return Response::json(array('res' => 0, 'info' => route('wait')));
+        //Worker::push('Deploy\Worker\Jobs\UpdateUserTeams', Job::TYPE_USER, "Update User {$user->login}",
+            //array(
+                //'id' => 1,
+                //'status' => User::STATUS_WAITING
+            //)
+        //);
+
+        return Response::json(array('res' => 0, 'info' => route('dashboard')));
     }
 }

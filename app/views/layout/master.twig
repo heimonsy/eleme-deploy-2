@@ -83,13 +83,10 @@
             <ul class="nav navbar-top-links navbar-right">
                 <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                        <i class="fa fa-user fa-fw"></i> heimonsy <i class="fa fa-caret-down"></i>
+                        <i class="fa fa-user fa-fw"></i> {{ loginUser.name }} <i class="fa fa-caret-down"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-user">
-                        <li><a href="#"><i class="fa fa-user fa-fw"></i> 个人资料</a>
-                        </li>
-                        <li><a href="#"><i class="fa fa-gear fa-fw"></i> 刷新权限</a>
-                        </li>
+                        <li><a href="/user"><i class="fa fa-user fa-fw"></i> 个人资料</a>
                         <li class="divider"></li>
                         <li><a href="/logout"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
                         </li>
@@ -122,27 +119,37 @@
 <script>
 var normalModalWrapper = document.getElementById('normalModalWrapper');
 
+var loginUser = createUser({{ loginUser | raw}});
+
+console.log(loginUser.isAdmin());
+
 var sideNavMenuData = [
 {
     url: '/',
     name: 'Dashboard',
+    admin_control: false,
     fa: 'fa-dashboard',
 },
 {
     url: '',
     name: '系统配置',
+    admin_control: true,
     fa: 'fa-wrench',
     children: [
     {
         url: '/system/config',
+        admin_control: true,
         name: '基础配置',
     },
     {
         url: '/manager/hosttypecatalogs',
+        admin_control: true,
+        name: '基础配置',
         name: '发布环境',
     },
     {
         url: '/manager/sites',
+        admin_control: true,
         name: '项目管理',
     }
     ]
@@ -150,14 +157,17 @@ var sideNavMenuData = [
 {
     url: '',
     name: '用户与权限',
-    fa: 'fa-users',
+    admin_control: true,
+    fa: 'fa-group',
     children: [
     {
         url: '/manager/role',
+        admin_control: true,
         name: '角色管理',
     },
     {
         url: '/manager/users',
+        admin_control: true,
         name: '用户管理',
     }
     ]
@@ -165,12 +175,14 @@ var sideNavMenuData = [
 {
     url: '/sites',
     name: '项目发布',
-    fa: 'fa-wrench',
+    admin_control: false,
+    fa: 'fa-upload',
 },
 {
     url: '/workers',
     name: 'Workers',
     fa: 'fa-gear',
+    admin_control: false,
 }
 ];
 

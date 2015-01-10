@@ -35,7 +35,10 @@ class Login
     public function checkLogin()
     {
         if ($this->user || $this->checkFromSession() || $this->checkFromCookies()) {
-            return !$this->user->isDeleted();
+            if(!$this->user->isDeleted()){
+                $this->user->load('roles');
+                return true;
+            }
         }
 
         return false;

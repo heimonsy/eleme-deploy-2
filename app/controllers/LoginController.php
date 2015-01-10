@@ -67,14 +67,15 @@ class LoginController extends Controller
             $user->status = User::STATUS_REGISTER;
             $route = 'register';
         } elseif (!$user->isDeleted()) {
-            $user->status = User::STATUS_WAITING;
-            $route = 'wait';
-            Worker::push('Deploy\Worker\Jobs\UpdateUserTeams', Job::TYPE_USER, "Update User {$userJson['login']}",
-                array(
-                    'id' => 1,
-                    'status' => Deploy\Account\User::STATUS_WAITING
-                )
-            );
+            $route = 'dashboard';
+            //$user->status = User::STATUS_WAITING;
+            //$route = 'wait';
+            //Worker::push('Deploy\Worker\Jobs\UpdateUserTeams', Job::TYPE_USER, "Update User {$userJson['login']}",
+                //array(
+                    //'id' => 1,
+                    //'status' => Deploy\Account\User::STATUS_WAITING
+                //)
+            //);
 
         } else {
             Log::error("[user has been deleted] github user {$userJson['login']} try to login");

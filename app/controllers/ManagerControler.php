@@ -3,7 +3,7 @@
 use Deploy\Account\User;
 use Deploy\Worker\Job;
 
-class ManagerController extends Controller
+class ManagerController extends BaseController
 {
     public function role()
     {

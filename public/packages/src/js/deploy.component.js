@@ -124,12 +124,22 @@ var NavUlLiComponent = React.createClass({
                     break;
                 }
             }
-            return (
-                <li className={liClass}>
-                    <a href={data.url}><i className="fa fa-wrench fa-fw"></i> {data.name}<span className="fa arrow"></span></a>
-                    <NavUlComponent extraClassName="nav-second-level" lists={data.children}/>
-                </li>
-            );
+            if (data.fa == undefined) {
+                return (
+                    <li className={liClass}>
+                        <a href={data.url}>{data.name}<span className="fa arrow"></span></a>
+                        <NavUlComponent extraClassName="nav-second-level" lists={data.children}/>
+                    </li>
+                );
+            } else {
+                var faClass = "fa " + data.fa + " fa-fw";
+                return (
+                    <li className={liClass}>
+                        <a href={data.url}><i className={faClass}></i> {data.name}<span className="fa arrow"></span></a>
+                        <NavUlComponent extraClassName="nav-second-level" lists={data.children}/>
+                    </li>
+                );
+            }
         }
     }
 });
@@ -137,9 +147,12 @@ var NavUlLiComponent = React.createClass({
 var NavUlComponent = React.createClass({
     render: function () {
         var navNodes = this.props.lists.map(function (list) {
-            return (
-                <NavUlLiComponent key={list.name} data={list}/>
-            );
+            if (list.admin_control !== true || loginUser.isAdmin()) {
+                return (
+                    <NavUlLiComponent key={list.name} data={list}/>
+                );
+            }
+            return '';
         });
 
         var className = this.props.extraClassName == undefined ? 'nav' : 'nav ' + this.props.extraClassName;

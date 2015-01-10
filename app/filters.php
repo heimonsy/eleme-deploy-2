@@ -98,5 +98,9 @@ Route::filter('api', function () {
 });
 
 Route::filter('admin', function () {
-    // todo finish admin permission
+    $user = Sentry::loginUser();
+    if (!$user->isAdmin()) {
+
+        return Response::make('非管理员角色无法访问此页面', 403);;
+    }
 });

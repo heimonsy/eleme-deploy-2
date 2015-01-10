@@ -1,6 +1,6 @@
 <?php
 
-class SystemController extends Controller
+class SystemController extends BaseController
 {
     public function dashboard()
     {
