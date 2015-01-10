@@ -2,9 +2,13 @@
 namespace Deploy\Account;
 
 use Eloquent;
+use Deploy\Sentry\PassportTrait;
+use Deploy\Sentry\PassportInterface;
 
-class Role extends Eloquent
+class Role extends Eloquent implements PassportInterface
 {
+    use PassportTrait;
+
     const TYPE_SYSTEM = 'system';
     const TYPE_USER = 'user';
 

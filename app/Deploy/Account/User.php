@@ -96,4 +96,24 @@ class User extends Eloquent
         }
         return $isAdmin;
     }
+
+    public function permissions()
+    {
+        static $permissions = null;
+
+        if ($permissions == null) {
+            $permissions = array();
+            foreach ($this->roles as $role) {
+                $permissions = array_merge($permissions, $role->permissions()->lists('name'));
+            }
+            $permissions = array_unique($permissions);
+        }
+
+        return $permissions;
+    }
+
+    public function toArray()
+    {
+        return array_merge(parent::toArray(), array('permissions' => $this->permissions()));
+    }
 }
