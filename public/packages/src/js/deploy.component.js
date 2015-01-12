@@ -359,6 +359,12 @@ var DeployModal = React.createClass({
     render: function (e) {
         var btnStyle ={marginLeft: "16px"};
         var mainBtn = this.props.btn == undefined ? '' : (<button type="button" style={btnStyle} className="btn btn-primary" onClick={this.handleMainBtn}>{this.props.btn}</button>);
+        var inlineAlert = '';
+        if (this.props.alertType != null) {
+            inlineAlert = (
+                <InlineFormAlertComponent alertType={this.props.alertType} alertMsg={this.props.alertMsg}/>
+            );
+        }
         return (
         <div className="modal fade" id={this.props.id} tabIndex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div className="modal-dialog">
@@ -371,6 +377,8 @@ var DeployModal = React.createClass({
                     {this.props.children}
                 </div>
                 <div className="modal-footer">
+                    {inlineAlert}
+                    &nbsp; &nbsp;
                     <button type="button" className="btn btn-default" data-dismiss="modal">关闭</button>
                     {mainBtn}
                 </div>
@@ -671,6 +679,79 @@ var SiteEditComponent = React.createClass({
             </DeployModal>
         );
    }
+});
+
+
+var RolePermissionModal = React.createClass({
+    handleToggle: function () {
+        $("#ctModal").modal("show");
+    },
+
+    handleSubmit: function (btn) {
+        var btn = $(btn);
+        $.post("/api/role/" + this.props.data.id + "/permission?_token=" + csrfToken, $("#pForm").serialize(), function (data) {
+            var state = this.state;
+            state.alertMsg = data.msg;
+            if (data.code == 0) {
+                state.alertType = 'success';
+                setTimeout(function () {$("#ctModal").modal("hide")}, 1000);
+            } else {
+                state.alertType = 'error';
+            }
+            this.setState(state);
+        }.bind(this));
+    },
+    getInitialState: function () {
+        return {modalTitle: "编辑权限: " + this.props.data.name, btn: '保存', alertType: null, alertMsg: ''};
+    },
+    emptySubmitHandle: function () {
+    },
+    render: function () {
+        var trNodes = [];
+        var permissions = this.props.data.permissions;
+        for (var i in permissions) {
+            trNodes.push(<tr key={'tr' + i}><th className="info" colSpan={3}>{permissions[i].description}</th></tr>);
+            for (var j in permissions[i].list) {
+                var checkbox;
+                if (permissions[i].list[j].is_controlled == 1){
+                    checkbox = (
+                        <label>
+                            <input type="checkbox" name="permissions[]" value={permissions[i].list[j].action} defaultChecked/>
+                        </label>
+                    );
+                } else {
+                    checkbox = (
+                        <label>
+                            <input type="checkbox" name="permissions[]" value={permissions[i].list[j].action} />
+                        </label>
+                    );
+                }
+                trNodes.push(<tr key={'tr' + i + j}><td>{this.props.data.name}</td><td>{permissions[i].list[j].description}</td><td>{checkbox}</td></tr>);
+            }
+        }
+        return (
+         <DeployModal id="ctModal" title={this.state.modalTitle} btn={this.state.btn} clickCallback={this.handleSubmit} alertType={this.state.alertType} alertMsg={this.state.alertMsg}>
+             <div className="row">
+                 <div className="col-lg-12">
+                     <form id="pForm" role="form" onSubmit={this.emptySubmitHandle}>
+                         <table className="table table-bordered table-hover">
+                             <thead>
+                                 <tr>
+                                     <td>角色名</td>
+                                     <td>权限名</td>
+                                     <td>是否拥有权限</td>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                 {trNodes}
+                             </tbody>
+                         </table>
+                     </form>
+                 </div>
+             </div>
+         </DeployModal>
+         );
+    }
 });
 
 ;

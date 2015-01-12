@@ -2,6 +2,8 @@
 namespace Deploy\Sentry;
 
 use Eloquent;
+use Deploy\Site\Site;
+use Deploy\Hosts\HostTypeCatalog;
 
 class Permission extends Eloquent
 {
@@ -13,5 +15,14 @@ class Permission extends Eloquent
     public function passable()
     {
          return $this->morphTo();
+    }
+
+    public static function permissionList()
+    {
+        $list = Site::accessActionList();
+        $list = array_merge($list, Site::manageActionList());
+        $list = array_merge($list, HostTypeCatalog::accessActionList());
+
+        return $list;
     }
 }

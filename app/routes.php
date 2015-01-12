@@ -115,9 +115,12 @@ Route::group(
         Route::resource('user', 'UserController', array(
             'only' => array('index', 'destroy')
         ));
+
+        Route::get('role/{role}/permission', 'ApiController@indexRolePermission');
+        Route::post('role/{role}/permission', 'ApiController@storeRolePermission');
     }
 );
 
 Route::when('api/*', 'csrf', array('post'));
-Route::when('api/*/*', 'csrf', array('put', 'delete'));
+Route::when('api/*/*', 'csrf', array('put', 'delete', 'post'));
 

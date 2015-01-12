@@ -64,4 +64,10 @@ var renderSiteModal = function (element, type, data, updateCallback) {
     c.handleToggle();
 };
 
+var renderRolePermissionModal = function (element, data, updateCallback) {
+    $(element).html("");
+    var c = React.render(<RolePermissionModal data={data} updateCallback={updateCallback}/>, element);
+    c.handleToggle();
+};
+
 ;

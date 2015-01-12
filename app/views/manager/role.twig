@@ -23,8 +23,9 @@
                         <th>角色名</th>
                         <th>类型</th>
                         <th>是否管理角色</th>
-                        <th width="60">权限</th>
-                        <th>操作</th>
+                        <th max-width="90">权限</th>
+                        <th max-width="90">修改</th>
+                        <th max-width="90">删除</th>
                     </tr>
                 </thead>
             </table>
@@ -50,23 +51,30 @@
                 {data: 'type'},
                 {data: 'is_admin_role'},
                 {data: 'id'},
+                {data: 'id'},
                 {data: 'id'}
             ],
             columnDefs:
             [
                 {
                     render: function (data, type, row) {
-                        return '<button data-id="' + data + '" class="btn btn-primary btn-xs">权限</button>';
+                        return '<button data-id="' + data + '" class="btn btn-primary btn-xs btnPermission">权限</button>';
                     },
                     targets: 4,
                 },
                 {
                     render: function (data, type, row) {
-                        var canModify = row.type == 'system' ? '' : '<button data-id="' + data + '" class="btn btn-primary btn-xs btnEditRole">修改</button>&nbsp;' +
-                            '<button data-loading-text="正在删除" data-name="' + row.name + '" data-id="' + data + '" class="btn btn-warning btn-xs btnDeleteRole">删除</button>';
+                        var canModify = row.type == 'system' ? '<i>无</i>' : '<button data-id="' + data + '" class="btn btn-primary btn-xs btnEditRole">修改</button>&nbsp;';
                         return canModify;
                     },
                     targets: 5
+                },
+                {
+                    render: function (data, type, row) {
+                        var canDel = row.type == 'system' ? '<i>无</i>' : '<button data-loading-text="正在删除" data-name="' + row.name + '" data-id="' + data + '" class="btn btn-warning btn-xs btnDeleteRole">删除</button>';
+                        return canDel;
+                    },
+                    targets: 6
                 },
                 {
                     render: function (data, type, row) {
@@ -114,6 +122,19 @@
 
 
         renderRoleForm(document.getElementById('roleAddFormWrapper'), table.ajax.reload);
+
+        $('#rolesTable').on('click', '.btnPermission', function (e) {
+            var btn = $(this);
+            btn.button('loading');
+            $.getJSON('/api/role/' + btn.attr('data-id') + '/permission',function (data) {
+                btn.button('reset');
+                if (data.code == 0) {
+                    renderRolePermissionModal(normalModalWrapper, data.data, null);
+                } else {
+                    alert(data.msg);
+                }
+            });
+        });
     });
 </script>
 {% endblock footer_js%}

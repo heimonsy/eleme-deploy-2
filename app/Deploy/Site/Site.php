@@ -25,11 +25,11 @@ class Site extends Eloquent implements AccessProtectedInterface, ManageProtected
 
     public function manageDescription()
     {
-        return '管理项目' . $this->name;
+        return '管理项目: ' . $this->name;
     }
 
     public function accessDescription()
     {
-        return '发布项目' . $this->name;
+        return '发布项目: ' . $this->name;
     }
 }
