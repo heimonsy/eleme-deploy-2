@@ -147,7 +147,10 @@ var NavUlLiComponent = React.createClass({
 var NavUlComponent = React.createClass({
     render: function () {
         var navNodes = this.props.lists.map(function (list) {
-            if (list.admin_control !== true || loginUser.isAdmin()) {
+            if ((list.protected != undefined && loginUser.control(list.protected))
+                || (list.protected == undefined && list.admin_control == false)
+                || loginUser.isAdmin()) {
+
                 return (
                     <NavUlLiComponent key={list.name} data={list}/>
                 );
@@ -696,7 +699,7 @@ var RolePermissionModal = React.createClass({
                 state.alertType = 'success';
                 setTimeout(function () {$("#ctModal").modal("hide")}, 1000);
             } else {
-                state.alertType = 'error';
+                state.alertType = 'danger';
             }
             this.setState(state);
         }.bind(this));
@@ -753,5 +756,80 @@ var RolePermissionModal = React.createClass({
          );
     }
 });
+
+var UserRoleAddModal = React.createClass({
+    handleChange: function (e) {
+        var target = e.target;
+        var state = this.state;
+        state.role_id = target.value;
+        state.alertType = null;
+        state.hasError = null;
+        this.setState(state);
+    },
+
+    handleToggle: function () {
+        $("#ctModal").modal("show");
+    },
+
+    handleSubmit: function (btn) {
+        var btn = $(btn);
+        var state = this.state;
+        if (this.state.role_id == 0) {
+            state.alertType = 'danger';
+            state.alertMsg = '请选择角色';
+            state.hasError = 'error';
+            this.setState(state);
+            return ;
+        }
+        $.post("/api/user/" + this.props.data.userId + "/role", {
+            _token : csrfToken,
+            role_id: this.state.role_id
+        }, function (data) {
+            state.alertMsg = data.msg;
+            if (data.code == 0) {
+                state.role_id = 0;
+                state.alertType = 'success';
+                setTimeout(function () {$("#ctModal").modal("hide")}, 1000);
+                this.props.updateCallback == null ? '' : this.props.updateCallback();
+            } else {
+                state.hasError = 'error';
+                state.alertType = 'danger';
+            }
+            this.setState(state);
+        }.bind(this), 'json');
+    },
+    getInitialState: function () {
+        return {role_id: 0, modalTitle: "为用户 " + this.props.data.userName + " 添加角色", btn: '添加', alertType: null, alertMsg: '', hasError: null};
+    },
+    emptySubmitHandle: function () {
+    },
+    render: function () {
+        var options = this.props.data.roles.map(function (data) {
+            return (<option key={data.id} value={data.id} >{data.name}</option>);
+        });
+        return (
+         <DeployModal id="ctModal" title={this.state.modalTitle} btn={this.state.btn} clickCallback={this.handleSubmit}>
+            <div className="row">
+                <div className="col-lg-12">
+                    <BlockAlert msgType={this.state.alertType}>{this.state.alertMsg}</BlockAlert>
+                </div>
+            </div>
+             <div className="row">
+                 <div className="col-lg-12">
+                     <form id="pForm" role="form" onSubmit={this.emptySubmitHandle}>
+                        <Input type="select" name="role_id" label="选择角色" onChange={this.handleChange} value={this.state.role_id} bsStyle={this.state.hasError}>
+                             <option value="0">请选择角色...</option>
+                             {options}
+                        </Input>
+                     </form>
+                 </div>
+             </div>
+         </DeployModal>
+         );
+    }
+});
+
+
+
 
 ;

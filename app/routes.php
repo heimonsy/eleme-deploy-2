@@ -83,7 +83,7 @@ Route::Model('site', 'Deploy\Site\Site', function () {
 });
 
 Route::bind('user', function ($value, $route) {
-    $user = User::where('id', $value)->normal()->first();
+    $user = Deploy\Account\User::where('id', $value)->normal()->first();
     if (!$user) {
         throw new \Deploy\Exception\ResourceNotFoundException('用户不存在');
     }
@@ -118,9 +118,13 @@ Route::group(
 
         Route::get('role/{role}/permission', 'ApiController@indexRolePermission');
         Route::post('role/{role}/permission', 'ApiController@storeRolePermission');
+
+        Route::post('user/{user}/role', 'ApiController@storeUserRole');
+        Route::delete('user/{user}/role/{role}', 'ApiController@destroyUserRole');
     }
 );
 
 Route::when('api/*', 'csrf', array('post'));
 Route::when('api/*/*', 'csrf', array('put', 'delete', 'post'));
+Route::when('api/*/*/*/*', 'csrf', array('put', 'delete', 'post'));
 

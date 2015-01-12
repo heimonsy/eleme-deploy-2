@@ -70,4 +70,10 @@ var renderRolePermissionModal = function (element, data, updateCallback) {
     c.handleToggle();
 };
 
+var renderUserRoleAddModal = function (element, data, updateCallback) {
+    $(element).html("");
+    var c = React.render(<UserRoleAddModal data={data} updateCallback={updateCallback}/>, element);
+    c.handleToggle();
+};
+
 ;

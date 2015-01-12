@@ -32,4 +32,12 @@ class Site extends Eloquent implements AccessProtectedInterface, ManageProtected
     {
         return '发布项目: ' . $this->name;
     }
+
+    public function toArray()
+    {
+        return array_merge(parent::toArray(), array(
+            'access_protected' => $this->accessAction(),
+            'manage_protected' => $this->manageAction()
+        ));
+    }
 }

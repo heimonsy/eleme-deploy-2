@@ -120,6 +120,7 @@
 var normalModalWrapper = document.getElementById('normalModalWrapper');
 
 var loginUser = createUser({{ loginUser | raw}});
+var siteList = createSiteMenuList({{ siteList | raw }});
 
 var sideNavMenuData = [
 {
@@ -142,7 +143,6 @@ var sideNavMenuData = [
     {
         url: '/manager/hosttypecatalogs',
         admin_control: true,
-        name: '基础配置',
         name: '发布环境',
     },
     {
@@ -175,6 +175,7 @@ var sideNavMenuData = [
     name: '项目发布',
     admin_control: false,
     fa: 'fa-upload',
+    children: siteList
 },
 {
     url: '/workers',

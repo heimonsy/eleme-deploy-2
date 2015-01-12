@@ -4,6 +4,7 @@ use Deploy\Account\Role;
 use Deploy\Sentry\Permission;
 use Deploy\Site\Site;
 use Deploy\Hosts\HostTypeCatalog;
+use Deploy\Account\User;
 
 
 class ApiController extends Controller
@@ -55,8 +56,8 @@ class ApiController extends Controller
     public function storeRolePermission(Role $role)
     {
         $list = Input::get('permissions');
-        if (!is_array($list)) {
-            return Response::json(array('code' => 1, 'msg' => 'permissions must be an array'));
+        if (empty($list)) {
+            $list = array();
         }
         DB::transaction(function () use($list, $role) {
             $role->permissions()->delete();
@@ -64,9 +65,43 @@ class ApiController extends Controller
             foreach ($list as $value) {
                 $permissions[] = $role->permissions()->create(array('name' => $value));
             }
-            $role->permissions()->saveMany($permissions);
+            if (count($permissions) > 0) {
+                $role->permissions()->saveMany($permissions);
+            }
         });
 
         return Response::json(array('code' => 0, 'msg' => '权限修改成功'));
+    }
+
+    public function storeUserRole(User $user)
+    {
+        $validator = Validator::make(
+            Input::only('role_id'),
+            array('role_id' => 'required|numeric|exists:roles,id|unique:role_user,role_id,null,id,user_id,' . $user->id),
+            array(
+                'required' => '角色 id 不能为空',
+                'numeric' => '角色 id 必须为数字',
+                'exists' => '角色不存在',
+                'unique' => '用户已经拥有该角色',
+            )
+        );
+
+        if ($validator->fails()) {
+            return Response::json(array(
+                'code' => 1,
+                'msg' => $validator->messages()->first(),
+            ));
+        }
+
+        $user->roles()->attach(Input::only('role_id'));
+
+        return Response::json(array('code' => 0, 'msg' => '添加成功'));
+    }
+
+    public function destroyUserRole(User $user, Role $role)
+    {
+        $user->roles()->detach($role->id);
+
+        return Response::json(array('code' => 0, 'msg' => '删除成功'));
     }
 }

@@ -101,6 +101,6 @@ Route::filter('admin', function () {
     $user = Sentry::loginUser();
     if (!$user->isAdmin()) {
 
-        return Response::make('非管理员角色无法访问此页面', 403);;
+        return Response::make('非管理员角色无法访问此页面<a href="/">dashboard</a>', 403);;
     }
 });

@@ -11,7 +11,7 @@ class UserController extends Controller
         return Response::json(array(
             'code' => 0,
             'data' => User::normal()->with(array('roles' => function ($query) {
-                          $query->select('roles.id', 'name', 'is_admin_role');
+                          $query->select('roles.id', 'name', 'is_admin_role')->orderBy('roles.id');
                       }))->get()
         ));
     }

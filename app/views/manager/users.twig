@@ -47,6 +47,9 @@ $(function () {
             [
             {
                 render: function (data, type, row) {
+                    if (data == loginUser.id) {
+                        return "<i>无</i>";
+                    }
                     return "<button  data-name='" + row.name + "' data-id='" + data + "' class='btn btn-warning btn-xs btnDelete'>删除</button>";
                 },
                 targets: 5
@@ -57,13 +60,71 @@ $(function () {
                     for (var i in row.roles) {
                         var role = row.roles[i];
                         var clss = role.is_admin_role ? 'label-danger' : 'label-default';
-                        html += "<span class=\"tag label " + clss + "\"> <span>" + role.name + "</span> <a><i class=\"remove glyphicon glyphicon-remove-sign glyphicon-white\"></i></a> </span>";
+                        if (role.is_admin_role == 1 && data == loginUser.id)  {
+                            html += "<span class=\"tag label " + clss + "\"> <span>" + role.name + "</span></span>";
+                        } else {
+                            html += "<span class=\"tag label " + clss + "\"> <span>" + role.name + "</span> <a data-role-id='" + role.id +"' data-uid='" + data + "' class=\"btnDelRole\"><i class=\"remove glyphicon glyphicon-remove-sign glyphicon-white\"></i></a> </span>";
+                        }
                     }
-                    return html + " &nbsp;<a class=\"btn btn-primary btn-xs\">+</a>";
+                    return html + " &nbsp;<button data-user='" + JSON.stringify(row) + "'  class=\"btn btn-primary btn-xs btnAddRole\">+</button>";
                 },
                 targets: 4
             }
             ]
+    });
+
+    $('#dataTable').on('click', '.btnAddRole', function (e) {
+        var data = 0;
+        var btn = $(this);
+        $.getJSON('/api/role', function (data) {
+            if (data.code == 0) {
+                var roles = [];
+                var user = createUser(eval('(' + btn.attr('data-user') + ')'));
+                for (i in data.data) {
+                    if (!user.haveRole(data.data[i].id)) {
+                        roles.push({
+                            id: data.data[i].id,
+                            name: data.data[i].name
+                        });
+                    }
+                }
+                renderUserRoleAddModal(normalModalWrapper, {userId: user.id, userName: user.name, roles: roles}, table.ajax.reload);
+            } else {
+                alert(data.msg);
+            }
+        });
+    });
+
+    $('#dataTable').on('click', '.btnDelRole', function (e) {
+        var btn  = $(this);
+        if (confirm("确定要删除用户的角色吗？")) {
+            $.post('/api/user/' + btn.attr('data-uid') + '/role/' + btn.attr('data-role-id'), {
+                _token: csrfToken,
+                _method: 'DELETE'
+            }, function (data) {
+                if (data.code == 0) {
+                    table.ajax.reload();
+                } else {
+                    alert(data.msg);
+                }
+            }, 'json');
+        }
+    });
+
+    $('#dataTable').on('click', '.btnDelete', function (e) {
+        var btn = $(this);
+        if (confirm("确定要删除用户“" + btn.attr('data-name') + "”吗？")) {
+            $.post('/api/user/' + btn.attr('data-id'), {
+                _method: 'DELETE',
+                _token: csrfToken,
+            }, function (data) {
+                if (data.code == 0) {
+                    table.ajax.reload();
+                } else {
+                    alert(data.msg);
+                }
+            }, 'json');
+        }
     });
 });
 </script>
