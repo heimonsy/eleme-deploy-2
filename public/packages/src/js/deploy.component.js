@@ -830,6 +830,62 @@ var UserRoleAddModal = React.createClass({
 });
 
 
+var DeployRow = React.createClass({
+    render: function () {
+        return (
+            <div className="row">
+                <div className="col-lg-12">
+                    {this.props.children}
+                </div>
+            </div>
+        );
+    }
+});
+
+var SiteConfigComponent = React.createClass({
+    handleEmpty: function (e) {
+        e.preventDefault();
+    },
+    handleSubmit: function (e) {
+        var btn = $(e.target);
+        console.log(e.target);
+        var state = this.state;
+        $.post('/api/site/' + siteId + '/configure?_method=PUT&_token=' + csrfToken, $("#siteConfigForm").serialize(), function (data) {
+            state.alertMsg = data.msg;
+            if (data.code == 0) {
+                state.alertType = 'success';
+            } else {
+                state.alertType = 'error';
+            }
+            this.setState(state);
+        }.bind(this), 'json');
+    },
+    getInitialState: function () {
+        return {alertType: null, alertMsg: ''};
+    },
+    render: function () {
+        return (
+            <DeployRow>
+                <form id="siteConfigForm" onSubmit={this.handleEmpty}>
+                    <Input type="text" name="name" help="{name}" defaultValue={this.props.data.name} label="项目名" disabled/>
+                    <Input type="text" name="repo_git" help="{repo_git}" defaultValue={this.props.data.repo_git} label="Fetch Url" disabled/>
+                    <Input type="text" name="static_dir" help="{static_dir}" defaultValue={this.props.data.static_dir} label="静态文件目录" />
+                    <Input type="text" name="rsync_exclude_file" help="{rsync_exclude}" defaultValue={this.props.data.rsync_exclude_file} label="Rsync Exclude File" />
+                    <Input type="text" name="default_branch" help="{default_branch}" defaultValue={this.props.data.default_branch} label="默认Branch" />
+                    <Input type="text" name="build_command" help="{build_command}" defaultValue={this.props.data.build_command} label="Build Command" />
+                    <Input type="text" name="test_command" help="{test_command}" defaultValue={this.props.data.test_command} label="Test Command" />
+                    <Input type="text" name="pull_key" defaultValue={this.props.data.pull_key} label="Pull Key" />
+                    <Input type="textarea" name="pull_key_passphrase" defaultValue={this.props.data.pull_key_passphrase} label="Pull Key Passphrase" />
+                    <Input type="text" name="hipchat_room" defaultValue={this.props.data.hipchat_room} label="Hipchat Room" />
+                    <Input type="text" name="hipchat_token" defaultValue={this.props.data.hipchat_token} label="Hipchat Token" />
+                    <Button onClick={this.handleSubmit} bsStyle="primary" >保存</Button>
+                    &nbsp;&nbsp;&nbsp;
+                    <InlineFormAlertComponent alertType={this.state.alertType} alertMsg={this.state.alertMsg}/>
+                </form>
+            </DeployRow>
+        );
+    }
+});
 
 
 ;

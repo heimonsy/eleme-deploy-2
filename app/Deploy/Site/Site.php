@@ -40,4 +40,51 @@ class Site extends Eloquent implements AccessProtectedInterface, ManageProtected
             'manage_protected' => $this->manageAction()
         ));
     }
+
+    public function setPullKeyPassphraseAttribute($value)
+    {
+        if ($value != '******') {
+            $this->attributes['pull_key_passphrase'] = $value;
+        }
+    }
+
+    public function getPullKeyPassphraseAttribute($value)
+    {
+        if (!empty($value)) {
+            $value = '******';
+        }
+
+        return $value;
+    }
+
+    public function setPullKeyAttribute($value)
+    {
+        if ($value != '******') {
+            $this->attributes['pull_key'] = $value;
+        }
+    }
+
+    public function getPullKeyAttribute($value)
+    {
+        if (!empty($value)) {
+            $value = '******';
+        }
+
+        return $value;
+    }
+
+    public function setHipchatTokenAttribute($value)
+    {
+        if ($value != '******') {
+            $this->attributes['hipchat_token'] = $value;
+        }
+    }
+
+    public function getHipchatTokenAttribute($value)
+    {
+        if (!empty($value)) {
+            $value = '******';
+        }
+        return $value;
+    }
 }

@@ -1,0 +1,94 @@
+{% extends 'layout.master' %}
+{% block main %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h2>{{ site.name }}</h2>
+            <br>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+
+    <div class="row">
+        <div class="col-lg-12">
+            <!-- Nav tabs -->
+            <ul id="myTab" class="nav nav-tabs" role="tablist">
+                <li role="presentation"><a href="#Setting" role="tab" data-toggle="tab">项目配置</a></li>
+                <li role="presentation"><a href="#DeploySetting" role="tab" data-toggle="tab">发布配置</a></li>
+                <li role="presentation"><a href="#HostType" role="tab" data-toggle="tab">Host Type</a></li>
+                <li role="presentation"><a href="#Hosts" role="tab" data-toggle="tab">Hosts</a></li>
+                <li role="presentation"><a href="#Deploy" role="tab" data-toggle="tab">Deploy</a></li>
+                <li role="presentation"><a href="#PrBuild" role="tab" data-toggle="tab">PR Build</a></li>
+                <li role="presentation"><a href="#PrDeploy" role="tab" data-toggle="tab">PR Deploy</a></li>
+            </ul>
+            <br>
+            <!-- Tab panes -->
+            <div id="myTabContent" class="tab-content">
+                <div role="tabpanel" class="tab-pane" id="Setting"></div>
+                <div role="tabpanel" class="tab-pane" id="DeploySetting">deploy setting</div>
+                <div role="tabpanel" class="tab-pane" id="HostType"><button id="test" class="btn btn-primary">new</button>Host Type</div>
+                <div role="tabpanel" class="tab-pane" id="Hosts">Hosts</div>
+                <div role="tabpanel" class="tab-pane" id="Deploy">Deploy</div>
+                <div role="tabpanel" class="tab-pane" id="PrBuild">Pr Build</div>
+                <div role="tabpanel" class="tab-pane" id="PrDeploy">Pr Deploy</div>
+            </div>
+
+        </div>
+    </div>
+{% endblock main %}
+{% block footer_js %}
+<script>
+var siteId = {{ site.id }};
+var csrfToken = '{{ csrf_token() }}';
+$(function () {
+    $('#myTab a').click(function (e) {
+        e.preventDefault()
+        $(this).tab('show')
+    });
+
+    var initBtn = function () {
+        $('a[data-toggle="tab"]').unbind('shown.bs.tab');
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            console.log(e.target);
+            console.log(e.relatedTarget)
+            var url = null;
+            var render = null;
+            var element = null
+            switch ($(e.target).attr('href')) {
+                case "#Setting":
+                    url = '/api/site/' + siteId + '/configure';
+                    render = renderDeployConfig;
+                    element = document.getElementById('Setting');
+                    break;
+            }
+            if (url !== null) {
+                $(element).html("<div>&nbsp;&nbsp;&nbsp;<img src='/static/ajax-loader.gif' /></div>");
+                $.getJSON(url, function (data) {
+                    if (data.code == 0) {
+                        render(element, data.data);
+                    } else {
+                        alert(data.msg);
+                    }
+                });
+            }
+        });
+    };
+
+    $("#test").click(function (e) {
+        $("#myTab").append('<li role="presentation"><a href="#testTabContent" role="tab" data-toggle="tab">test</a></li>');
+        $("#myTabContent").append('<div role="tabpanel" class="tab-pane" id="testTabContent">hehehehehe</div>');
+        /*$("a [href=#testTableContent]").tab("show");*/
+        initBtn();
+        $('#myTab a:last').tab('show');
+    });
+
+    initBtn();
+
+    $('#myTab a[href="#Setting"]').tab("show");
+});
+
+
+
+
+</script>
+{% endblock footer_js %}

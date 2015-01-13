@@ -104,4 +104,34 @@ class ApiController extends Controller
 
         return Response::json(array('code' => 0, 'msg' => '删除成功'));
     }
+
+    public function showSiteConfig(Site $site)
+    {
+        $user = Sentry::loginUser();
+        if (!$user->control($site->accessAction()) && !$user->isAdmin()) {
+            return Response::make('你没有发布该项目的权限', 403);
+        }
+
+        return Response::json(array(
+            'code' => 0,
+            'data' => $site
+        ));
+    }
+
+    public function updateSiteConfig(Site $site)
+    {
+        $user = Sentry::loginUser();
+        if (!$user->control($site->accessAction()) && !$user->isAdmin()) {
+            return Response::make('你没有发布该项目的权限', 403);
+        }
+
+
+        $site->fill(Input::only('static_dir', 'rsync_exclude_file', 'default_branch', 'build_command', 'test_command',
+                                'hipchat_room', 'hipchat_token', 'pull_key', 'pull_key_passphrase'));
+        $site->save();
+        return Response::json(array(
+            'code' => 0,
+            'msg' => '保存成功',
+        ));
+    }
 }

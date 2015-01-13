@@ -1,6 +1,8 @@
 <?php
 namespace Deploy\Sentry;
 
+use Deploy\Account\User;
+
 class Sentry
 {
     protected $login;

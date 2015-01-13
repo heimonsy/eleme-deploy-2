@@ -36,6 +36,7 @@ Route::group(array('before' => array('auth')), function () {
 
     Route::get('/is-waiting', function () {
         $user = Sentry::loginUser();
+
         return Response::json(array('res' => 0, 'data' => $user->isWaiting()));
         //return Response::json(array('res' => 0, 'data' => false));
     });
@@ -53,7 +54,7 @@ Route::group(array('before' => array('auth', 'waiting')), function () {
 // Manger Group
 Route::group(
     array(
-        'before' => array('auth', 'admin'),
+        'before' => array('auth', 'waiting', 'admin'),
         'prefix' => 'manager',
     ),
     function () {
@@ -87,8 +88,40 @@ Route::bind('user', function ($value, $route) {
     if (!$user) {
         throw new \Deploy\Exception\ResourceNotFoundException('用户不存在');
     }
+
     return $user;
 });
+
+// site auth
+Route::group(
+    array(
+        'before' => array('auth', 'waiting'),
+    ),
+    function () {
+        Route::get('/site/{site}', array(
+            'before' => 'site.control',
+            'uses' => 'ManagerController@site'
+        ));
+    }
+);
+
+// no admin auth api
+Route::group(
+    array(
+        'before' => array('auth'),
+    ),
+    function () {
+        Route::get('/api/site/{site}/configure', array(
+            'before' => 'site.control',
+            'uses' => 'ApiController@showSiteConfig'
+        ));
+
+        Route::put('/api/site/{site}/configure', array(
+            'before' => array('csrf', 'site.control'),
+            'uses' =>  'ApiController@updateSiteConfig'
+        ));
+    }
+);
 
 Route::group(
     array(
@@ -127,4 +160,3 @@ Route::group(
 Route::when('api/*', 'csrf', array('post'));
 Route::when('api/*/*', 'csrf', array('put', 'delete', 'post'));
 Route::when('api/*/*/*/*', 'csrf', array('put', 'delete', 'post'));
-

@@ -104,3 +104,13 @@ Route::filter('admin', function () {
         return Response::make('非管理员角色无法访问此页面<a href="/">dashboard</a>', 403);;
     }
 });
+
+
+Route::filter('site.control', function ($route) {
+    $site = $route->getParameter('site');
+    $user = Sentry::loginUser();
+
+    if (!$user->control($site->accessAction()) && !$user->isAdmin()) {
+        return Response::make('你没有发布该项目的权限', 403);
+    }
+});
