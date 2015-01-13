@@ -41,6 +41,11 @@ class Site extends Eloquent implements AccessProtectedInterface, ManageProtected
         ));
     }
 
+    public function deploy_config()
+    {
+        return $this->hasOne('Deploy\Site\DeployConfig', 'site_id', 'id');
+    }
+
     public function setPullKeyPassphraseAttribute($value)
     {
         if ($value != '******') {

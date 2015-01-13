@@ -76,8 +76,12 @@ var renderUserRoleAddModal = function (element, data, updateCallback) {
     c.handleToggle();
 };
 
-var renderDeployConfig = function (element, data) {
+var renderSiteConfig = function (element, data) {
     React.render(<SiteConfigComponent data={data} />, element);
+};
+
+var renderSiteDeployConfig = function (element, data) {
+    React.render(<SiteDeployConfigComponent data={data} />, element);
 };
 
 ;

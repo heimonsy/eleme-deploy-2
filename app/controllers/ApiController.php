@@ -3,6 +3,7 @@
 use Deploy\Account\Role;
 use Deploy\Sentry\Permission;
 use Deploy\Site\Site;
+use Deploy\Site\DeployConfig;
 use Deploy\Hosts\HostTypeCatalog;
 use Deploy\Account\User;
 
@@ -107,11 +108,6 @@ class ApiController extends Controller
 
     public function showSiteConfig(Site $site)
     {
-        $user = Sentry::loginUser();
-        if (!$user->control($site->accessAction()) && !$user->isAdmin()) {
-            return Response::make('你没有发布该项目的权限', 403);
-        }
-
         return Response::json(array(
             'code' => 0,
             'data' => $site
@@ -120,18 +116,41 @@ class ApiController extends Controller
 
     public function updateSiteConfig(Site $site)
     {
-        $user = Sentry::loginUser();
-        if (!$user->control($site->accessAction()) && !$user->isAdmin()) {
-            return Response::make('你没有发布该项目的权限', 403);
-        }
-
-
         $site->fill(Input::only('static_dir', 'rsync_exclude_file', 'default_branch', 'build_command', 'test_command',
                                 'hipchat_room', 'hipchat_token', 'pull_key', 'pull_key_passphrase'));
         $site->save();
         return Response::json(array(
             'code' => 0,
             'msg' => '保存成功',
+        ));
+    }
+
+    public function showDeployConfig(Site $site)
+    {
+        $deploy_config = $site->deploy_config()->first();
+        if ($deploy_config == null) {
+            $deploy_config = new DeployConfig;
+            $deploy_config->site()->associate($site);
+            $deploy_config->save();
+        }
+
+        return Response::json(array(
+            'code' => 0,
+            'data' => $deploy_config,
+        ));
+    }
+
+    public function updateDeployConfig(Site $site)
+    {
+        $deploy_config = $site->deploy_config()->first();
+        $deploy_config->fill(Input::only('remote_user', 'remote_owner', 'remote_app_dir', 'remote_static_dir', 
+            'app_script', 'static_script', 'deploy_key', 'deploy_key_passphrase'));
+
+        $deploy_config->save();
+
+        return Response::json(array(
+            'code' => 0,
+            'msg' => '保存成功'
         ));
     }
 }

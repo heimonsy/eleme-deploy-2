@@ -22,7 +22,7 @@ class CreateSitesTable extends Migration
             $table->string('default_branch');
             $table->string('build_command');
             $table->string('test_command');
-            $table->string('pull_key');
+            $table->text('pull_key');
             $table->string('pull_key_passphrase');
             $table->string('hipchat_room');
             $table->string('hipchat_token');

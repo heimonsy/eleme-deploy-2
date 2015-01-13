@@ -5,7 +5,10 @@ use Deploy\Exception\ResourceNotFoundException;
 
 App::error(function (ResourceNotFoundException $e) {
     Log::error(sprintf('Resource Not Found; Client IP: %s Url: %s  %s ', Input::ip(), Input::url(), $e->getMessage()));
-    return Response::json(array('code' => 1, 'msg' => $e->getUserMessage()));
+    if (Request::ajax()) {
+        return Response::json(array('code' => 1, 'msg' => $e->getUserMessage()));
+    }
+    return Response::make($e->getUserMessage(), 404);
 });
 
 App::error(function (Illuminate\Session\TokenMismatchException $e) {

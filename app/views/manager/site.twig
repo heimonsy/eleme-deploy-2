@@ -22,10 +22,11 @@
                 <li role="presentation"><a href="#PrDeploy" role="tab" data-toggle="tab">PR Deploy</a></li>
             </ul>
             <br>
+
             <!-- Tab panes -->
             <div id="myTabContent" class="tab-content">
                 <div role="tabpanel" class="tab-pane" id="Setting"></div>
-                <div role="tabpanel" class="tab-pane" id="DeploySetting">deploy setting</div>
+                <div role="tabpanel" class="tab-pane" id="DeploySetting"></div>
                 <div role="tabpanel" class="tab-pane" id="HostType"><button id="test" class="btn btn-primary">new</button>Host Type</div>
                 <div role="tabpanel" class="tab-pane" id="Hosts">Hosts</div>
                 <div role="tabpanel" class="tab-pane" id="Deploy">Deploy</div>
@@ -57,8 +58,13 @@ $(function () {
             switch ($(e.target).attr('href')) {
                 case "#Setting":
                     url = '/api/site/' + siteId + '/configure';
-                    render = renderDeployConfig;
+                    render = renderSiteConfig;
                     element = document.getElementById('Setting');
+                    break;
+                case "#DeploySetting":
+                    url = '/api/site/' + siteId + '/deploy_configure';
+                    render = renderSiteDeployConfig;
+                    element = document.getElementById('DeploySetting');
                     break;
             }
             if (url !== null) {

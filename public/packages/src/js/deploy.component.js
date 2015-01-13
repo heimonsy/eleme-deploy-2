@@ -848,9 +848,10 @@ var SiteConfigComponent = React.createClass({
     },
     handleSubmit: function (e) {
         var btn = $(e.target);
-        console.log(e.target);
         var state = this.state;
+        btn.button('loading');
         $.post('/api/site/' + siteId + '/configure?_method=PUT&_token=' + csrfToken, $("#siteConfigForm").serialize(), function (data) {
+            btn.button('reset');
             state.alertMsg = data.msg;
             if (data.code == 0) {
                 state.alertType = 'success';
@@ -886,6 +887,50 @@ var SiteConfigComponent = React.createClass({
         );
     }
 });
+
+var SiteDeployConfigComponent = React.createClass({
+    handleEmpty: function (e) {
+        e.preventDefault();
+    },
+    handleSubmit: function (e) {
+        var btn = $(e.target);
+        var state = this.state;
+        btn.button('loading');
+        $.post('/api/site/' + siteId + '/deploy_configure?_method=PUT&_token=' + csrfToken, $("#deployConfigForm").serialize(), function (data) {
+            btn.button('reset');
+            state.alertMsg = data.msg;
+            if (data.code == 0) {
+                state.alertType = 'success';
+            } else {
+                state.alertType = 'error';
+            }
+            this.setState(state);
+        }.bind(this), 'json');
+    },
+    getInitialState: function () {
+        return {alertType: null, alertMsg: ''};
+    },
+    render: function () {
+        return (
+            <DeployRow>
+                <form id="deployConfigForm" onSubmit={this.handleEmpty}>
+                    <Input type="text" name="remote_user" help="{remote_user}" defaultValue={this.props.data.remote_user} label="Remote User" />
+                    <Input type="text" name="remote_owner" help="{remote_owner}" defaultValue={this.props.data.remote_owner} label="Rmote Owner" />
+                    <Input type="text" name="remote_app_dir" help="{remote_app_dir}" defaultValue={this.props.data.remote_app_dir} label="Remote App Dir" />
+                    <Input type="text" name="remote_static_dir" help="{remote_static_dir}" defaultValue={this.props.data.remote_static_dir} label="Remote Static Dir" />
+                    <Input type="text" name="app_script" help="{app_script}" defaultValue={this.props.data.app_script} label="APP发布前后执行的脚本" />
+                    <Input type="text" name="static_script" help="{static_script}" defaultValue={this.props.data.static_script} label="静态文件发布前后执行的脚本" />
+                    <Input type="text" name="deploy_key" defaultValue={this.props.data.deploy_key} label="Deploy Login Key" />
+                    <Input type="textarea" name="deploy_key_passphrase" defaultValue={this.props.data.deploy_key_passphrase} label="Deploy Login Key Passphrase" />
+                    <Button onClick={this.handleSubmit} bsStyle="primary" >保存</Button>
+                    &nbsp;&nbsp;&nbsp;
+                    <InlineFormAlertComponent alertType={this.state.alertType} alertMsg={this.state.alertMsg}/>
+                </form>
+            </DeployRow>
+        );
+    }
+});
+
 
 
 ;

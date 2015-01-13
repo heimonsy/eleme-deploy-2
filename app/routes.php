@@ -108,17 +108,40 @@ Route::group(
 // no admin auth api
 Route::group(
     array(
-        'before' => array('auth'),
+        'before' => array('auth', 'site.control'),
     ),
     function () {
-        Route::get('/api/site/{site}/configure', array(
-            'before' => 'site.control',
-            'uses' => 'ApiController@showSiteConfig'
-        ));
+        Route::get('/api/site/{site}/configure', 'ApiController@showSiteConfig');
+        Route::get('/api/site/{site}/deploy_configure', 'ApiController@showDeployConfig');
 
         Route::put('/api/site/{site}/configure', array(
-            'before' => array('csrf', 'site.control'),
+            'before' => array('csrf'),
             'uses' =>  'ApiController@updateSiteConfig'
+        ));
+
+        Route::put('/api/site/{site}/deploy_configure', array(
+            'before' => array('csrf'),
+            'uses' =>  'ApiController@updateDeployConfig'
+        ));
+    }
+);
+
+Route::group(
+    array(
+        'before' => array('auth', 'admin'),
+        'prefix' => 'api',
+    ),
+    function () {
+        Route::resource('role', 'RoleController', array(
+            'only' => array('index', 'show', 'store', 'destroy', 'update')
+        ));
+
+        Route::resource('hosttype', 'HostTypeController', array(
+            'only' => array('index', 'show', 'store', 'destroy', 'update')
+        ));
+
+        Route::resource('hosttypecatalog', 'HostTypeCatalogController', array(
+            'only' => array('index', 'show', 'store', 'destroy', 'update')
         ));
     }
 );
