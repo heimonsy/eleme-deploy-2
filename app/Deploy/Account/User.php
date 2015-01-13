@@ -3,8 +3,9 @@ namespace Deploy\Account;
 
 use Eloquent;
 use Crypt;
+use Deploy\Sentry\ControllerInterface;
 
-class User extends Eloquent
+class User extends Eloquent implements ControllerInterface
 {
     const STATUS_DELETE = 0;
     const STATUS_NORMAL = 1;
@@ -110,6 +111,11 @@ class User extends Eloquent
         }
 
         return $permissions;
+    }
+
+    public function control($action)
+    {
+        return in_array($action, $this->permissions()) || $this->isAdmin();
     }
 
     public function toArray()
