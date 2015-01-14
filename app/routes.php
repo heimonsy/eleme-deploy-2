@@ -75,8 +75,12 @@ Route::Model('hosttype', 'Deploy\Hosts\HostType', function () {
     throw new \Deploy\Exception\ResourceNotFoundException('Host Type不存在');
 });
 
-Route::Model('hosttypecatalog', 'Deploy\Hosts\HostTypeCatalog', function () {
+Route::model('hosttypecatalog', 'Deploy\Hosts\HostTypeCatalog', function () {
     throw new \Deploy\Exception\ResourceNotFoundException('发布环境不存在');
+});
+
+Route::model('host', 'Deploy\Hosts\Host', function () {
+    throw new \Deploy\Exception\ResourceNotFoundException('主机不存在');
 });
 
 Route::Model('site', 'Deploy\Site\Site', function () {
@@ -136,6 +140,10 @@ Route::group(
     ),
     function () {
         Route::resource('site.hosttype', 'SiteHostTypeController', array(
+            'only' => array('index', 'show', 'store', 'destroy', 'update')
+        ));
+
+        Route::resource('site.host', 'SiteHostController', array(
             'only' => array('index', 'show', 'store', 'destroy', 'update')
         ));
 

@@ -15,8 +15,8 @@
             <ul id="myTab" class="nav nav-tabs" role="tablist">
                 <li role="presentation"><a href="#Setting" role="tab" data-toggle="tab">项目配置</a></li>
                 <li role="presentation"><a href="#DeploySetting" role="tab" data-toggle="tab">发布配置</a></li>
-                <li role="presentation"><a href="#HostType" role="tab" data-toggle="tab">Host Type</a></li>
-                <li role="presentation"><a href="#Hosts" role="tab" data-toggle="tab">Hosts</a></li>
+                <li role="presentation"><a href="#HostType" role="tab" data-toggle="tab">机器分组</a></li>
+                <li role="presentation"><a href="#Hosts" role="tab" data-toggle="tab">机器配置</a></li>
                 <li role="presentation"><a href="#Deploy" role="tab" data-toggle="tab">Deploy</a></li>
                 <li role="presentation"><a href="#PrBuild" role="tab" data-toggle="tab">PR Build</a></li>
                 <li role="presentation"><a href="#PrDeploy" role="tab" data-toggle="tab">PR Deploy</a></li>
@@ -47,7 +47,28 @@
                         </div>
                     </div>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="Hosts">Hosts</div>
+                <div role="tabpanel" class="tab-pane" id="Hosts">
+                    <div class="row">
+                        <div class="col-lg-12"><button class="btn btn-primary" id="newHost">新增</button></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <table id="hostsTable" class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>机器名</th>
+                                        <th>IP</th>
+                                        <th>SSH 端口</th>
+                                        <th>发布类型</th>
+                                        <th>机器分组</th>
+                                        <th>修改</th>
+                                        <th>删除</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
                 <div role="tabpanel" class="tab-pane" id="Deploy">Deploy</div>
                 <div role="tabpanel" class="tab-pane" id="PrBuild">Pr Build</div>
                 <div role="tabpanel" class="tab-pane" id="PrDeploy">Pr Deploy</div>
@@ -65,6 +86,107 @@ $(function () {
         e.preventDefault()
         $(this).tab('show')
     });
+
+    var showHosts = function () {
+        var table = null;
+        return function () {
+            console.log("hehe");
+            if (table === null) {
+                table = $("#hostsTable").DataTable({
+                    ajax: '/api/site/' + siteId + "/host",
+                    paging: false,
+                    ordering: false,
+                    info: false,
+                    columns: [
+                        {data: 'name'},
+                        {data: 'ip'},
+                        {data: 'port'},
+                        {data: 'type'},
+                        {data: 'host_type'},
+                        {data: 'id'},
+                        {data: 'id'},
+                    ],
+                    columnDefs:
+                    [
+                    {
+                        render: function (data, type, row) {
+                            return data.name;
+                        },
+                        targets: 4,
+                    },
+                    {
+                        render: function (data, type, row) {
+                            var clss = data == 'APP' ? 'label-success' : 'label-default';
+                            return "<span class=\"label " + clss + "\">" + data + "</span>";
+                        },
+                        targets: 3
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return "<button class=\"btn btn-warning btn-xs btnHostDelete\" data-name=\""+ row.name +"\" data-id=\"" + data + "\">删除</button>";
+                        },
+                        targets: 6
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return "<button class=\"btn btn-primary btn-xs btnHostEdit\" data-json='" + JSON.stringify(row) + "' data-name=\""+ row.name +"\">修改</button>";
+                        },
+                        targets: 5
+                    }
+                    ]
+                });
+            } else {
+                table.ajax.reload();
+            }
+
+            $('#newHost').unbind();
+            $('#newHost').click(function (data) {
+                var btn = $(this);
+                btn.button('loading');
+                $.getJSON('/api/site/' + siteId + '/hosttype', function (data) {
+                    btn.button('reset');
+                    if (data.code == 0) {
+                        renderSiteHosts(normalModalWrapper, 'new', {host_types: data.data}, table.ajax.reload);
+                    } else {
+                        alert(data.msg);
+                    }
+                });
+            });
+
+            $('#hostsTable').unbind('click');
+            $('#hostsTable').on('click', '.btnHostEdit', function (e) {
+                var btn = $(this);
+                btn.button('loading');
+                $.getJSON('/api/site/' + siteId + '/hosttype', function (data) {
+                    btn.button('reset');
+                    if (data.code == 0) {
+                        var host = eval('(' + btn.attr('data-json') + ')');
+                        renderSiteHosts(normalModalWrapper, 'edit', {host: host, host_types: data.data}, table.ajax.reload);
+                    } else {
+                        alert(data.msg);
+                    }
+                });
+            });
+
+            $('#hostsTable').on('click', '.btnHostDelete', function (e) {
+                var btn = $(this);
+                if (confirm("确定要删除主机" + btn.attr("data-name") + "吗")) {
+                    btn.button('loading');
+                    $.post('/api/site/' + siteId + '/host/' + btn.attr('data-id'), {
+                        _token: csrfToken,
+                        _method: 'DELETE',
+                    }, function (data) {
+                        btn.button('reset');
+                        if (data.code == 0) {
+                            table.ajax.reload();
+                        } else {
+                            alert(data.msg);
+                        }
+                    }, 'json');
+                }
+            });
+        };
+    }();
 
     var showHostType = function () {
         var table = null;
@@ -176,6 +298,10 @@ $(function () {
                     break;
                 case '#HostType':
                     showHostType();
+                    return ;
+                case '#Hosts':
+                    console.log("wtf");
+                    showHosts();
                     return ;
             }
             if (url !== null) {

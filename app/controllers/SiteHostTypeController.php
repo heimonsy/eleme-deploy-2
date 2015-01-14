@@ -23,8 +23,8 @@ class SiteHostTypeController extends Controller
             Input::only('name', 'catalog_id'),
             array('name' => 'required|unique:host_types,name', 'catalog_id' => 'required|exists:host_type_catalogs,id'),
             array(
-                'name.required' => '项目名不能为空',
-                'name.unique' => '项目名已存在',
+                'name.required' => '机器分组名不能为空',
+                'name.unique' => '机器分组名已存在',
                 'catalog_id.required' => '环境类型不能为空',
                 'catalog_id.exists' => '环境类型不存在',
             )
@@ -63,8 +63,8 @@ class SiteHostTypeController extends Controller
             Input::only('name', 'catalog_id'),
             array('name' => 'required|unique:host_types,name,' . $hosttype->id, 'catalog_id' => 'required|exists:host_type_catalogs,id'),
             array(
-                'name.required' => '项目名不能为空',
-                'name.unique' => '项目名已存在',
+                'name.required' => '机器分组名不能为空',
+                'name.unique' => '机器分组名已存在',
                 'catalog_id.required' => '环境类型不能为空',
                 'catalog_id.exists' => '环境类型不存在',
             )

@@ -90,4 +90,10 @@ var renderSiteHostType = function (element, type, data, updateCallback) {
     c.handleToggle();
 };
 
+var renderSiteHosts = function (element, type, data, updateCallback) {
+    $(element).html("");
+    var c = React.render(<SiteHostEditModal data={data} type={type} updateCallback={updateCallback} />, element);
+    c.handleToggle();
+};
+
 ;

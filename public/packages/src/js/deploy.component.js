@@ -376,7 +376,7 @@ var DeployModal = React.createClass({
                     <button type="button" className="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                     <h4 className="modal-title" id="myModalLabel">{this.props.title}</h4>
                 </div>
-                <div className="modal-body">
+                <div id="ctModalBody" className="modal-body">
                     {this.props.children}
                 </div>
                 <div className="modal-footer">
@@ -534,7 +534,7 @@ var HostTypeAddComponent = React.createClass({
     },
 
     render: function () {
-        var titleName = this.props.type == 'new' ? '新建Host Type' : '修改Host Type';
+        var titleName = this.props.type == 'new' ? '新建机器分组' : '修改机器分组';
         var btnName = this.props.type == 'new' ? '新增' : '修改';
         return (
     <div className="modal fade" id="roleModal" tabIndex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -962,7 +962,7 @@ var SiteHostTypeEditModal = React.createClass({
         if (this.state.name.isEmpty()) {
             state.nameError = true;
             state.alertType = 'danger';
-            state.alertMsg = '项目名不能为空';
+            state.alertMsg = '机器分组名不能为空';
             this.setState(state);
             return ;
         }
@@ -970,7 +970,7 @@ var SiteHostTypeEditModal = React.createClass({
         if (this.state.catalog_id == 0) {
             state.catalog_idError = true;
             state.alertType = 'danger';
-            state.alertMsg = '请选择Host Type环境类型';
+            state.alertMsg = '请选择机器分组环境类型';
             this.setState(state);
             return ;
         }
@@ -1049,5 +1049,150 @@ var SiteHostTypeEditModal = React.createClass({
 });
 
 
+var SiteHostEditModal = React.createClass({
+    handleToggle: function () {
+        $("#ctModal").modal("show");
+    },
+    handleChange: function (e) {
+        var state = this.state;
+        var t = e.target;
+        state[t.name] = t.value;
+        state[t.name + 'Error'] = false;
+        state.alertType = null;
+        this.setState(state);
+    },
+
+    getInitialState: function () {
+        if (this.props.type == 'edit') {
+            return {name: this.props.data.host.name, host_type_id: this.props.data.host.host_type.id, port: this.props.data.host.port, ip: this.props.data.host.ip, type: this.props.data.host.type, nameError: false, host_type_idError: false, portError: false, ipError: false, modalTitle: '修改机器', btn: "保存", alertType: null, alertMsg: ''};
+        }
+
+        return {name: '', host_type_id: '', port: '', ip: '', type: 'APP', nameError: false, host_type_idError: false, portError: false, ipError: false, modalTitle: '新增机器', btn: "保存", alertType: null, alertMsg: ''};
+    },
+
+    emptySubmitHandle: function (e) {
+        e.preventDefault();
+    },
+
+    handleSubmit: function (btn) {
+        btn = $(btn);
+        var state = this.state;
+        if (this.state.name.isEmpty()) {
+            state.nameError = true;
+            state.alertType = 'danger';
+            state.alertMsg = '机器名不能为空';
+            this.setState(state);
+            return ;
+        }
+
+        if (this.state.host_type_id == 0) {
+            state.host_type_idError = true;
+            state.alertType = 'danger';
+            state.alertMsg = '机器分组不能为空';
+            this.setState(state);
+            return ;
+        }
+
+        if (! /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(this.state.ip)) {
+            state.ipError = true;
+            state.alertType = 'danger';
+            state.alertMsg = '机器ip格式错误';
+            this.setState(state);
+            return ;
+        }
+
+        if (!(/^\d{1,5}$/i.test(this.state.port) && this.state.port < 65536)) {
+            state.portError = true;
+            state.alertType = 'danger';
+            state.alertMsg = 'SSH 端口格式错误';
+            this.setState(state);
+            return ;
+        }
+
+        if (this.props.type == 'new') {
+            btn.button('loading');
+            $.post('/api/site/' + siteId + '/host', {
+                _token: csrfToken,
+                name: this.state.name,
+                port: this.state.port,
+                ip: this.state.ip,
+                host_type_id: this.state.host_type_id,
+                type: this.state.type,
+            }, function (data) {
+                state.alertMsg = data.msg;
+                if (data.code == 0) {
+                    state.alertType = 'success';
+                    setTimeout(function () {$("#ctModal").modal("hide")}, 1000);
+                    this.props.updateCallback == null ? '' : this.props.updateCallback();
+                } else {
+                    for (i in data.fields) {
+                        state[data.fields[i] + 'Error'] = true;
+                    }
+                    state.alertType = 'danger';
+                }
+                this.setState(state);
+                btn.button('reset');
+                $('#ctModal').animate({ scrollTop: 0 }, 'fast');
+            }.bind(this), 'json');
+        } else {
+            btn.button('loading');
+            $.post('/api/site/' + siteId + '/host/' + this.props.data.host.id, {
+                _token: csrfToken,
+                _method: 'PUT',
+                name: this.state.name,
+                port: this.state.port,
+                ip: this.state.ip,
+                host_type_id: this.state.host_type_id,
+                type: this.state.type,
+            }, function (data) {
+                state.alertMsg = data.msg;
+                if (data.code == 0) {
+                    state.alertType= 'success';
+                    setTimeout(function () {$("#ctModal").modal("hide")}, 1000);
+                    this.props.updateCallback == null ? '' : this.props.updateCallback();
+                } else {
+                    for (i in data.fields) {
+                        state[data.fields[i] + 'Error'] = 'error';
+                    }
+                    state.alertType = 'danger';
+                }
+                this.setState(state);
+                btn.button('reset');
+            }.bind(this), 'json');
+        }
+    },
+
+    render: function () {
+        var options = this.props.data.host_types.map(function (host_type) {
+            return (<option key={host_type.id} value={host_type.id}>{host_type.name}</option>);
+        });
+        return (
+             <DeployModal id="ctModal" title={this.state.modalTitle} btn={this.state.btn} clickCallback={this.handleSubmit}>
+                <div className="row">
+                    <div className="col-lg-12">
+                        <BlockAlert msgType={this.state.alertType}>{this.state.alertMsg}</BlockAlert>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-lg-12">
+                        <form role="form" onSubmit={this.emptySubmitHandle}>
+                            <Input name="name" value={this.state.name} onChange={this.handleChange} type="text" bsStyle={this.state.nameError ? 'error' : null} label="机器名" placeholder="Host Name"/>
+                            <Input name="ip" value={this.state.ip} onChange={this.handleChange} type="text" bsStyle={this.state.ipError ? 'error' : null} label="机器IP" placeholder="Host IP"/>
+                            <Input name="port" value={this.state.port} onChange={this.handleChange} type="text" bsStyle={this.state.portError ? 'error' : null} label="SSH 端口" placeholder="Host Port"/>
+                            <Input type="select" value={this.state.host_type_id} onChange={this.handleChange} name="host_type_id" bsStyle={this.state.host_type_idError ? 'error' : null} label="机器分组">
+                                <option value="0">请选择...</option>
+                                {options}
+                            </Input>
+                            <Input type="select" value={this.state.type} onChange={this.handleChange} name="type" bsStyle={this.state.typeError ? 'error' : null} label="机器发布类型">
+                                <option value="APP">应用发布机器</option>
+                                <option value="STATIC">静态文件发布机器</option>
+                            </Input>
+                        </form>
+                    </div>
+                </div>
+            </DeployModal>
+        );
+   }
+});
 
 ;
