@@ -931,6 +931,123 @@ var SiteDeployConfigComponent = React.createClass({
     }
 });
 
+var SiteHostTypeEditModal = React.createClass({
+    handleToggle: function () {
+        $("#ctModal").modal("show");
+    },
+    handleChange: function (e) {
+        var state = this.state;
+        var t = e.target;
+        state[t.name] = t.value;
+        state[t.name + 'Error'] = false;
+        state.alertType = null;
+        this.setState(state);
+    },
+
+    getInitialState: function () {
+        if (this.props.type == 'edit') {
+            return {name: this.props.data.hosttype.name, catalog_id: this.props.data.hosttype.catalog.id, catalog_idError: false, nameError: false, modalTitle: '修改HostType', btn: "保存", alertType: null, alertMsg: ''};
+        }
+
+        return {name: '', catalog_id: 0, catalog_idError: false, nameError: false, modalTitle: '新增HostType', btn: "保存", alertType: null, alertMsg: ''};
+    },
+
+    emptySubmitHandle: function (e) {
+        e.preventDefault();
+    },
+
+    handleSubmit: function (btn) {
+        btn = $(btn);
+        var state = this.state;
+        if (this.state.name.isEmpty()) {
+            state.nameError = true;
+            state.alertType = 'danger';
+            state.alertMsg = '项目名不能为空';
+            this.setState(state);
+            return ;
+        }
+
+        if (this.state.catalog_id == 0) {
+            state.catalog_idError = true;
+            state.alertType = 'danger';
+            state.alertMsg = '请选择Host Type环境类型';
+            this.setState(state);
+            return ;
+        }
+
+        if (this.props.type == 'new') {
+            btn.button('loading');
+            $.post('/api/site/' + siteId + '/hosttype', {
+                _token: csrfToken,
+                name: this.state.name,
+                catalog_id: this.state.catalog_id
+            }, function (data) {
+                state.alertMsg = data.msg;
+                if (data.code == 0) {
+                    state.alertType = 'success';
+                    setTimeout(function () {$("#ctModal").modal("hide")}, 1000);
+                    this.props.updateCallback == null ? '' : this.props.updateCallback();
+                } else {
+                    for (i in data.fields) {
+                        state[data.fields[i] + 'Error'] = true;
+                    }
+                    state.alertType = 'danger';
+                }
+                this.setState(state);
+                btn.button('reset');
+            }.bind(this), 'json');
+        } else {
+            btn.button('loading');
+            $.post('/api/site/' + siteId + '/hosttype/' + this.props.data.hosttype.id, {
+                _token: csrfToken,
+                _method: 'PUT',
+                name: this.state.name,
+                catalog_id: this.state.catalog_id
+            }, function (data) {
+                state.alertMsg = data.msg;
+                if (data.code == 0) {
+                    state.alertType= 'success';
+                    setTimeout(function () {$("#ctModal").modal("hide")}, 1000);
+                    this.props.updateCallback == null ? '' : this.props.updateCallback();
+                } else {
+                    for (i in data.fields) {
+                        state[data.fields[i] + 'Error'] = 'error';
+                    }
+                    state.alertType = 'danger';
+                }
+                this.setState(state);
+                btn.button('reset');
+            }.bind(this), 'json');
+        }
+    },
+
+    render: function () {
+        var catalogs = this.props.data.catalogs.map(function (catalog) {
+            return (<option key={catalog.id} value={catalog.id}>{catalog.name}</option>);
+        });
+        return (
+             <DeployModal id="ctModal" title={this.state.modalTitle} btn={this.state.btn} clickCallback={this.handleSubmit}>
+                <div className="row">
+                    <div className="col-lg-12">
+                        <BlockAlert msgType={this.state.alertType}>{this.state.alertMsg}</BlockAlert>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-lg-12">
+                        <form role="form" onSubmit={this.emptySubmitHandle}>
+                            <Input name="name" value={this.state.name} onChange={this.handleChange} type="text" bsStyle={this.state.nameError ? 'error' : null} label="Host Type " placeholder="Host Type"/>
+                            <Input type="select" value={this.state.catalog_id} onChange={this.handleChange} name="catalog_id" bsStyle={this.state.catalog_idError ? 'error' : null} label="Host Type 环境">
+                                <option value="0">请选择环境...</option>
+                                {catalogs}
+                            </Input>
+                        </form>
+                    </div>
+                </div>
+            </DeployModal>
+        );
+   }
+});
+
 
 
 ;

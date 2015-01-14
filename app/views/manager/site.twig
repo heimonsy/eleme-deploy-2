@@ -27,7 +27,26 @@
             <div id="myTabContent" class="tab-content">
                 <div role="tabpanel" class="tab-pane" id="Setting"></div>
                 <div role="tabpanel" class="tab-pane" id="DeploySetting"></div>
-                <div role="tabpanel" class="tab-pane" id="HostType"><button id="test" class="btn btn-primary">new</button>Host Type</div>
+                <div role="tabpanel" class="tab-pane" id="HostType">
+                    <div class="row">
+                        <div class="col-lg-12"><button class="btn btn-primary" id="newHostType">新增</button></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <table id="hostTypeTable" class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>HostType</th>
+                                        <th>环境</th>
+                                        <th>修改</th>
+                                        <th>删除</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
                 <div role="tabpanel" class="tab-pane" id="Hosts">Hosts</div>
                 <div role="tabpanel" class="tab-pane" id="Deploy">Deploy</div>
                 <div role="tabpanel" class="tab-pane" id="PrBuild">Pr Build</div>
@@ -47,11 +66,100 @@ $(function () {
         $(this).tab('show')
     });
 
+    var showHostType = function () {
+        var table = null;
+        return function () {
+            if (table === null) {
+                table = $("#hostTypeTable").DataTable({
+                    ajax: '/api/site/' + siteId + "/hosttype",
+                    paging: false,
+                    ordering: false,
+                    info: false,
+                    columns: [
+                        {data: 'id'},
+                        {data: 'name'},
+                        {data: 'catalog'},
+                        {data: 'id'},
+                        {data: 'id'},
+                    ],
+                    columnDefs:
+                    [
+                        {
+                            render: function (data, type, row) {
+                                return data.name;
+                            },
+                            targets: 2,
+                        },
+                        {
+                            render: function (data, type, row) {
+                                return "<button class=\"btn btn-primary btn-xs btnHostTypeEdit\" data-json=\'" + JSON.stringify(row) + "\'>修改</button>";
+                            },
+                            targets: 3,
+                        },
+                        {
+                            render: function (data, type, row) {
+                                return "<button class=\"btn btn-warning btn-xs btnHostTypeDelete\" data-name=\""+ row.name +"\" data-id=\"" + data + "\">删除</button>";
+                            },
+                            targets: 4
+                        }
+                    ]
+                });
+            } else {
+                table.ajax.reload();
+            }
+
+            $("#newHostType").unbind('click');
+            $("#newHostType").click(function (e) {
+                var btn = $(this);
+                btn.button('loading');
+                $.getJSON('/api/site/' + siteId + '/hosttypecatalog', function (data) {
+                    btn.button('reset');
+                    if (data.code == 0) {
+                        renderSiteHostType(normalModalWrapper, 'new', {'catalogs' : data.data}, table.ajax.reload);
+                    } else {
+                        alert(data.msg);
+                    }
+                });
+            });
+
+            $('#hostTypeTable').unbind('click');
+            $('#hostTypeTable').on('click', '.btnHostTypeDelete', function (e) {
+                var btn = $(this);
+                btn.button('loading');
+                if (confirm("确定要删除 " + btn.attr('data-name') + "吗？")) {
+                    $.post('/api/site/' + siteId + '/hosttype/' + btn.attr('data-id'), {
+                        _token: csrfToken,
+                        _method: 'DELETE'
+                    }, function (data) {
+                        btn.button('reset');
+                        if (data.code == 0) {
+                            table.ajax.reload();
+                        } else {
+                            alert(data.msg);
+                        }
+                    }, 'json');
+                }
+            });
+            $('#hostTypeTable').on('click', '.btnHostTypeEdit', function (e) {
+                var btn = $(this);
+                btn.button('loading');
+                $.getJSON('/api/site/' + siteId + '/hosttypecatalog', function (data) {
+                    btn.button('reset');
+                    if (data.code == 0) {
+                        var hosttype = eval('(' + btn.attr('data-json') + ')');
+                        renderSiteHostType(normalModalWrapper, 'edit', {hosttype: hosttype, 'catalogs' : data.data}, table.ajax.reload);
+                    } else {
+                        alert(data.msg);
+                    }
+                });
+            });
+        }
+    }();
+
+
     var initBtn = function () {
         $('a[data-toggle="tab"]').unbind('shown.bs.tab');
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-            console.log(e.target);
-            console.log(e.relatedTarget)
             var url = null;
             var render = null;
             var element = null
@@ -66,6 +174,9 @@ $(function () {
                     render = renderSiteDeployConfig;
                     element = document.getElementById('DeploySetting');
                     break;
+                case '#HostType':
+                    showHostType();
+                    return ;
             }
             if (url !== null) {
                 $(element).html("<div>&nbsp;&nbsp;&nbsp;<img src='/static/ajax-loader.gif' /></div>");

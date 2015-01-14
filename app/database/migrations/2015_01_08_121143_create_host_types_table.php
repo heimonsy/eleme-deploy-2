@@ -15,8 +15,9 @@ class CreateHostTypesTable extends Migration
     {
         Schema::create('host_types', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name')->unique();
-            $table->string('catalog_id');
+            $table->string('name');
+            $table->integer('site_id');
+            $table->integer('catalog_id');
             $table->timestamps();
         });
     }

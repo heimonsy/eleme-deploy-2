@@ -15,7 +15,7 @@ class CreateDeployConfigsTable extends Migration
     {
         Schema::create('deploy_configs', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('site_id');
+            $table->integer('site_id');
             $table->string('remote_user');
             $table->string('remote_owner');
             $table->string('remote_static_dir');

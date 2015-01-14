@@ -41,6 +41,11 @@ class Site extends Eloquent implements AccessProtectedInterface, ManageProtected
         ));
     }
 
+    public function host_types()
+    {
+        return $this->hasMany('Deploy\Hosts\HostType', 'site_id', 'id');
+    }
+
     public function deploy_config()
     {
         return $this->hasOne('Deploy\Site\DeployConfig', 'site_id', 'id');

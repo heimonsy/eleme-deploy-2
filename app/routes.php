@@ -126,6 +126,25 @@ Route::group(
     }
 );
 
+/**
+ * 需要site access control 权限的api
+ */
+Route::group(
+    array(
+        'before' => array('auth', 'site.control'),
+        'prefix' => 'api'
+    ),
+    function () {
+        Route::resource('site.hosttype', 'SiteHostTypeController', array(
+            'only' => array('index', 'show', 'store', 'destroy', 'update')
+        ));
+
+        Route::resource('site.hosttypecatalog', 'SiteHostTypeCatalogController', array(
+            'only' => array('index')
+        ));
+    }
+);
+
 Route::group(
     array(
         'before' => array('auth', 'admin'),

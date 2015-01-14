@@ -84,4 +84,10 @@ var renderSiteDeployConfig = function (element, data) {
     React.render(<SiteDeployConfigComponent data={data} />, element);
 };
 
+var renderSiteHostType = function (element, type, data, updateCallback) {
+    $(element).html("");
+    var c = React.render(<SiteHostTypeEditModal data={data} type={type} updateCallback={updateCallback} />, element);
+    c.handleToggle();
+};
+
 ;
