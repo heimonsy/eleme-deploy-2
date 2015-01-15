@@ -147,6 +147,10 @@ Route::group(
             'only' => array('index', 'show', 'store', 'destroy', 'update')
         ));
 
+        Route::resource('site.build', 'SiteBuildController', array(
+            'only' => array('index', 'show', 'store')
+        ));
+
         Route::resource('site.hosttypecatalog', 'SiteHostTypeCatalogController', array(
             'only' => array('index')
         ));

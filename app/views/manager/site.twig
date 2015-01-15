@@ -17,6 +17,7 @@
                 <li role="presentation"><a href="#DeploySetting" role="tab" data-toggle="tab">发布配置</a></li>
                 <li role="presentation"><a href="#HostType" role="tab" data-toggle="tab">机器分组</a></li>
                 <li role="presentation"><a href="#Hosts" role="tab" data-toggle="tab">机器配置</a></li>
+                <li role="presentation"><a href="#Build" role="tab" data-toggle="tab">Build</a></li>
                 <li role="presentation"><a href="#Deploy" role="tab" data-toggle="tab">Deploy</a></li>
                 <li role="presentation"><a href="#PrBuild" role="tab" data-toggle="tab">PR Build</a></li>
                 <li role="presentation"><a href="#PrDeploy" role="tab" data-toggle="tab">PR Deploy</a></li>
@@ -69,28 +70,103 @@
                         </div>
                     </div>
                 </div>
+                <div role="tabpanel" class="tab-pane" id="Build">
+                    <div class="row">
+                        <div class="col-lg-12" id="buildFormWrapper">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <table id="buildTable" class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Checkout</th>
+                                        <th>Commit</th>
+                                        <th>状态</th>
+                                        <th>状态消息</th>
+                                        <th>更新时间</th>
+                                        <th>详细</th>
+                                        <th>发布</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
                 <div role="tabpanel" class="tab-pane" id="Deploy">Deploy</div>
                 <div role="tabpanel" class="tab-pane" id="PrBuild">Pr Build</div>
                 <div role="tabpanel" class="tab-pane" id="PrDeploy">Pr Deploy</div>
             </div>
-
         </div>
     </div>
 {% endblock main %}
 {% block footer_js %}
 <script>
 var siteId = {{ site.id }};
+var defaultBranch = '{{ site.default_branch }}';
 var csrfToken = '{{ csrf_token() }}';
+
 $(function () {
     $('#myTab a').click(function (e) {
         e.preventDefault()
         $(this).tab('show')
     });
 
+    var showBuilds = function () {
+        var table = null;
+        return function () {
+            if (table == null) {
+                table = $("#buildTable").DataTable({
+                    ajax: '/api/site/' + siteId + '/build',
+                    paging: false,
+                    ordering: false,
+                    info: false,
+                    columns: [
+                        {data: 'id'},
+                        {data: 'checkout'},
+                        {data: 'commit'},
+                        {data: 'status'},
+                        {data: 'status_info'},
+                        {data: 'updated_at'},
+                        {data: 'id'},
+                        {data: 'id'},
+                    ],
+                    columnDefs: [
+                    {
+                        render: function (data, type, row) {
+                            return '<button class="btn btn-primary btn-xs"/>详细输出</button>';
+                        },
+                        targets: 6,
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return data == '' ? ' ------ ' : data;
+                        },
+                        targets: 2,
+                    },
+                    {
+                        render: function (data, type, row) {
+                            var cls = {"Waiting":"label-default", "Building":"label-info", "Success":"label-success", "Error":"label-danger"};
+                            return '<span class="label '+ cls[data] +'">' + data +  '</span>';
+                        },
+                        targets: 3
+                    }
+                    ]
+                });
+            } else {
+                table.ajax.reload();
+            }
+
+            renderNewBuildForm(document.getElementById('buildFormWrapper'), {checkout: defaultBranch}, table.ajax.reload);
+
+            return table.ajax.reload;
+        };
+    }();
+
     var showHosts = function () {
         var table = null;
         return function () {
-            console.log("hehe");
             if (table === null) {
                 table = $("#hostsTable").DataTable({
                     ajax: '/api/site/' + siteId + "/host",
@@ -136,6 +212,7 @@ $(function () {
                     ]
                 });
             } else {
+                /*table.ajax.url('/api/site/' + siteId + "/host").load();*/
                 table.ajax.reload();
             }
 
@@ -190,6 +267,7 @@ $(function () {
 
     var showHostType = function () {
         var table = null;
+        var dataUrl = '';
         return function () {
             if (table === null) {
                 table = $("#hostTypeTable").DataTable({
@@ -279,13 +357,22 @@ $(function () {
     }();
 
 
+    var refreshInterval = null;
     var initBtn = function () {
         $('a[data-toggle="tab"]').unbind('shown.bs.tab');
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            if (refreshInterval !== null) {
+                window.clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
             var url = null;
             var render = null;
             var element = null
             switch ($(e.target).attr('href')) {
+                case '#Build':
+                    var callback = showBuilds();
+                    refreshInterval = window.setInterval(callback, 5000);
+                    return ;
                 case "#Setting":
                     url = '/api/site/' + siteId + '/configure';
                     render = renderSiteConfig;
@@ -300,7 +387,6 @@ $(function () {
                     showHostType();
                     return ;
                 case '#Hosts':
-                    console.log("wtf");
                     showHosts();
                     return ;
             }
@@ -327,7 +413,7 @@ $(function () {
 
     initBtn();
 
-    $('#myTab a[href="#Setting"]').tab("show");
+    $('#myTab a[href="#Build"]').tab("show");
 });
 
 

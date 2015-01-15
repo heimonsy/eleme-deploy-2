@@ -96,4 +96,10 @@ var renderSiteHosts = function (element, type, data, updateCallback) {
     c.handleToggle();
 };
 
+
+var renderNewBuildForm = function (element, data, updateCallback) {
+    $(element).html("");
+    var c = React.render(<NewBuildForm data={data} updateCallback={updateCallback} />, element);
+};
+
 ;

@@ -1195,4 +1195,59 @@ var SiteHostEditModal = React.createClass({
    }
 });
 
+
+var NewBuildForm = React.createClass({
+    handleChange: function (e) {
+        var state = this.state;
+        var t = e.target;
+        state[t.name] = t.value;
+        state[t.name + 'Error'] = false;
+        state.alertType = null;
+        this.setState(state);
+    },
+    emptySubmitHandle: function () {
+    },
+    handleSubmit: function (e) {
+        var btn = $(e.currentTarget);
+        var state = this.state;
+        if (this.state.checkout.isEmpty()) {
+            state.checkoutError = true;
+            state.alertType = 'error';
+            state.alertMsg = 'Checkout 不能为空';
+            this.setState(state);
+            return ;
+        }
+        btn.button('loading');
+        $.post('/api/site/' + siteId + '/build', {
+            _token: csrfToken
+        }, function (data) {
+            btn.button('reset');
+            state.alertMsg = data.msg;
+            if (data.code == 0) {
+                state.checkout = '';
+                state.alertType = 'success';
+                this.props.updateCallback == null ? '' : this.props.updateCallback();
+            } else {
+                state.checkoutError = true;
+                state.alertType = 'error';
+            }
+            this.setState(state);
+        }.bind(this), 'json')
+    },
+    getInitialState: function () {
+        return {checkout: this.props.data.checkout, checkoutError: false, alertType: null, alertMsg: ''};
+    },
+    render: function () {
+        return (
+            <form className="form-inline" role="form" onSubmit={this.emptySubmitHandle}>
+                <Input name="checkout" value={this.state.checkout} onChange={this.handleChange} type="text" bsStyle={this.state.checkoutError ? 'error' : null} label="Checkout" labelClassName="sr-only" placeholder="Checkout"/>
+                &nbsp;
+                <Button bsStyle="primary" onClick={this.handleSubmit} autoComplete="off">Build</Button>
+                &nbsp; &nbsp;
+                <InlineFormAlertComponent alertType={this.state.alertType} alertMsg={this.state.alertMsg}/>
+            </form>
+        );
+    }
+});
+
 ;
