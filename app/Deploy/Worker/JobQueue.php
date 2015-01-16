@@ -20,9 +20,9 @@ class JobQueue
         }
 
         $this->queueName = $queue;
-        $this->queueKey = $queue . ':QUEUE';
-        $this->reservedKey = $queue . ':RESERVED';
-        $this->delayKey = $queue . ':DELAY';
+        $this->queueKey = $queue . ':L:QUEUE';
+        $this->reservedKey = $queue . ':Z:RESERVED';
+        $this->delayKey = $queue . ':Z:DELAY';
         $this->reservedTimeout  = Config::get('worker.timeout.reserved') ?: 300;
         $this->redis = app('redis')->connection();
     }

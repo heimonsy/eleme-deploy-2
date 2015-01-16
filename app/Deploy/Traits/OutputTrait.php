@@ -2,6 +2,7 @@
 namespace Deploy\Traits;
 
 use Symfony\Component\Process\Process;
+use Deploy\Interfaces\OutputInterface;
 
 trait OutputTrait
 {
@@ -12,10 +13,15 @@ trait OutputTrait
         return 'DEPLOY:L:OUTPUT:' . $this->getId();
     }
 
+    public function clear()
+    {
+        return $this->redis()->del($this->getKey());
+    }
+
     public function outputCallback()
     {
         // $this 在匿名函数中使用，需要php5.4
-        return function ($type, $buff) {
+        return function ($type, $buffer) {
             static $errLine = '';
             static $outLine = '';
 
@@ -39,7 +45,7 @@ trait OutputTrait
 
     public function commandLine($line)
     {
-        $this->line(OutputInterface::CMD . $outLine);
+        $this->line(OutputInterface::CMD . $line);
     }
 
     public function outputLine($line)

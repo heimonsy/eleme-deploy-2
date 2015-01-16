@@ -3,7 +3,7 @@
 
 return array(
     'queues' => array(
-        'main' => 'DEPLOY:L:WORK:QUEUE:main',
+        'main' => 'DEPLOY:WORK:QUEUE:main',
     ),
 
     'timeout' => array(

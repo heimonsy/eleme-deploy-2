@@ -24,7 +24,7 @@ class Worker extends Facade
         $pid = $redis->get(Supervisor::PID_KEY);
     }
 
-    public static function push($class, $type, $description, array $message, $queueName = 'main')
+    public static function createJob($class, $description, array $message = array(), $type = Job::TYPE_USER)
     {
         if (!class_exists($class)) {
             throw new ClassNotFoundException('内部错误', "task class {$class} not found");
@@ -34,9 +34,16 @@ class Worker extends Facade
         $job->message = $message;
         $job->description = $description;
         $job->type = $type;
-        $job->status = Job::STATUS_WAITING;
+        $job->status = Job::STATUS_CREATED;
         $job->save();
 
+        return $job;
+    }
+
+    public static function push(Job $job, $queueName = 'main')
+    {
+        $job->status = Job::STATUS_WAITING;
+        $job->save();
         $queue = new JobQueue(Config::get('worker.queues.' . $queueName));
         $queue = $queue->push($job->id);
     }

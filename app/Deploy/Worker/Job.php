@@ -12,6 +12,7 @@ class Job extends Eloquent implements OutputInterface
     const TYPE_USER = 'user';
     const TYPE_SYSTEM = 'system';
 
+    const STATUS_CREATED = 'Created';
     const STATUS_WAITING  = 'Waiting';
     const STATUS_DOING  = 'Doing';
     const STATUS_ERROR  = 'Error';
@@ -23,7 +24,7 @@ class Job extends Eloquent implements OutputInterface
 
     public function getId()
     {
-        return $this->id;
+        return  'JOB:' . $this->id;
     }
 
     public function getMessageAttribute($message)
@@ -34,5 +35,11 @@ class Job extends Eloquent implements OutputInterface
     public function setMessageAttribute(array $message)
     {
         $this->attributes['message'] = json_encode($message);
+    }
+
+    public function delete()
+    {
+        $this->clear();
+        parent::delete();
     }
 }

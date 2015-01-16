@@ -5,6 +5,7 @@ use Log;
 use Exception;
 use ErrorException;
 use Deploy\Worker\Job;
+use Symfony\Component\Debug\Exception\FatalErrorException;
 
 class Worker
 {
@@ -50,12 +51,10 @@ class Worker
 
         } catch (Exception $e) {
             Log::error($e);
-            $this->job->status = Job::STATUS_ERROR;
-            $this->job->save();
-        } catch (ErrorException $e) {
+            $this->deleteJob(Job::STATUS_ERROR);
+        } catch (FatalErrorException $e) {
             Log::error($e);
-            $this->job->status = Job::STATUS_ERROR;
-            $this->job->save();
+            $this->deleteJob(Job::STATUS_ERROR);
         }
 
         Log::info("WORKER [ {$this->pid} ] : job finish [ {$this->job->id} ] {$this->job->class};");
@@ -74,8 +73,14 @@ class Worker
     {
         $this->queue->delay($this->job->id, $time);
         $this->queue->removeJobFromReserved($this->job->id);
+        $this->log("Job {$this->job->id} Release");
 
         $this->job->status = Job::STATUS_WAITING;
         $this->job->save();
+    }
+
+    public function log($info)
+    {
+        Log::info("[WORKER {$this->pid}] [Job {$this->job->id}]: $info ; ");
     }
 }
