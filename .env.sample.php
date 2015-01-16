@@ -1,6 +1,9 @@
 <?php
 
 return array(
+    // 发布站点的根目录
+    'DEPLOY_BASE_PATH' => '',
+
     'WEB_URL' => 'http://localhost',
     'ENCRYPTION_KEY' => 'your key',
     'USER_FAKEID_OFFSET' => 20141231,
