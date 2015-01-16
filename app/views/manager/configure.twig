@@ -1,0 +1,23 @@
+{% extends 'layout.master' %}
+{% block main %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h2 class="page-header">基础配置</h2>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+
+    <div class="row">
+        <div class="col-lg-8" id="systemConfigureWrapper">
+        </div>
+    </div>
+
+{% endblock main %}
+{% block footer_js%}
+<script>
+$(function () {
+    renderSystemConfigureForm(document.getElementById('systemConfigureWrapper'));
+});
+</script>
+{% endblock footer_js %}

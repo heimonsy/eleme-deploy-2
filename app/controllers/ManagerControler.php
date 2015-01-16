@@ -6,6 +6,11 @@ use Deploy\Site\Site;
 
 class ManagerController extends BaseController
 {
+    public function configure()
+    {
+        return Response::view('manager.configure');
+    }
+
     public function role()
     {
         return Response::view('manager.role');

@@ -62,6 +62,7 @@ Route::group(
         Route::get('hosttypecatalogs', 'ManagerController@hosttypecatalogs');
         Route::get('sites', 'ManagerController@sites');
         Route::get('users', 'ManagerController@users');
+        Route::get('system/configure', 'ManagerController@configure');
     }
 );
 
@@ -117,6 +118,7 @@ Route::group(
     function () {
         Route::get('/api/site/{site}/configure', 'ApiController@showSiteConfig');
         Route::get('/api/site/{site}/deploy_configure', 'ApiController@showDeployConfig');
+        Route::get('/api/system/config', 'ApiController@showSystemConfig');
 
         Route::put('/api/site/{site}/configure', array(
             'before' => array('csrf'),

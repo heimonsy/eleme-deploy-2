@@ -102,4 +102,8 @@ var renderNewBuildForm = function (element, data, updateCallback) {
     var c = React.render(<NewBuildForm data={data} updateCallback={updateCallback} />, element);
 };
 
+
+var renderSystemConfigureForm = function (element) {
+    React.render(<BasicConfigureForm />, element);
+};
 ;

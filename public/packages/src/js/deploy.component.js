@@ -18,6 +18,36 @@ var Alert = ReactBootstrap.Alert;
  *
  ********************/
 
+var BasicConfigureForm = React.createClass({
+    handleChange: function (e) {
+        var state = this.state;
+        var t = e.target;
+        state[t.name] = t.value;
+        state[t.name + 'Error'] = false;
+        state.alertType = null;
+        this.setState(state);
+    },
+
+    handleSubmit: function () {
+    },
+    componentDidMount: function () {
+    },
+
+    getInitialState: function () {
+        return {deploy_root : '', deploy_rootError: false};
+    },
+    render: function () {
+        return (
+            <form>
+                <Input name="deploy_root" value={this.state.deploy_root} onChange={this.handleChange} bsStyle={this.state.deploy_rootError ? 'danger' : null} type="text" label="项目根目录" placeholder="Deploy Root"/>
+                <Button></Button>
+                <Button bsStyle="primary" onClick={this.handleSubmit} autoComplete="off">保存</Button>
+            </form>
+        );
+    }
+});
+
+
 var WaitProgressComponent = React.createClass({
     loadStatusFromServer: function () {
         $.getJSON('/is-waiting', function (data) {

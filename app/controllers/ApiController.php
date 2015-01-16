@@ -153,4 +153,13 @@ class ApiController extends Controller
             'msg' => '保存成功'
         ));
     }
+
+    public function showSystemConfig()
+    {
+        $config = SystemConfig::firstOrNew(array('name' => 'system'));
+        return Response::json(array(
+            'code' => 0,
+            'data' => $config
+        ));
+    }
 }
