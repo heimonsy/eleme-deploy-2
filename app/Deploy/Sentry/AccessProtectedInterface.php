@@ -1,7 +1,8 @@
 <?php
 namespace Deploy\Sentry;
+use Deploy\Interfaces\AllObjectsInterface;
 
-interface AccessProtectedInterface
+interface AccessProtectedInterface extends AllObjectsInterface
 {
     public function accessDescription();
 

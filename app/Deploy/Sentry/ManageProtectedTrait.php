@@ -4,7 +4,6 @@ namespace Deploy\Sentry;
 trait ManageProtectedTrait
 {
     abstract public function identify();
-    abstract public static function allObjects();
     abstract public function manageDescription();
 
     public function manageAction()

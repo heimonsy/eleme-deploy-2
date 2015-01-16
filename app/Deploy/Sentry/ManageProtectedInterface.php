@@ -1,7 +1,8 @@
 <?php
 namespace Deploy\Sentry;
+use Deploy\Interfaces\AllObjectsInterface;
 
-interface ManageProtectedInterface
+interface ManageProtectedInterface extends AllObjectsInterface
 {
     public function manageDescription();
 

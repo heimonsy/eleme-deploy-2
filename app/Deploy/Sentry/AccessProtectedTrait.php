@@ -4,7 +4,6 @@ namespace Deploy\Sentry;
 trait AccessProtectedTrait
 {
     abstract public function identify();
-    abstract public static function allObjects();
     abstract public function accessDescription();
 
     public function accessAction()
