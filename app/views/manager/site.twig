@@ -77,7 +77,7 @@
                     </div>
                     <div class="row">
                         <div class="col-lg-12">
-                            <table id="buildTable" class="table table-bordered table-hover">
+                            <table id="buildTable" class="table table-bordered table-hover small-table">
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -85,8 +85,8 @@
                                         <th>Commit</th>
                                         <th>状态</th>
                                         <th>状态消息</th>
-                                        <th>更新时间</th>
-                                        <th>详细</th>
+                                        <th max-width="150">更新时间</th>
+                                        <th max-width="80">详细</th>
                                         <th>发布</th>
                                     </tr>
                                 </thead>
@@ -141,7 +141,7 @@ $(function () {
                     },
                     {
                         render: function (data, type, row) {
-                            return data == '' ? ' ------ ' : data;
+                            return data == '' ? ' ------ ' : data.substr(0, 7);
                         },
                         targets: 2,
                     },

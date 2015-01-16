@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateBuildsTable extends Migration
+class CreateCommitsTable extends Migration
 {
 
     /**
@@ -13,16 +13,12 @@ class CreateBuildsTable extends Migration
      */
     public function up()
     {
-        Schema::create('builds', function (Blueprint $table) {
+        Schema::create('commits', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('user_id');
             $table->integer('site_id');
-            $table->integer('job_id');
             $table->string('commit');
             // 可以认为是branch,但是因为本身支持例如commit,或者tag的checkout,所以改用checkout
             $table->string('checkout');
-            $table->string('status');
-            $table->string('status_info');
             $table->timestamps();
         });
     }
@@ -34,8 +30,7 @@ class CreateBuildsTable extends Migration
      */
     public function down()
     {
-        //
-        Schema::drop('builds');
+        Schema::drop('commits');
     }
 
 }

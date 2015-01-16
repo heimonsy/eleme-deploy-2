@@ -98,19 +98,19 @@ class User extends Eloquent implements ControllerInterface
         return $isAdmin;
     }
 
+    protected static $permissions = array();
+
     public function permissions()
     {
-        static $permissions = null;
-
-        if ($permissions == null) {
-            $permissions = array();
+        if (!isset(self::$permissions[$this->id])) {
+            self::$permissions[$this->id] = array();
             foreach ($this->roles as $role) {
-                $permissions = array_merge($permissions, $role->permissions()->lists('name'));
+                self::$permissions[$this->id] = array_merge(self::$permissions[$this->id], $role->permissions()->lists('name'));
             }
-            $permissions = array_unique($permissions);
+            self::$permissions[$this->id] = array_unique(self::$permissions[$this->id]);
         }
 
-        return $permissions;
+        return self::$permissions[$this->id];
     }
 
     public function control($action)

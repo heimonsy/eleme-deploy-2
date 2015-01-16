@@ -1249,7 +1249,8 @@ var NewBuildForm = React.createClass({
         }
         btn.button('loading');
         $.post('/api/site/' + siteId + '/build', {
-            _token: csrfToken
+            _token: csrfToken,
+            checkout: this.state.checkout
         }, function (data) {
             btn.button('reset');
             state.alertMsg = data.msg;

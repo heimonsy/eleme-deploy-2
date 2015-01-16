@@ -23,3 +23,5 @@
     color: #fff;
     margin-bottom: 5px;
 }
+
+.small-table td{ font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace; font-size: 13px;}
