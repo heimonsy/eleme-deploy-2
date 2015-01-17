@@ -18,6 +18,11 @@ trait OutputTrait
         return $this->redis()->del($this->getKey());
     }
 
+    public function getOutput()
+    {
+        return $this->redis()->lrange($this->getKey(), 0, -1);
+    }
+
     public function outputCallback()
     {
         // $this 在匿名函数中使用，需要php5.4
@@ -28,19 +33,29 @@ trait OutputTrait
             $len = strlen($buffer);
             if (Process::ERR === $type) {
                 $errLine .= $buffer;
-                if ($buffer[$len-1] == PHP_EOL) {
+                if ($buffer[$len-1] == "\n") {
                     $errLine = preg_replace('/"Enter passphrase" \{ send ".+/', '--------', $errLine);
-                    $this->line(OutputInterface::ERR . $errLine);
+                    $this->line(OutputInterface::ERR . $this->lastLine($errLine));
                     $errLine = '';
                 }
             } else {
                 $outLine .= $buffer;
-                if ($buffer[$len-1] == PHP_EOL) {
-                    $this->line(OutputInterface::OUT . $outLine);
+                if ($buffer[$len-1] == "\n") {
+                    $this->line(OutputInterface::OUT . $this->lastLine($outLine));
                     $outLine = '';
                 }
             }
         };
+    }
+
+    protected function lastLine($out)
+    {
+        $arr = explode("\r", $out);
+        $len = count($arr);
+        if ($len == 1 ) {
+            return $out;
+        }
+        return $arr[$len-2] . $arr[$len-1];
     }
 
     public function commandLine($line)

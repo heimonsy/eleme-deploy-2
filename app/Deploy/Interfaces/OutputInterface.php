@@ -13,4 +13,6 @@ interface OutputInterface
     public function commandLine($line);
 
     public function outputLine($line);
+
+    public function getOutput();
 }
