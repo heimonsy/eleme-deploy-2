@@ -37,6 +37,11 @@ class Job extends Eloquent implements OutputInterface
         $this->attributes['message'] = json_encode($message);
     }
 
+    public function toArray()
+    {
+        return array_merge(parent::toArray(), array('output' => $this->getOutput()));
+    }
+
     public function delete()
     {
         $this->clear();

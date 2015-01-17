@@ -71,3 +71,18 @@ var createSiteMenuList = function (sites) {
 
     return list;
 };
+
+
+var createTimeoutEvent= function () {
+    var timeout = {
+        timeout: null,
+        clear: function () {
+            if (this.timeout === null) {
+                console.log("timeout is null");
+            } else {
+                window.clearTimeout(this.timeout);
+            }
+        }
+    };
+    return timeout;
+};

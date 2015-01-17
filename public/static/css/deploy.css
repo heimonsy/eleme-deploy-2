@@ -24,4 +24,18 @@
     margin-bottom: 5px;
 }
 
-.small-table td{ font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace; font-size: 13px;}
+.small-table td{ font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace; font-size: 13px; }
+
+.output { font-size: 13px; margin: 0; line-height:20px; padding-top: 6px; background-color: #2A2A2A; padding-bottom: 6px; font-family: monospace;}
+.output p { margin: 0; white-space: pre-wrap; padding-left: 50px; padding-right 30px; background-color: #2A2A2A;}
+.output p:hover { background-color: #444444; }
+.output a { color: rgb(102, 102, 102); display: inline-block; width: 34px; padding-right: 11px; text-align: right; margin-left: -40px; text-decoration: none;}
+.output a:hover {text-decoration: none;}
+.output span { color: rgb(241, 241, 241); word-wrap: break-word; width: auto; height: auto;}
+
+.label-h4 { font-size: 45%; margin-bottom: 8px; position: absolute; bottom: 0px;}
+.job-title { font-size: 26px; position: relative;}
+
+.output span.line-error { color: #FFB6B0; }
+.output span.line-cmd { color: #5CAC7C; }
+.output span.line-cmd { color: #5CAC7C; }

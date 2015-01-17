@@ -29,7 +29,7 @@ class SiteBuildController extends Controller
 
         $job = Worker::createJob(
             'Deploy\Worker\Jobs\BuildRepo',
-            "Build 项目 {$site->name}, 操作用户 {$user->name}({$user->login})"
+            "操作：Build &nbsp; " . "项目：{$site->name} &nbsp;" . "操作者：{$user->name}({$user->login}) &nbsp;"
         );
 
         $build = new Build;
@@ -49,7 +49,10 @@ class SiteBuildController extends Controller
 
         return Response::json(array(
             'code' => 0,
-            'msg' => '成功新建Build任务'
+            'msg' => '成功新建Build任务',
+            'data' => array(
+                'jobId' => $job->id
+            )
         ));
     }
 }

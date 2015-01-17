@@ -106,4 +106,10 @@ var renderNewBuildForm = function (element, data, updateCallback) {
 var renderSystemConfigureForm = function (element) {
     React.render(<BasicConfigureForm />, element);
 };
+
+var renderJobInfo = function (element, jobId) {
+    $(element).html("");
+    var c = React.render(<JobInfoTabContent jobId={jobId} />, element);
+    return c.timeoutEvent;
+};
 ;

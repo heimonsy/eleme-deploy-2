@@ -80,7 +80,7 @@
                             <table id="buildTable" class="table table-bordered table-hover small-table">
                                 <thead>
                                     <tr>
-                                        <th>#</th>
+                                        <th>Job ID</th>
                                         <th>Checkout</th>
                                         <th>Commit</th>
                                         <th>状态</th>
@@ -97,6 +97,7 @@
                 <div role="tabpanel" class="tab-pane" id="Deploy">Deploy</div>
                 <div role="tabpanel" class="tab-pane" id="PrBuild">Pr Build</div>
                 <div role="tabpanel" class="tab-pane" id="PrDeploy">Pr Deploy</div>
+                <div role="tabpanel" class="tab-pane" id="JobInfo"></div>
             </div>
         </div>
     </div>
@@ -106,12 +107,32 @@
 var siteId = {{ site.id }};
 var defaultBranch = '{{ site.default_branch }}';
 var csrfToken = '{{ csrf_token() }}';
+var timeoutEvent = null;
+var refreshInterval = null;
+var prevJobId = null;
 
 $(function () {
     $('#myTab a').click(function (e) {
         e.preventDefault()
         $(this).tab('show')
     });
+
+    var showJobInfo = function (jobId) {
+        prevJobId = jobId;
+        $("#myTab").append('<li role="presentation"><a href="#JobInfo-' + prevJobId + '" data-job-id="' + prevJobId + '" role="tab" data-toggle="tab">Job #' + prevJobId + '</a></li>');
+        $("#myTabContent").append('<div role="tabpanel" class="tab-pane" id="JobInfo-' + prevJobId + '"></div>');
+        initBtn();
+        $('#myTab a:last').tab('show');
+    };
+
+    var initJobBtn = function () {
+        $('.btnOpenJob').click(function (data) {
+            var btn = $(this);
+            btn.button('loading');
+            showJobInfo(btn.attr('data-job-id'));
+            btn.button('reset');
+        });
+    };
 
     var showBuilds = function () {
         var table = null;
@@ -123,19 +144,19 @@ $(function () {
                     ordering: false,
                     info: false,
                     columns: [
-                        {data: 'id'},
+                        {data: 'job_id'},
                         {data: 'checkout'},
                         {data: 'commit'},
                         {data: 'status'},
                         {data: 'status_info'},
                         {data: 'updated_at'},
-                        {data: 'id'},
+                        {data: 'job_id'},
                         {data: 'id'},
                     ],
                     columnDefs: [
                     {
                         render: function (data, type, row) {
-                            return '<button class="btn btn-primary btn-xs"/>详细输出</button>';
+                            return '<button class="btn btn-primary btn-xs btnOpenJob" data-job-id="' + data + '"/>详细输出</button>';
                         },
                         targets: 6,
                     },
@@ -159,6 +180,11 @@ $(function () {
             }
 
             renderNewBuildForm(document.getElementById('buildFormWrapper'), {checkout: defaultBranch}, table.ajax.reload);
+
+            $('#buildTable').unbind('draw.dt');
+            $('#buildTable').on('draw.dt', function (e) {
+                initJobBtn();
+            });
 
             return table.ajax.reload;
         };
@@ -356,19 +382,37 @@ $(function () {
         }
     }();
 
-
-    var refreshInterval = null;
     var initBtn = function () {
         $('a[data-toggle="tab"]').unbind('shown.bs.tab');
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            var prevTab = $(e.relatedTarget);
+            if (prevTab.attr('href') != undefined && prevTab.attr('href').substr(0, 8) == '#JobInfo') {
+                prevTab.remove();
+                $(prevTab.attr('href')).remove();
+            }
+
+            if (timeoutEvent !== null) {
+                timeoutEvent.clear();
+                timeoutEvent = null;
+            }
+
             if (refreshInterval !== null) {
                 window.clearInterval(refreshInterval);
                 refreshInterval = null;
             }
+
             var url = null;
             var render = null;
             var element = null
-            switch ($(e.target).attr('href')) {
+            var thisTab = $(e.target);
+            location.hash = thisTab.attr('href');
+
+            if (thisTab.attr('href').substr(0, 8) == '#JobInfo') {
+                timeoutEvent = renderJobInfo(document.getElementById(thisTab.attr('href').substr(1)), thisTab.attr('data-job-id'));
+                return '';
+            }
+
+            switch (thisTab.attr('href')) {
                 case '#Build':
                     var callback = showBuilds();
                     refreshInterval = window.setInterval(callback, 5000);
@@ -403,17 +447,36 @@ $(function () {
         });
     };
 
-    $("#test").click(function (e) {
-        $("#myTab").append('<li role="presentation"><a href="#testTabContent" role="tab" data-toggle="tab">test</a></li>');
-        $("#myTabContent").append('<div role="tabpanel" class="tab-pane" id="testTabContent">hehehehehe</div>');
-        /*$("a [href=#testTableContent]").tab("show");*/
-        initBtn();
-        $('#myTab a:last').tab('show');
-    });
+    window.onhashchange = function () {
+        if (location.hash.substr(0, 8) == '#JobInfo') {
+            var tab = $('#myTab a:last');
+            var href = tab.attr('href');
+            if (href.substr(0, 8) == '#JobInfo') {
+                if (href != location.hash) {
+                    $(href).remove();
+                    tab.remove();
+                } else {
+                    $('#myTab a[href="' + location.hash + '"]').tab("show");
+                    return ;
+                }
+            }
+            showJobInfo(location.hash.substr(9));
+        } else {
+            $('#myTab a[href="' + location.hash + '"]').tab("show");
+        }
+    };
 
     initBtn();
 
-    $('#myTab a[href="#Build"]').tab("show");
+    if (location.hash == '') {
+        location.hash = '#Build';
+    } else if (location.hash.substr(0, 8) == '#JobInfo') {
+        showJobInfo(location.hash.substr(9));
+    } else {
+            $('#myTab a[href="' + location.hash + '"]').tab("show");
+    }
+
+    /*$('#myTab a[href="#Build"]').tab("show");*/
 });
 
 

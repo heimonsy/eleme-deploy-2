@@ -1257,7 +1257,8 @@ var NewBuildForm = React.createClass({
             if (data.code == 0) {
                 state.checkout = '';
                 state.alertType = 'success';
-                this.props.updateCallback == null ? '' : this.props.updateCallback();
+                location.hash = '#JobInfo-' + data.data.jobId;
+                //this.props.updateCallback == null ? '' : this.props.updateCallback();
             } else {
                 state.checkoutError = true;
                 state.alertType = 'error';
@@ -1280,5 +1281,79 @@ var NewBuildForm = React.createClass({
         );
     }
 });
+
+
+var OutputComponent = React.createClass({
+    render : function () {
+        var lines = [];
+        for (var i in this.props.output) {
+            var start = this.props.output[i].substr(0, 3);
+            switch(start){
+                case 'err':
+                    lines.push(<p key={i}><a>{i * 1 +1}</a><span className="line-error">{this.props.output[i].substr(4)}</span></p>);
+                    break;
+                case 'out':
+                    lines.push(<p key={i}><a>{i * 1 +1}</a><span>{this.props.output[i].substr(4)}</span></p>);
+                    break;
+                case 'cmd':
+                    lines.push(<p key={i}><a>{i * 1 +1}</a><span className="line-cmd">{"$ " + this.props.output[i].substr(4)}</span></p>);
+                    break;
+            }
+        }
+        return (
+            <div className="output">
+                {lines}
+            </div>
+        );
+    }
+});
+
+var JobInfoTabContent = React.createClass({
+    timeoutEvent: createTimeoutEvent(),
+    loadStateFromServer: function () {
+        var state = this.state;
+        $.getJSON('/api/site/' + siteId + '/job/' + this.props.jobId, function (data) {
+            if (data.code == 0) {
+                this.setState(data.data);
+                if (data.data.status !== 'Error' && data.data.status !== 'Success') {
+                    this.timeoutEvent.timeout = window.setTimeout(this.loadStateFromServer, 3000);
+                }
+            } else {
+                alert(data.msg);
+            }
+        }.bind(this));
+    },
+    componentDidMount: function () {
+        this.loadStateFromServer();
+    },
+    getInitialState : function () {
+        return {id: this.props.jobId };
+    },
+    render: function () {
+        var statusCls = {"Created": 'warning'};
+        var output = this.state.output === undefined ? (<div className="text-center"><img src="/static/ajax-loader.gif"/></div>) : (<OutputComponent output={this.state.output}/>);
+        return (
+            <div className="container-fluid">
+                <div className="row">
+                    <div className="col-lg-12 ">
+                        <div className="well">
+                            <p className="job-title">Job #{this.state.id} &nbsp; <span className="label label-success label-h4">Success</span></p>
+                            <p dangerouslySetInnerHTML={{__html: this.state.description}}></p>
+                            <p>
+                                创建时间：{this.state.created_at} &nbsp;&nbsp; 更新时间：{this.state.updated_at}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-lg-12">
+                        {output}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+});
+
 
 ;

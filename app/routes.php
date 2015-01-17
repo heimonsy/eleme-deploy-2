@@ -88,6 +88,10 @@ Route::Model('site', 'Deploy\Site\Site', function () {
     throw new \Deploy\Exception\ResourceNotFoundException('项目不存在');
 });
 
+Route::Model('job', 'Deploy\Worker\Job', function () {
+    throw new \Deploy\Exception\ResourceNotFoundException('Job不存在');
+});
+
 Route::bind('user', function ($value, $route) {
     $user = Deploy\Account\User::where('id', $value)->normal()->first();
     if (!$user) {
@@ -155,6 +159,10 @@ Route::group(
 
         Route::resource('site.hosttypecatalog', 'SiteHostTypeCatalogController', array(
             'only' => array('index')
+        ));
+
+        Route::resource('site.job', 'SiteJobController', array(
+            'only' => array('show')
         ));
     }
 );
