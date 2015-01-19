@@ -10,4 +10,9 @@ class JobLock
     {
         return self::KEY_PREFIX . 'BUILD:REPO:' . $siteId;
     }
+
+    public static function storeKey($siteId)
+    {
+        return self::KEY_PREFIX . 'STORE:KEY:' . $siteId;
+    }
 }

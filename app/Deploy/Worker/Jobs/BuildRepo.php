@@ -51,8 +51,10 @@ class BuildRepo extends Task
             $CHECKOUT = $build->checkout;
 
             $SITE_DIR = $BASE_PATH . '/' . $site->id;
-            $PULL_KEY_FILE = $SITE_DIR . '/keys/' . $site->id . '.pull';
-            $PULL_KEY_PASSPHRASE = $site->pull_key_passphrase;
+            $pull_key = $site->realPullKey();
+
+            $PULL_KEY_FILE = empty($site->realPullKey()) ? null : "{$SITE_DIR}/keys/{$site->id}.pull";
+            $PULL_KEY_PASSPHRASE = $site->realPullKeyPassphrase();
 
             $BRANCH_DIR = $SITE_DIR . '/branchs/default';
             $COMMIT_DIR = $SITE_DIR . '/commits';
@@ -100,15 +102,16 @@ class BuildRepo extends Task
             $commit = Commit::firstOrCreate(array('site_id' => $site->id, 'commit' => $COMMIT, 'checkout' => $CHECKOUT));
             $build->commit = $COMMIT;
             $build->setStatus(Build::STATUS_SUCCESS);
-            $worker->log("{$LOG_PREFIX} Build Success");
-            $status = Job::STATUS_SUCCESS;
 
+            $worker->log("{$LOG_PREFIX} Build Success");
+            $worker->deleteJob();
             $lock->release();
+
         } catch (Exception $e) {
-            $lock->release();
             $build->setStatus(Build::STATUS_ERROR);
             $worker->log("{$LOG_PREFIX} Build Error");
-            $worker->log($e);
+            $worker->deleteJob(Job::STATUS_ERROR);
+
             switch ($process) {
             case 1:
                 $this->process("rm -rf {$BRANCH_DIR}", null, false);
@@ -120,9 +123,9 @@ class BuildRepo extends Task
                 $this->process("rm -rf {$COMMIT_PATH}", null, false);
                 break;
             }
-            $status = Job::STATUS_ERROR;
+
+            $lock->release();
+            throw $e;
         }
-        $worker->log("{$LOG_PREFIX} Build Finish");
-        $worker->deleteJob($status);
     }
 }
