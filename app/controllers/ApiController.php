@@ -6,6 +6,7 @@ use Deploy\Site\Site;
 use Deploy\Site\DeployConfig;
 use Deploy\Hosts\HostTypeCatalog;
 use Deploy\Account\User;
+use Deploy\Facade\Worker;
 
 
 class ApiController extends Controller
@@ -119,6 +120,19 @@ class ApiController extends Controller
         $site->fill(Input::only('static_dir', 'rsync_exclude_file', 'default_branch', 'build_command', 'test_command',
                                 'hipchat_room', 'hipchat_token', 'pull_key', 'pull_key_passphrase'));
         $site->save();
+
+        $pull_key = Input::get('pull_key');
+        if ($pull_key != '******') {
+            $user = Sentry::loginUser();
+            $job = Worker::createJob(
+                'Deploy\Worker\Jobs\StoreKey',
+                "操作：Store Keys &nbsp; " . "项目：{$site->name} &nbsp;" . "操作者：{$user->name}({$user->login}) &nbsp;",
+                array('site_id' => $site->id)
+            );
+            Worker::push($job);
+        }
+
+
         return Response::json(array(
             'code' => 0,
             'msg' => '保存成功',

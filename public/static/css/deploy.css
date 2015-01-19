@@ -39,3 +39,5 @@
 .output span.line-error { color: #FFB6B0; }
 .output span.line-cmd { color: #5CAC7C; }
 .output span.line-cmd { color: #5CAC7C; }
+.output span.line-waiting { color: #FFFF00; }
+.output span.line-finish { color: #0099CC; }

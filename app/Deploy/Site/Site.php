@@ -1,6 +1,7 @@
 <?php
 namespace Deploy\Site;
 
+use Crypt;
 use Eloquent;
 use Deploy\Sentry\AccessProtectedInterface;
 use Deploy\Sentry\AccessProtectedTrait;
@@ -54,7 +55,7 @@ class Site extends Eloquent implements AccessProtectedInterface, ManageProtected
     public function setPullKeyPassphraseAttribute($value)
     {
         if ($value != '******') {
-            $this->attributes['pull_key_passphrase'] = $value;
+            $this->attributes['pull_key_passphrase'] = $value === '' ? '' : Crypt::encrypt($value);
         }
     }
 
@@ -70,7 +71,7 @@ class Site extends Eloquent implements AccessProtectedInterface, ManageProtected
     public function setPullKeyAttribute($value)
     {
         if ($value != '******') {
-            $this->attributes['pull_key'] = $value;
+            $this->attributes['pull_key'] = $value === '' ? '' : Crypt::encrypt($value);
         }
     }
 
@@ -96,5 +97,17 @@ class Site extends Eloquent implements AccessProtectedInterface, ManageProtected
             $value = '******';
         }
         return $value;
+    }
+
+    public function realPullKey()
+    {
+        $value = $this->attributes['pull_key'];
+        return $value == '' ? '' : Crypt::decrypt($value);
+    }
+
+    public function realPullKeyPassphrase()
+    {
+        $value = $this->attributes['pull_key_passphrase'];
+        return $value == '' ? '' : Crypt::decrypt($value);
     }
 }

@@ -1,7 +1,11 @@
 <?php
 namespace Deploy\Site;
 
+use Log;
+use Crypt;
 use Eloquent;
+use Deploy\Facade\Worker;
+use Deploy\Worker\Job;
 
 class DeployConfig extends Eloquent
 {
@@ -17,7 +21,7 @@ class DeployConfig extends Eloquent
     public function setDeployKeyPassphraseAttribute($value)
     {
         if ($value != '******') {
-            $this->attributes['deploy_key_passphrase'] = $value;
+            $this->attributes['deploy_key_passphrase'] = $value === '' ? '' : Crypt::encrypt($value);
         }
     }
 
@@ -33,7 +37,7 @@ class DeployConfig extends Eloquent
     public function setDeployKeyAttribute($value)
     {
         if ($value != '******') {
-            $this->attributes['deploy_key'] = $value;
+           Worker::push($job);
         }
     }
 
@@ -46,5 +50,17 @@ class DeployConfig extends Eloquent
         return $value;
     }
 
+    public function realDeployKey()
+    {
+
+        $value = $this->attributes['deploy_key'];
+        return $value == '' ? '' : Crypt::decrypt($value);
+    }
+
+    public function realDeployKeyPassphrase()
+    {
+        $value = $this->attributes['deploy_key_passphrase'];
+        return $value == '' ? '' : Crypt::decrypt($value);
+    }
 }
 

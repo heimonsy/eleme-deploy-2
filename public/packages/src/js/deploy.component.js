@@ -879,6 +879,12 @@ var SiteConfigComponent = React.createClass({
     handleSubmit: function (e) {
         var btn = $(e.target);
         var state = this.state;
+        var passphrase = $('#siteConfigForm input[name="pull_key_passphrase"]').get(0);
+        if (passphrase.value.length > 32) {
+            alert('passphrase 长度不能超过32位');
+            passphrase.focus();
+            return ;
+        }
         btn.button('loading');
         $.post('/api/site/' + siteId + '/configure?_method=PUT&_token=' + csrfToken, $("#siteConfigForm").serialize(), function (data) {
             btn.button('reset');
@@ -905,8 +911,8 @@ var SiteConfigComponent = React.createClass({
                     <Input type="text" name="default_branch" help="{default_branch}" defaultValue={this.props.data.default_branch} label="默认Branch" />
                     <Input type="text" name="build_command" help="{build_command}" defaultValue={this.props.data.build_command} label="Build Command" />
                     <Input type="text" name="test_command" help="{test_command}" defaultValue={this.props.data.test_command} label="Test Command" />
-                    <Input type="text" name="pull_key" defaultValue={this.props.data.pull_key} label="Pull Key" />
-                    <Input type="textarea" name="pull_key_passphrase" defaultValue={this.props.data.pull_key_passphrase} label="Pull Key Passphrase" />
+                    <Input type="textarea" name="pull_key" defaultValue={this.props.data.pull_key} label="Pull Key" />
+                    <Input type="text" ref="passphrase" name="pull_key_passphrase" defaultValue={this.props.data.pull_key_passphrase} label="Pull Key Passphrase" />
                     <Input type="text" name="hipchat_room" defaultValue={this.props.data.hipchat_room} label="Hipchat Room" />
                     <Input type="text" name="hipchat_token" defaultValue={this.props.data.hipchat_token} label="Hipchat Token" />
                     <Button onClick={this.handleSubmit} bsStyle="primary" >保存</Button>
@@ -925,6 +931,12 @@ var SiteDeployConfigComponent = React.createClass({
     handleSubmit: function (e) {
         var btn = $(e.target);
         var state = this.state;
+        var passphrase = $('#deployConfigForm input[name="deploy_key_passphrase"]').get(0);
+        if (passphrase.value.length > 32) {
+            alert('passphrase 长度不能超过32位');
+            passphrase.focus();
+            return ;
+        }
         btn.button('loading');
         $.post('/api/site/' + siteId + '/deploy_configure?_method=PUT&_token=' + csrfToken, $("#deployConfigForm").serialize(), function (data) {
             btn.button('reset');
@@ -950,8 +962,8 @@ var SiteDeployConfigComponent = React.createClass({
                     <Input type="text" name="remote_static_dir" help="{remote_static_dir}" defaultValue={this.props.data.remote_static_dir} label="Remote Static Dir" />
                     <Input type="text" name="app_script" help="{app_script}" defaultValue={this.props.data.app_script} label="APP发布前后执行的脚本" />
                     <Input type="text" name="static_script" help="{static_script}" defaultValue={this.props.data.static_script} label="静态文件发布前后执行的脚本" />
-                    <Input type="text" name="deploy_key" defaultValue={this.props.data.deploy_key} label="Deploy Login Key" />
-                    <Input type="textarea" name="deploy_key_passphrase" defaultValue={this.props.data.deploy_key_passphrase} label="Deploy Login Key Passphrase" />
+                    <Input type="textarea" name="deploy_key" defaultValue={this.props.data.deploy_key} label="Deploy Login Key" />
+                    <Input type="text" ref="passphrase" name="deploy_key_passphrase" defaultValue={this.props.data.deploy_key_passphrase} label="Deploy Login Key Passphrase" />
                     <Button onClick={this.handleSubmit} bsStyle="primary" >保存</Button>
                     &nbsp;&nbsp;&nbsp;
                     <InlineFormAlertComponent alertType={this.state.alertType} alertMsg={this.state.alertMsg}/>
@@ -1286,7 +1298,9 @@ var NewBuildForm = React.createClass({
 var OutputComponent = React.createClass({
     render : function () {
         var lines = [];
+        var last = 0;
         for (var i in this.props.output) {
+            last = i;
             var start = this.props.output[i].substr(0, 3);
             switch(start){
                 case 'err':
@@ -1300,6 +1314,17 @@ var OutputComponent = React.createClass({
                     break;
             }
         }
+        last++;
+        lines.push(<p key={last}><a>{last + 1}</a><span></span></p>);
+        last++;
+        if (this.props.isFinish) {
+            lines.push(<p key={last}><a>{last + 1}</a><span className="line-finish">Finish</span></p>);
+        } else {
+            lines.push(<p key={last}><a>{last + 1}</a><span className="line-waiting">Waiting...</span></p>);
+        }
+        last++;
+        lines.push(<p key={last}><a>{last + 1}</a><span></span></p>);
+
         return (
             <div className="output">
                 {lines}
@@ -1330,14 +1355,16 @@ var JobInfoTabContent = React.createClass({
         return {id: this.props.jobId };
     },
     render: function () {
-        var statusCls = {"Created": 'warning'};
-        var output = this.state.output === undefined ? (<div className="text-center"><img src="/static/ajax-loader.gif"/></div>) : (<OutputComponent output={this.state.output}/>);
+        var labels = {"Created": 'default', 'Waiting': 'default', 'Success': 'success', 'Error': 'danger', 'Doing': 'info'};
+        statusCls = 'label label-' + labels[this.state.status] + ' label-h4 ';
+        var isFinish = this.state.status == 'Error' || this.state.status == 'Success' ? true : false;
+        var output = this.state.output === undefined ? (<div className="text-center"><img src="/static/ajax-loader.gif"/></div>) : (<OutputComponent isFinish={isFinish} output={this.state.output}/>);
         return (
             <div className="container-fluid">
                 <div className="row">
                     <div className="col-lg-12 ">
                         <div className="well">
-                            <p className="job-title">Job #{this.state.id} &nbsp; <span className="label label-success label-h4">Success</span></p>
+                            <p className="job-title">Job #{this.state.id} &nbsp; <span className={statusCls}>{this.state.status}</span></p>
                             <p dangerouslySetInnerHTML={{__html: this.state.description}}></p>
                             <p>
                                 创建时间：{this.state.created_at} &nbsp;&nbsp; 更新时间：{this.state.updated_at}
