@@ -29,7 +29,8 @@ class ManagerController extends BaseController
     public function site(Site $site)
     {
         return Response::view('manager.site', array(
-            'site' => $site
+            'site' => $site,
+            'payload_url' => url('payload/site/' . $site->id)
         ));
     }
 

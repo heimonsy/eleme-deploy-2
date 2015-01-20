@@ -1,5 +1,8 @@
 <?php
 
+
+Route::post('/payload/site/{site}', 'SitePullRequestBuildController@store');
+
 Route::group(array('before' => 'guest'), function () {
     Route::get('/login', array(
         'as' => 'login',
@@ -92,6 +95,11 @@ Route::Model('job', 'Deploy\Worker\Job', function () {
     throw new \Deploy\Exception\ResourceNotFoundException('Job不存在');
 });
 
+Route::Model('prbuild', 'Deploy\Site\PullRequestBuild', function () {
+    throw new \Deploy\Exception\ResourceNotFoundException('Job不存在');
+});
+
+
 Route::bind('user', function ($value, $route) {
     $user = Deploy\Account\User::where('id', $value)->normal()->first();
     if (!$user) {
@@ -123,6 +131,11 @@ Route::group(
         Route::get('/api/site/{site}/configure', 'ApiController@showSiteConfig');
         Route::get('/api/site/{site}/deploy_configure', 'ApiController@showDeployConfig');
         Route::get('/api/system/config', 'ApiController@showSystemConfig');
+
+        Route::put('/api/site/{site}/prrebuild', array(
+            'before' => array('csrf'),
+            'uses' => 'ApiController@prRebuild'
+        ));
 
         Route::put('/api/site/{site}/configure', array(
             'before' => array('csrf'),
@@ -163,6 +176,10 @@ Route::group(
 
         Route::resource('site.job', 'SiteJobController', array(
             'only' => array('show')
+        ));
+
+        Route::resource('site.prbuild', 'SitePullRequestBuildController', array(
+            'only' => array('index')
         ));
     }
 );

@@ -77,10 +77,10 @@
                     </div>
                     <div class="row">
                         <div class="col-lg-12">
-                            <table id="buildTable" class="table table-bordered table-hover small-table">
+                            <table id="buildTable" class="table table-hover small-table">
                                 <thead>
                                     <tr>
-                                        <th>Job ID</th>
+                                        <th>Job</th>
                                         <th>Checkout</th>
                                         <th>Commit</th>
                                         <th>状态</th>
@@ -95,7 +95,31 @@
                     </div>
                 </div>
                 <div role="tabpanel" class="tab-pane" id="Deploy">Deploy</div>
-                <div role="tabpanel" class="tab-pane" id="PrBuild">Pr Build</div>
+                <div role="tabpanel" class="tab-pane" id="PrBuild">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            Webhooks Url: {{payload_url}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <table id="prBuildTable" class="table table-hover small-table">
+                                <thead>
+                                    <th>Job</th>
+                                    <th min-width="220">Title</th>
+                                    <th>Commit</th>
+                                    <th>用户</th>
+                                    <th max-width="150">创建时间</th>
+                                    <th>状态</th>
+                                    <th>Build</th>
+                                    <th>Test</th>
+                                    <th>详细</th>
+                                    <th>操作</th>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
                 <div role="tabpanel" class="tab-pane" id="PrDeploy">Pr Deploy</div>
                 <div role="tabpanel" class="tab-pane" id="JobInfo"></div>
             </div>
@@ -117,6 +141,127 @@ $(function () {
         $(this).tab('show')
     });
 
+    var showPrBuilds = function () {
+        var table = null;
+        var timeoutEvent = createTimeoutEvent();
+        return function () {
+            var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning"};
+            if (table === null) {
+                table = $("#prBuildTable").DataTable({
+                    ajax: '/api/site/' + siteId + '/prbuild',
+                    paging: false,
+                    ordering: false,
+                    info: false,
+                    columns: [
+                        {data: 'job_id'},
+                        {data: 'title'},
+                        {data: 'commit'},
+                        {data: 'user_login'},
+                        {data: 'created_at'},
+                        {data: 'status'},
+                        {data: 'build_status'},
+                        {data: 'test_status'},
+                        {data: 'job_id'},
+                        {data: 'job_id'},
+                    ],
+                    createdRow: function (row, data, index) {
+                        if (data.status == 'open') {
+                            if (data.build_status == 'Error' || data.test_status == 'Error') {
+                                $(row).addClass("danger");
+                            } else {
+                                $(row).addClass("success");
+                            }
+                        }
+                    },
+                    columnDefs: [
+                    {
+                        render: function (data, type, row) {
+                            if (row.status == 'open' && (row.build_status == 'Error' || row.test_status == 'Error' )) {
+                                return '<button class="btn btn-primary btn-xs btnRebuild" data-pr-id="' + row.id + '"/>Rebuild</button>';
+                            } else if (row.status == 'open' && row.build_status == 'Success' && row.test_status == 'Success') {
+                                return '<button class="btn btn-primary btn-xs" data-commit="' + row.commit + '"/>Deploy</button>';
+                            }
+                            return '<i>无</i>';
+                        },
+                        targets: 9
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return '<button class="btn btn-primary btn-xs btnOpenJob" data-job-id="' + data + '"/>详细输出</button>';
+                        },
+                        targets: 8
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return '<a target="_blank" href="https://github.com/' + data + '">' + data + '</a>';
+                        },
+                        targets: 3
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return data.substr(5);
+                        },
+                        targets: 4
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return data.substr(0, 7);
+                        },
+                        targets: 2
+                    },
+                    {
+                        render: function (data, type, row) {
+                            if (data == 'closed') {
+                                return 'Merged(<a target="_blank" href="https://github.com/' + row.merged_by +'">' + row.merged_by + '</a>)';
+                            }
+                            return '<span class="label label-' + labels[data] + '">' + data + '</span>';
+                        },
+                        targets: 5
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return '<span class="label label-' + labels[data] + '">' + data + '</span>';
+                        },
+                        targets: 6
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return '<span class="label label-' + labels[data] + '">' + data + '</span>';
+                        },
+                        targets: 7
+                    }
+                    ]
+                });
+            } else {
+                table.ajax.reload();
+            }
+
+            $('#prBuildTable').unbind('draw.dt');
+            $('#prBuildTable').on('draw.dt', function (e) {
+                console.log("wtf");
+                initJobBtn();
+                timeoutEvent.timeout = window.setTimeout(table.ajax.reload, 5000);
+                $('.btnRebuild').click(function (data) {
+                    var btn  = $(this);
+                    $(btn).button('loading');
+                    $.post('/api/site/' + siteId + '/prrebuild', {
+                        _method: 'PUT',
+                        _token: csrfToken,
+                        pr_id: btn.attr('data-pr-id')
+                    }, function (data) {
+                        if (data.code == 0) {
+                            location.hash = '#JobInfo-' + data.data.jobId;
+                        } else {
+                            alert(data.msg);
+                        }
+                    }, 'json');
+                });
+            }.bind(timeoutEvent, table));
+
+            return timeoutEvent;
+        };
+    }();
+
     var showJobInfo = function (jobId) {
         prevJobId = jobId;
         $("#myTab").append('<li role="presentation"><a href="#JobInfo-' + prevJobId + '" data-job-id="' + prevJobId + '" role="tab" data-toggle="tab">Job #' + prevJobId + '</a></li>');
@@ -136,6 +281,7 @@ $(function () {
 
     var showBuilds = function () {
         var table = null;
+        var timeoutEvent = createTimeoutEvent();
         return function () {
             if (table == null) {
                 table = $("#buildTable").DataTable({
@@ -153,6 +299,8 @@ $(function () {
                         {data: 'job_id'},
                         {data: 'id'},
                     ],
+                    createdRow: function (row, data, index) {
+                    },
                     columnDefs: [
                     {
                         render: function (data, type, row) {
@@ -184,9 +332,10 @@ $(function () {
             $('#buildTable').unbind('draw.dt');
             $('#buildTable').on('draw.dt', function (e) {
                 initJobBtn();
-            });
+                timeoutEvent.timeout = window.setTimeout(table.ajax.reload, 5000);
+            }.bind(timeoutEvent, table));
 
-            return table.ajax.reload;
+            return timeoutEvent;
         };
     }();
 
@@ -413,9 +562,11 @@ $(function () {
             }
 
             switch (thisTab.attr('href')) {
+                case '#PrBuild':
+                    timeoutEvent = showPrBuilds();
+                    return ;
                 case '#Build':
-                    var callback = showBuilds();
-                    refreshInterval = window.setInterval(callback, 5000);
+                    timeoutEvent = showBuilds();
                     return ;
                 case "#Setting":
                     url = '/api/site/' + siteId + '/configure';
@@ -447,7 +598,8 @@ $(function () {
         });
     };
 
-    window.onhashchange = function () {
+    window.onhashchange = function (e) {
+        e.preventDefault();
         if (location.hash.substr(0, 8) == '#JobInfo') {
             var tab = $('#myTab a:last');
             var href = tab.attr('href');

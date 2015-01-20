@@ -112,4 +112,5 @@ var renderJobInfo = function (element, jobId) {
     var c = React.render(<JobInfoTabContent jobId={jobId} />, element);
     return c.timeoutEvent;
 };
+
 ;

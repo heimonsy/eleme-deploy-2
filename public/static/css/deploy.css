@@ -25,6 +25,7 @@
 }
 
 .small-table td{ font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace; font-size: 13px; }
+.small-table .btn-xs {font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace; font-size: 11px;}
 
 .output { font-size: 13px; margin: 0; line-height:20px; padding-top: 6px; background-color: #2A2A2A; padding-bottom: 6px; font-family: monospace;}
 .output p { margin: 0; white-space: pre-wrap; padding-left: 50px; padding-right 30px; background-color: #2A2A2A;}
@@ -41,3 +42,5 @@
 .output span.line-cmd { color: #5CAC7C; }
 .output span.line-waiting { color: #FFFF00; }
 .output span.line-finish { color: #0099CC; }
+
+

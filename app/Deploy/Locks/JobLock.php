@@ -15,4 +15,9 @@ class JobLock
     {
         return self::KEY_PREFIX . 'STORE:KEY:' . $siteId;
     }
+
+    public static function buildPullRequest($siteId)
+    {
+        return self::KEY_PREFIX . 'BUILD:PULLREQUEST:' . $siteId;
+    }
 }

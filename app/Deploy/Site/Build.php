@@ -9,6 +9,7 @@ class Build extends Eloquent
     const STATUS_BUILDING = 'Building';
     const STATUS_SUCCESS = 'Success';
     const STATUS_ERROR = 'Error';
+    const STATUS_KILLED = 'Killed';
 
     protected $status_infos = array(
         self::STATUS_BUILDING => '正在 Build',

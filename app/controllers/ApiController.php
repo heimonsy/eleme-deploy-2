@@ -7,6 +7,8 @@ use Deploy\Site\DeployConfig;
 use Deploy\Hosts\HostTypeCatalog;
 use Deploy\Account\User;
 use Deploy\Facade\Worker;
+use Deploy\Worker\Job;
+use Deploy\Site\PullRequestBuild;
 
 
 class ApiController extends Controller
@@ -174,6 +176,24 @@ class ApiController extends Controller
         return Response::json(array(
             'code' => 0,
             'data' => $config
+        ));
+    }
+
+    public function prRebuild(Site $site)
+    {
+        $pr = PullRequestBuild::findOrFail(Input::get('pr_id'));
+        $pr->setCommandStatus(PullRequestBuild::STATUS_WAITING, PullRequestBuild::STATUS_WAITING);
+        $job = Job::findOrFail($pr->job_id);
+        $job->status = Job::STATUS_WAITING;
+        $job->clear();
+        $job->save();
+        Worker::push($job);
+
+        return Response::json(array(
+            'code' => 0,
+            'data' => array(
+                'jobId' => $job->id
+            )
         ));
     }
 }
