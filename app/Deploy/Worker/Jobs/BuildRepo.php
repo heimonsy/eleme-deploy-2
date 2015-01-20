@@ -35,13 +35,13 @@ class BuildRepo extends Task
 
         $process = 0;
         try {
-            $config = $site->deploy_config;
-            if ($config === null) {
-                throw new BaseException('deploy config 未配置');
-            }
+            //$config = $site->deploy_config;
+            //if ($config === null) {
+                //throw new BaseException('deploy config 未配置');
+            //}
 
             $BASE_PATH = getenv('DEPLOY_BASE_PATH');
-            if ($BASE_PATH === false) {
+            if (empty($BASE_PATH)) {
                 throw new BaseException('env 没有配置base path');
             }
             $build->setStatus(Build::STATUS_BUILDING);
@@ -71,6 +71,8 @@ class BuildRepo extends Task
 
             $this->process("cp -rf '{$BRANCH_DIR}' '{$CHECKOUT_PATH}' ");
             $process = 3;
+            $lock->release();
+            $lock = null;
 
             $this->process("git checkout {$CHECKOUT} ", $CHECKOUT_PATH);
             $show = $this->process("git show {$CHECKOUT} | grep -E 'commit (.+)' | cut -c8- ", $CHECKOUT_PATH);
@@ -105,10 +107,10 @@ class BuildRepo extends Task
 
             $worker->log("{$LOG_PREFIX} Build Success");
             $worker->deleteJob();
-            $lock->release();
 
         } catch (Exception $e) {
             $build->setStatus(Build::STATUS_ERROR);
+            $this->job->errorLine($e);
             $worker->log("{$LOG_PREFIX} Build Error");
             $worker->deleteJob(Job::STATUS_ERROR);
 
@@ -123,8 +125,9 @@ class BuildRepo extends Task
                 $this->process("rm -rf {$COMMIT_PATH}", null, false);
                 break;
             }
-
-            $lock->release();
+            if ($lock != null) {
+                $lock->release();
+            }
             throw $e;
         }
     }
