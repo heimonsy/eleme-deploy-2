@@ -63,6 +63,12 @@ trait OutputTrait
         $this->line(OutputInterface::CMD . $line);
     }
 
+    public function errorLine($line)
+    {
+        $line = preg_replace('/"Enter passphrase" \{ send ".+/', '--------', $line);
+        $this->line(OutputInterface::ERR . $line);
+    }
+
     public function outputLine($line)
     {
         $this->line(OutputInterface::OUT . $line);
