@@ -99,6 +99,9 @@ Route::Model('prbuild', 'Deploy\Site\PullRequestBuild', function () {
     throw new \Deploy\Exception\ResourceNotFoundException('Job不存在');
 });
 
+Route::Model('commit', 'Deploy\Site\Commit', function () {
+    throw new \Deploy\Exception\ResourceNotFoundException('Commit不存在');
+});
 
 Route::bind('user', function ($value, $route) {
     $user = Deploy\Account\User::where('id', $value)->normal()->first();
@@ -131,6 +134,15 @@ Route::group(
         Route::get('/api/site/{site}/configure', 'ApiController@showSiteConfig');
         Route::get('/api/site/{site}/deploy_configure', 'ApiController@showDeployConfig');
         Route::get('/api/system/config', 'ApiController@showSystemConfig');
+
+        Route::get('/api/site/{site}/typenv', 'ApiController@siteTypeAndEnv');
+
+        Route::post('/api/site/{site}/deploy', array(
+            'before' => array('csrf'),
+            'uses' => 'ApiController@siteDeploy'
+        ));
+
+        Route::get('/api/site/{site}/deploy', 'ApiController@indexDeploy');
 
         Route::put('/api/site/{site}/prrebuild', array(
             'before' => array('csrf'),
@@ -179,6 +191,10 @@ Route::group(
         ));
 
         Route::resource('site.prbuild', 'SitePullRequestBuildController', array(
+            'only' => array('index')
+        ));
+
+        Route::resource('site.commit', 'SiteCommitController', array(
             'only' => array('index')
         ));
     }

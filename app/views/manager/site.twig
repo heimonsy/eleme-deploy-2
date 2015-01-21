@@ -94,7 +94,29 @@
                         </div>
                     </div>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="Deploy">Deploy</div>
+                <div role="tabpanel" class="tab-pane" id="Deploy">
+                    <div class="row">
+                        <div class="col-lg-12" id="deployJobWrapper">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <table id="deploysTable" class="table table-hover small-table">
+                                <thead>
+                                    <tr>
+                                        <th>Job</th>
+                                        <th>Commit</th>
+                                        <th>发布到</th>
+                                        <th>状态</th>
+                                        <th>创建时间</th>
+                                        <th>更新时间</th>
+                                        <th>详细输出</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
                 <div role="tabpanel" class="tab-pane" id="PrBuild">
                     <div class="row">
                         <div class="col-lg-12">
@@ -105,16 +127,18 @@
                         <div class="col-lg-12">
                             <table id="prBuildTable" class="table table-hover small-table">
                                 <thead>
-                                    <th>Job</th>
-                                    <th min-width="220">Title</th>
-                                    <th>Commit</th>
-                                    <th>用户</th>
-                                    <th max-width="150">创建时间</th>
-                                    <th>状态</th>
-                                    <th>Build</th>
-                                    <th>Test</th>
-                                    <th>详细</th>
-                                    <th>操作</th>
+                                    <tr>
+                                        <th>Job</th>
+                                        <th min-width="220">Title</th>
+                                        <th>Commit</th>
+                                        <th>用户</th>
+                                        <th max-width="150">创建时间</th>
+                                        <th>状态</th>
+                                        <th>Build</th>
+                                        <th>Test</th>
+                                        <th>详细</th>
+                                        <th>操作</th>
+                                    </tr>
                                 </thead>
                             </table>
                         </div>
@@ -128,6 +152,7 @@
 {% endblock main %}
 {% block footer_js %}
 <script>
+var siteObj = {{ site | raw }};
 var siteId = {{ site.id }};
 var defaultBranch = '{{ site.default_branch }}';
 var csrfToken = '{{ csrf_token() }}';
@@ -135,16 +160,77 @@ var timeoutEvent = null;
 var refreshInterval = null;
 var prevJobId = null;
 
+var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning"};
+
 $(function () {
     $('#myTab a').click(function (e) {
         e.preventDefault()
         $(this).tab('show')
     });
 
+    var showDeploy = function () {
+        var table = null;
+        var timeoutEvent = createTimeoutEvent();
+        return function () {
+            timeoutEvent.clear();
+            if (table === null) {
+                table = $("#deploysTable").DataTable({
+                    ajax: '/api/site/' + siteId + '/deploy',
+                    paging: false,
+                    ordering: false,
+                    info: false,
+                    columns: [
+                        {data: 'job_id'},
+                        {data: 'commit'},
+                        {data: 'description'},
+                        {data: 'status'},
+                        {data: 'created_at'},
+                        {data: 'updated_at'},
+                        {data: 'job_id'},
+                    ],
+                    columnDefs: [
+                    {
+                        render: function (data, type, row) {
+                            return data.substr(0, 7);
+                        },
+                        targets: 1
+                    },
+                    {
+                        render: function  (data, type, row) {
+                            return '<span class="label label-' + labels[data] + '">' + data + '</span>';
+                        },
+                        targets: 3
+                    },
+                    {
+                        render: function  (data, type, row) {
+                            return '<button class="btn btn-primary btn-xs" data-job-id="' + data + '">详细输出</button>';
+                        },
+                        targets: 6
+                    }
+                    ]
+                });
+            } else {
+                table.ajax.reload();
+            }
+
+            $('#deploysTable').unbind('draw.dt');
+            $('#deploysTable').on('draw.dt', function (e) {
+                console.log('deploy table');
+                initJobBtn();
+                timeoutEvent.timeout = window.setTimeout(table.ajax.reload, 5000);
+            }.bind(timeoutEvent, table));
+
+            renderDeployJob(document.getElementById("deployJobWrapper"), siteId);
+
+            return timeoutEvent;
+        };
+    }();
+
     var showPrBuilds = function () {
         var table = null;
         var timeoutEvent = createTimeoutEvent();
         return function () {
+            timeoutEvent.clear();
             var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning"};
             if (table === null) {
                 table = $("#prBuildTable").DataTable({
@@ -238,7 +324,6 @@ $(function () {
 
             $('#prBuildTable').unbind('draw.dt');
             $('#prBuildTable').on('draw.dt', function (e) {
-                console.log("wtf");
                 initJobBtn();
                 timeoutEvent.timeout = window.setTimeout(table.ajax.reload, 5000);
                 $('.btnRebuild').click(function (data) {
@@ -270,11 +355,22 @@ $(function () {
         $('#myTab a:last').tab('show');
     };
 
+    var showJobHostInfo = function (jobId) {
+        $("#myTab").append('<li role="presentation"><a href="#JobHostInfo-' + prevJobId + '" data-job-id="' + prevJobId + '" role="tab" data-toggle="tab">Job #' + prevJobId + '</a></li>');
+        $("#myTabContent").append('<div role="tabpanel" class="tab-pane" id="JobHostInfo--' + prevJobId + '"></div>');
+    };
+
     var initJobBtn = function () {
         $('.btnOpenJob').click(function (data) {
             var btn = $(this);
             btn.button('loading');
             showJobInfo(btn.attr('data-job-id'));
+            btn.button('reset');
+        });
+        $('.btnShowJobHost').click(function (data) {
+            var btn = $(this);
+            btn.button('loading');
+            showJobHostInfo(btn.attr('data-job-id'));
             btn.button('reset');
         });
     };
@@ -283,6 +379,7 @@ $(function () {
         var table = null;
         var timeoutEvent = createTimeoutEvent();
         return function () {
+            timeoutEvent.clear();
             if (table == null) {
                 table = $("#buildTable").DataTable({
                     ajax: '/api/site/' + siteId + '/build',
@@ -556,12 +653,20 @@ $(function () {
             var thisTab = $(e.target);
             location.hash = thisTab.attr('href');
 
+            if (thisTab.attr('href').substr(0, 8) == '#JobHost') {
+                timeoutEvent = renderJobInfo(document.getElementById(thisTab.attr('href').substr(1)), thisTab.attr('data-job-id'), true);
+                return ;
+            }
+
             if (thisTab.attr('href').substr(0, 8) == '#JobInfo') {
-                timeoutEvent = renderJobInfo(document.getElementById(thisTab.attr('href').substr(1)), thisTab.attr('data-job-id'));
+                timeoutEvent = renderJobInfo(document.getElementById(thisTab.attr('href').substr(1)), thisTab.attr('data-job-id'), false);
                 return '';
             }
 
             switch (thisTab.attr('href')) {
+                case '#Deploy':
+                    timeoutEvent = showDeploy();
+                    return ;
                 case '#PrBuild':
                     timeoutEvent = showPrBuilds();
                     return ;
@@ -613,6 +718,19 @@ $(function () {
                 }
             }
             showJobInfo(location.hash.substr(9));
+        } else if(location.hash.substr(0, 8) == '#JobHost') {
+            var tab = $('#myTab a:last');
+            var href = tab.attr('href');
+            if (href.substr(0, 8) == '#JobHost') {
+                if (href != location.hash) {
+                    $(href).remove();
+                    tab.remove();
+                } else {
+                    $('#myTab a[href="' + location.hash + '"]').tab("show");
+                    return ;
+                }
+            }
+            showJobHostInfo(location.hash.substr(13));
         } else {
             $('#myTab a[href="' + location.hash + '"]').tab("show");
         }
@@ -624,6 +742,8 @@ $(function () {
         location.hash = '#Build';
     } else if (location.hash.substr(0, 8) == '#JobInfo') {
         showJobInfo(location.hash.substr(9));
+    } else if(location.hash.substr(0, 8) == '#JobHost') {
+        showJobHostInfo(location.hash.substr(13));
     } else {
             $('#myTab a[href="' + location.hash + '"]').tab("show");
     }

@@ -51,7 +51,7 @@ var createUser = function (user) {
                 }
             }
 
-            return map[action] === 1;
+            return map[action] === 1 || this.isAdmin();
         }
     }();
 
@@ -78,7 +78,7 @@ var createTimeoutEvent= function () {
         timeout: null,
         clear: function () {
             if (this.timeout === null) {
-                console.log("timeout is null");
+                //console.log("timeout is null");
             } else {
                 window.clearTimeout(this.timeout);
             }

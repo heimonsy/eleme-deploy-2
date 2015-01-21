@@ -1337,7 +1337,9 @@ var JobInfoTabContent = React.createClass({
     timeoutEvent: createTimeoutEvent(),
     loadStateFromServer: function () {
         var state = this.state;
-        $.getJSON('/api/site/' + siteId + '/job/' + this.props.jobId, function (data) {
+        var url = '/api/site/' + siteId + '/job/' + this.props.jobId;
+        url = this.props.haveHost ? url + '?haveHost=1' : url;
+        $.getJSON(url, function (data) {
             if (data.code == 0) {
                 this.setState(data.data);
                 if (data.data.status !== 'Error' && data.data.status !== 'Success') {
@@ -1359,6 +1361,38 @@ var JobInfoTabContent = React.createClass({
         statusCls = 'label label-' + labels[this.state.status] + ' label-h4 ';
         var isFinish = this.state.status == 'Error' || this.state.status == 'Success' ? true : false;
         var output = this.state.output === undefined ? (<div className="text-center"><img src="/static/ajax-loader.gif"/></div>) : (<OutputComponent isFinish={isFinish} output={this.state.output}/>);
+        var table = '';
+        if (this.state.hosts != undefined) {
+            var trs = this.state.hosts.map(function (host) {
+                return (
+                    <tr key={"host-" + host.id}>
+                        <td>host.host_name</td>
+                        <td>host.host_ip</td>
+                        <td>host.host_port</td>
+                        <td>host.host_status</td>
+                        <td>host.updated_at</td>
+                        <td><button className="btn btn-primary btn-xs" data-id={host.id}>详细输出</button></td>
+                    </tr>
+                );
+            });
+            table = (
+                <table class="table table-hover small-table">
+                    <thead>
+                        <tr>
+                            <th>主机名</th>
+                            <th>主机IP</th>
+                            <th>主机端口</th>
+                            <th>主机状态</th>
+                            <th>更新时间</th>
+                            <th>详细输出</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {trs}
+                    </tbody>
+                </table>
+            );
+        }
         return (
             <div className="container-fluid">
                 <div className="row">
@@ -1374,6 +1408,11 @@ var JobInfoTabContent = React.createClass({
                 </div>
                 <div className="row">
                     <div className="col-lg-12">
+                        {table}
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-lg-12">
                         {output}
                     </div>
                 </div>
@@ -1382,5 +1421,125 @@ var JobInfoTabContent = React.createClass({
     }
 });
 
+var DeployJobForm = React.createClass({
+    emptySubmitHandle: function (e) {
+        e.preventDefault();
+    },
+    getInitialState: function () {
+        return {alertType: null, alertMsg: null, commit: '', commitError: null, deploy_kind: 'type', deploy_kindError: null, deploy_toError: null, deploy_to: null, envs: [], types: [], commits: []};
+    },
+    handleChange: function (e) {
+        var state = this.state;
+        var t = e.target;
+        state[t.name] = t.value;
+        state[t.name + 'Error'] = false;
+        state.alertType = null;
+        this.setState(state);
+    },
+    onDeployKindChange: function (e) {
+        e.preventDefault();
+        var t = e.target;
+        var state = this.state;
+        state.deploy_kind = t.value;
+        state.deploy_to = '';
+        this.setState(state);
+    },
+    handleSubmit: function (e) {
+        e.preventDefault();
+        var btn = $(e.target);
+        var state = this.state;
+        console.log(this.state.deploy_to);
+        if (this.state.deploy_to == null || this.state.deploy_to.isEmpty()) {
+            state.deploy_toError = true;
+            this.setState(state);
+            return ;
+        }
+        btn.button('loading');
+        $.post('/api/site/' + this.props.siteId + '/deploy', {
+            _token: csrfToken,
+            deploy_kind: this.state.deploy_kind,
+            deploy_to: this.state.deploy_to,
+            commit: this.state.commit
+        }, function (data) {
+            btn.button('reset');
+            state.alertMsg = data.msg
+            if (data.code == 0) {
+                state.alertType = 'success';
+            } else {
+                state.alertType = 'error';
+            }
+            this.setState(state);
+        }.bind(this), 'json');
+    },
+    componentDidMount: function () {
+        $.getJSON('/api/site/' + this.props.siteId + '/typenv', function (data) {
+            if (data.code == 0) {
+                state = this.state;
+                state.envs = data.data.envs;
+                state.commits = data.data.commits;
+                if (state.commits.length > 0) {
+                    state.commit = state.commits[0].commit;
+                }
+                state.types = data.data.types;
+                this.setState(state);
+            } else {
+                alert(data.msg);
+            }
+        }.bind(this));
+    },
+    render: function () {
+        var kind = '';
+        if (this.state.deploy_kind == 'type') {
+            var types = this.state.types.map(function (type) {
+                if (loginUser.control(type.access_protected)) {
+                    return (<option key={'type-' + type.id} value={type.id}>[{type.catalog.name}]&nbsp;&nbsp;{type.name}</option>);
+                }
+            });
+            kind = (
+                <Input bsStyle={this.state.deploy_toError ? 'error' : null} type="select" onChange={this.handleChange} name="deploy_to" value={this.state.deploy_to}>
+                    <option key="type-0" value="">请选择...</option>
+                    {types}
+                </Input>
+            );
+        } else if (this.state.deploy_kind == 'env') {
+            var envs = this.state.envs.map(function (env) {
+                if (loginUser.control(env.access_protected)) {
+                    return (<option key={'env-' + env.id} value={env.id}>{env.name}</option>);
+                }
+            });
+            kind = (
+                <Input bsStyle={this.state.deploy_toError ? 'error' : null} onChange={this.handleChange} type="select" name="deploy_to" value={this.state.deploy_to}>
+                    <option key="env-0" value="">请选择...</option>
+                    {envs}
+                </Input>
+            );
+        } else {
+            kind = (<Input onChange={this.handleChange} bsStyle={this.state.deploy_toError ? 'error' : null} type="text" name="deploy_to" value={this.state.deploy_to} placeholder="机器IP" />);
+        }
 
+        var commits = this.state.commits.map(function (commit) {
+            return (<option key={'commit-' + commit.id} onChange={this.handleChange} value={commit.commit}>[{commit.checkout.substr(0, 16)}]&nbsp;&nbsp;{commit.commit.substr(0, 7)}</option>);
+        });
+
+        return (
+            <form className="form-inline" role="form" onSubmit={this.emptySubmitHandle}>
+                <Input type="select" name="deploy_kind" value={this.state.deploy_kind} onChange={this.onDeployKindChange}>
+                    <option value="type">按机器分组</option>
+                    <option value="env">按环境</option>
+                    <option value="host">按机器</option>
+                </Input>
+                &nbsp;
+                {kind}
+                &nbsp;
+                <Input type="select" name="commit" value={this.state.commit} onChange={this.handleChange}>
+                    {commits}
+                </Input>
+                &nbsp;
+                <Button bsStyle="primary" data-loading-text="加载中..." onClick={this.handleSubmit} autoComplete="off">Deploy</Button>
+                &nbsp; &nbsp;
+                <InlineFormAlertComponent alertType={this.state.alertType} alertMsg={this.state.alertMsg}/>
+            </form>
+        );
+    }
+});
 ;

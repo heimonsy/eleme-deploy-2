@@ -17,8 +17,18 @@ class HostType extends Eloquent
         return $this->belongsTo('Deploy\Hosts\HostTypeCatalog', 'catalog_id', 'id');
     }
 
+    public function hosts()
+    {
+        return $this->hasMany('Deploy\Hosts\Host', 'host_type_id', 'id');
+    }
+
     public function site()
     {
         return $this->belongsTo('Deploy\Site\Site', 'site_id', 'id');
+    }
+
+    public function toArray()
+    {
+        return array_merge(parent::toArray(), array('access_protected' => $this->catalog->accessAction()));
     }
 }

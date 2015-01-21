@@ -26,4 +26,9 @@ class HostTypeCatalog extends Eloquent implements AccessProtectedInterface
     {
         return '发布到环境: ' . $this->name;
     }
+
+    public function toArray()
+    {
+        return array_merge(parent::toArray(), array('access_protected' => $this->accessAction()));
+    }
 }

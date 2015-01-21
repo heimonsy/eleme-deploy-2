@@ -3,12 +3,15 @@
 use Deploy\Account\Role;
 use Deploy\Sentry\Permission;
 use Deploy\Site\Site;
+use Deploy\Site\Deploy;
 use Deploy\Site\DeployConfig;
 use Deploy\Hosts\HostTypeCatalog;
 use Deploy\Account\User;
 use Deploy\Facade\Worker;
 use Deploy\Worker\Job;
 use Deploy\Site\PullRequestBuild;
+use Deploy\Hosts\HostType;
+use Deploy\Hosts\Host;
 
 
 class ApiController extends Controller
@@ -196,4 +199,78 @@ class ApiController extends Controller
             )
         ));
     }
+
+    public function siteTypeAndEnv(Site $site)
+    {
+        $catalogs = HostTypeCatalog::all();
+        $hostTypes = HostType::where('site_id', $site->id)->with('catalog')->orderBy('catalog_id')->get();
+
+        return Response::json(array(
+            'code' => 0,
+            'data' => array(
+                'envs' => $catalogs,
+                'types' => $hostTypes,
+                'commits' => $site->commits()->orderBy('id', 'desc')->get()
+            )
+        ));
+    }
+
+    public function siteDeploy(Site $site)
+    {
+        $user = Sentry::loginUser();
+        $hosts = array();
+        if (Input::get('deploy_kind') == 'host') {
+            $host = Host::where(array('site_id' => $site->id, 'ip' => Input::get('deploy_to')))->first();
+            if ($host == null) {
+                return Response::json(array('code' => 1, 'msg' => 'IP错误或不存在'));
+            }
+
+            if (!$user->control($host->host_type()->first()->catalog->accessAction())) {
+                return Response::json(array('code' => 1, 'msg' => '你没有发布到这台主机的权限'));
+            }
+            $toName = $host->ip;
+
+        } elseif (Input::get('deploy_kind') == 'env') {
+            $catalog = HostTypeCatalog::find(Input::get('deploy_to'));
+            if ($catalog == null) {
+                return Response::json(array('code' => 1, 'msg' => '环境不存在'));
+            }
+            $toName = $catalog->name;
+        } else {
+            $type = HostType::find(Input::get('deploy_to'));
+            if ($type == null) {
+                return Response::json(array('code' => 1, 'msg' => '主机分组不存在'));
+            }
+            $toName = $type->name;
+        }
+
+        $deploy = new Deploy;
+        $deploy->fill(Input::only('deploy_kind', 'deploy_to', 'commit'));
+        $deploy->user_id = $user->id;
+        $deploy->job_id = 1;
+        $deploy->site_id = $site->id;
+        $deploy->description = $toName;
+        $deploy->type = Deploy::TYPE_DEPLOY;
+        $deploy->status = Deploy::STATUS_WAITING;
+        $deploy->save();
+
+        return Response::json(array(
+            'code' => 0,
+            'msg' => '发布成功'
+        ));
+    }
+
+    public function indexDeploy(Site $site)
+    {
+        return Response::json(array(
+            'code' => 0,
+            'data' => Deploy::where(
+                array(
+                    'site_id' => $site->id,
+                    'type' => Deploy::TYPE_DEPLOY,
+                )
+            )->orderBy('id', 'desc')->limit(30)->get(),
+        ));
+    }
 }
+

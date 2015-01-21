@@ -23,7 +23,7 @@ class SiteHostController extends Controller
             array(
                 'name' => 'required|unique:hosts,name',
                 'host_type_id' => 'required|exists:host_types,id',
-                'ip' => 'required|ip',
+                'ip' => 'required|ip|unique:hosts,ip',
                 'port' => 'required|numeric',
                 'type' => 'required|in:APP,STATIC',
             ),
@@ -31,7 +31,8 @@ class SiteHostController extends Controller
                 'required' => '字段不能为空',
                 'name.unique' => '主机名已存在',
                 'catalog_id.exists' => '环境类型不存在',
-                'ip' => 'IP格式不正确',
+                'ip.ip' => 'IP格式不正确',
+                'ip.unique' => 'IP已存在',
                 'port.numeric' => '端口必须为数字',
                 'in' => '主机发布类型不正确',
             )
@@ -69,7 +70,7 @@ class SiteHostController extends Controller
             array(
                 'name' => 'required|unique:hosts,name,' . $host->id,
                 'host_type_id' => 'required|exists:host_types,id',
-                'ip' => 'required|ip',
+                'ip' => 'required|ip|unique:hosts,ip,' . $host->id,
                 'port' => 'required|numeric',
                 'type' => 'required|in:APP,STATIC',
             ),
@@ -77,7 +78,8 @@ class SiteHostController extends Controller
                 'required' => '字段不能为空',
                 'name.unique' => '主机名已存在',
                 'catalog_id.exists' => '环境类型不存在',
-                'ip' => 'IP格式不正确',
+                'ip.ip' => 'IP格式不正确',
+                'ip.unique' => 'IP已存在',
                 'port.numeric' => '端口必须为数字',
                 'in' => '主机发布类型不正确',
             )
