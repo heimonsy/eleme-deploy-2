@@ -162,10 +162,27 @@ var prevJobId = null;
 
 var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning"};
 
+function clearNj(hash)
+{
+    if (hash.substr(-3) == '-nj') {
+        return hash.substr(0, hash.length -3);
+    }
+    return hash;
+}
+
+function addNj(hash)
+{
+    if (hash.substr(-3) == '-nj') {
+        return hash;
+    }
+    return hash + '-nj';
+}
+
 $(function () {
     $('#myTab a').click(function (e) {
         e.preventDefault()
         $(this).tab('show')
+        return false;
     });
 
     var showDeploy = function () {
@@ -215,7 +232,6 @@ $(function () {
 
             $('#deploysTable').unbind('draw.dt');
             $('#deploysTable').on('draw.dt', function (e) {
-                console.log('deploy table');
                 initJobBtn();
                 timeoutEvent.timeout = window.setTimeout(table.ajax.reload, 5000);
             }.bind(timeoutEvent, table));
@@ -651,7 +667,7 @@ $(function () {
             var render = null;
             var element = null
             var thisTab = $(e.target);
-            location.hash = thisTab.attr('href');
+            location.hash = addNj(thisTab.attr('href'));
 
             if (thisTab.attr('href').substr(0, 8) == '#JobHost') {
                 timeoutEvent = renderJobInfo(document.getElementById(thisTab.attr('href').substr(1)), thisTab.attr('data-job-id'), true);
@@ -705,47 +721,48 @@ $(function () {
 
     window.onhashchange = function (e) {
         e.preventDefault();
-        if (location.hash.substr(0, 8) == '#JobInfo') {
+        hash = clearNj(location.hash);
+        if (hash.substr(0, 8) == '#JobInfo') {
             var tab = $('#myTab a:last');
             var href = tab.attr('href');
             if (href.substr(0, 8) == '#JobInfo') {
-                if (href != location.hash) {
+                if (href != hash) {
                     $(href).remove();
                     tab.remove();
                 } else {
-                    $('#myTab a[href="' + location.hash + '"]').tab("show");
+                    $('#myTab a[href="' + hash + '"]').tab("show");
                     return ;
                 }
             }
-            showJobInfo(location.hash.substr(9));
-        } else if(location.hash.substr(0, 8) == '#JobHost') {
+            showJobInfo(hash.substr(9));
+        } else if(hash.substr(0, 8) == '#JobHost') {
             var tab = $('#myTab a:last');
             var href = tab.attr('href');
             if (href.substr(0, 8) == '#JobHost') {
-                if (href != location.hash) {
+                if (href != hash) {
                     $(href).remove();
                     tab.remove();
                 } else {
-                    $('#myTab a[href="' + location.hash + '"]').tab("show");
+                    $('#myTab a[href="' + hash + '"]').tab("show");
                     return ;
                 }
             }
-            showJobHostInfo(location.hash.substr(13));
+            showJobHostInfo(hash.substr(13));
         } else {
-            $('#myTab a[href="' + location.hash + '"]').tab("show");
+            $('#myTab a[href="' + hash + '"]').tab("show");
         }
     };
 
     initBtn();
 
     if (location.hash == '') {
-        location.hash = '#Build';
+        location.hash = '#Build-nj';
     } else if (location.hash.substr(0, 8) == '#JobInfo') {
-        showJobInfo(location.hash.substr(9));
+        showJobInfo(clearNj(location.hash.substr(9)));
     } else if(location.hash.substr(0, 8) == '#JobHost') {
-        showJobHostInfo(location.hash.substr(13));
+        showJobHostInfo(clearNj(location.hash.substr(13)));
     } else {
-            $('#myTab a[href="' + location.hash + '"]').tab("show");
+            $('#myTab a[href="' + clearNj(location.hash) + '"]').tab("show");
     }
 
     /*$('#myTab a[href="#Build"]').tab("show");*/
