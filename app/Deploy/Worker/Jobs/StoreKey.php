@@ -14,13 +14,14 @@ use Deploy\Site\Site;
 use Deploy\Site\Commit;
 use Deploy\Site\Build;
 use Deploy\Exception\BaseException;
+use Deploy\Site\DeployConfig;
 
 class StoreKey extends Task
 {
     public function fire($worker)
     {
         $site = Site::with('deploy_config')->findOrFail($this->message['site_id']);
-        $config = $site->deploy_config;
+        $config = DeployConfig::firstOrCreate(array('site_id' => $site->id));
         $redis = app('redis')->connection();
 
         $LOG_PREFIX = "[Site {$site->name}] [Store Key],";

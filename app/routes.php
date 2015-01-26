@@ -103,6 +103,12 @@ Route::Model('commit', 'Deploy\Site\Commit', function () {
     throw new \Deploy\Exception\ResourceNotFoundException('Commit不存在');
 });
 
+Route::Model('deployhost', 'Deploy\Worker\DeployHost', function () {
+    throw new \Deploy\Exception\ResourceNotFoundException('Deploy Host不存在');
+});
+
+
+
 Route::bind('user', function ($value, $route) {
     $user = Deploy\Account\User::where('id', $value)->normal()->first();
     if (!$user) {
@@ -190,6 +196,10 @@ Route::group(
             'only' => array('show')
         ));
 
+        Route::resource('site.deployhost', 'DeployHostController', array(
+            'only' => array('show')
+        ));
+
         Route::resource('site.prbuild', 'SitePullRequestBuildController', array(
             'only' => array('index')
         ));
@@ -257,3 +267,4 @@ Route::group(
 Route::when('api/*', 'csrf', array('post'));
 Route::when('api/*/*', 'csrf', array('put', 'delete', 'post'));
 Route::when('api/*/*/*/*', 'csrf', array('put', 'delete', 'post'));
+

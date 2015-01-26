@@ -6,11 +6,11 @@ use Deploy\Interfaces\OutputInterface;
 
 trait OutputTrait
 {
-    abstract public function getId();
+    abstract public function getOutputIdentify();
 
     public function getKey()
     {
-        return 'DEPLOY:L:OUTPUT:' . $this->getId();
+        return 'DEPLOY:L:OUTPUT:' . $this->getOutputIdentify();
     }
 
     public function clear()

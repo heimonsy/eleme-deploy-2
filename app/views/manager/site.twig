@@ -108,6 +108,7 @@
                                         <th>Commit</th>
                                         <th>发布到</th>
                                         <th>状态</th>
+                                        <th>主机数</th>
                                         <th>创建时间</th>
                                         <th>更新时间</th>
                                         <th>详细输出</th>
@@ -201,6 +202,7 @@ $(function () {
                         {data: 'commit'},
                         {data: 'description'},
                         {data: 'status'},
+                        {data: 'id'},
                         {data: 'created_at'},
                         {data: 'updated_at'},
                         {data: 'job_id'},
@@ -220,15 +222,24 @@ $(function () {
                     },
                     {
                         render: function  (data, type, row) {
-                            return '<button class="btn btn-primary btn-xs" data-job-id="' + data + '">详细输出</button>';
+                            return '<button class="btn btn-primary btn-xs btnShowJobHost" data-job-id="' + data + '">详细输出</button>';
                         },
-                        targets: 6
+                        targets: 7
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return '<span class="label label-default label-num">' + row.total_hosts + '</span><span class="label label-success label-num">' + row.success_hosts +'</span><span class="label label-danger label-num">' + row.error_hosts + '</span>';
+                        },
+                        targets: 4
                     }
                     ]
                 });
             } else {
                 table.ajax.reload();
             }
+
+            $('#deploysTable').unbind('draw.dt');
+            $('#deploysTable').on('draw.dt');
 
             $('#deploysTable').unbind('draw.dt');
             $('#deploysTable').on('draw.dt', function (e) {
@@ -351,7 +362,7 @@ $(function () {
                         pr_id: btn.attr('data-pr-id')
                     }, function (data) {
                         if (data.code == 0) {
-                            location.hash = '#JobInfo-' + data.data.jobId;
+                            location.hash = addNj('#JobInfo-' + data.data.jobId);
                         } else {
                             alert(data.msg);
                         }
@@ -372,8 +383,11 @@ $(function () {
     };
 
     var showJobHostInfo = function (jobId) {
-        $("#myTab").append('<li role="presentation"><a href="#JobHostInfo-' + prevJobId + '" data-job-id="' + prevJobId + '" role="tab" data-toggle="tab">Job #' + prevJobId + '</a></li>');
-        $("#myTabContent").append('<div role="tabpanel" class="tab-pane" id="JobHostInfo--' + prevJobId + '"></div>');
+        prevJobId = jobId;
+        $("#myTab").append('<li role="presentation"><a href="#JobHost-' + prevJobId + '" data-job-id="' + prevJobId + '" role="tab" data-toggle="tab">Job #' + prevJobId + '</a></li>');
+        $("#myTabContent").append('<div role="tabpanel" class="tab-pane" id="JobHost-' + prevJobId + '"></div>');
+        initBtn();
+        $('#myTab a:last').tab('show');
     };
 
     var initJobBtn = function () {
@@ -648,7 +662,8 @@ $(function () {
         $('a[data-toggle="tab"]').unbind('shown.bs.tab');
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             var prevTab = $(e.relatedTarget);
-            if (prevTab.attr('href') != undefined && prevTab.attr('href').substr(0, 8) == '#JobInfo') {
+            var pHref = prevTab.attr('href');
+            if (pHref != undefined && (pHref.substr(0, 8) == '#JobInfo' || pHref.substr(0, 8) == '#JobHost')) {
                 prevTab.remove();
                 $(prevTab.attr('href')).remove();
             }
@@ -669,13 +684,14 @@ $(function () {
             var thisTab = $(e.target);
             location.hash = addNj(thisTab.attr('href'));
 
+            console.log(thisTab.attr('href'));
             if (thisTab.attr('href').substr(0, 8) == '#JobHost') {
-                timeoutEvent = renderJobInfo(document.getElementById(thisTab.attr('href').substr(1)), thisTab.attr('data-job-id'), true);
+                timeoutEvent = renderJobInfo(document.getElementById(thisTab.attr('href').substr(1)), thisTab.attr('data-job-id'), 'deploy');
                 return ;
             }
 
             if (thisTab.attr('href').substr(0, 8) == '#JobInfo') {
-                timeoutEvent = renderJobInfo(document.getElementById(thisTab.attr('href').substr(1)), thisTab.attr('data-job-id'), false);
+                timeoutEvent = renderJobInfo(document.getElementById(thisTab.attr('href').substr(1)), thisTab.attr('data-job-id'), 'build');
                 return '';
             }
 
@@ -747,7 +763,7 @@ $(function () {
                     return ;
                 }
             }
-            showJobHostInfo(hash.substr(13));
+            showJobHostInfo(hash.substr(9));
         } else {
             $('#myTab a[href="' + hash + '"]').tab("show");
         }
@@ -760,7 +776,7 @@ $(function () {
     } else if (location.hash.substr(0, 8) == '#JobInfo') {
         showJobInfo(clearNj(location.hash.substr(9)));
     } else if(location.hash.substr(0, 8) == '#JobHost') {
-        showJobHostInfo(clearNj(location.hash.substr(13)));
+        showJobHostInfo(clearNj(location.hash.substr(9)));
     } else {
             $('#myTab a[href="' + clearNj(location.hash) + '"]').tab("show");
     }

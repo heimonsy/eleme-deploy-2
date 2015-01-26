@@ -5,6 +5,9 @@ use Eloquent;
 
 class Host extends Eloquent
 {
+    const TYPE_APP = 'APP';
+    const TYPE_STATIC = 'STATIC';
+
     protected $table = 'hosts';
 
     protected $guarded = array('id');
@@ -17,5 +20,25 @@ class Host extends Eloquent
     public function site()
     {
         return $this->belongsTo('Deploy\Site\Site', 'site_id', 'id');
+    }
+
+    public function scopeApp($query)
+    {
+        return $query->where('type', self::TYPE_APP);
+    }
+
+    public function scopeStatic($query)
+    {
+        return $query->where('type', self::TYPE_STATIC);
+    }
+
+    public function isApp()
+    {
+        return self::TYPE_APP === $this->type;
+    }
+
+    public function isStatic()
+    {
+        return self::TYPE_STATIC === $this->type;
     }
 }

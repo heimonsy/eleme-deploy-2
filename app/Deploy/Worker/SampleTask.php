@@ -4,27 +4,22 @@ namespace Deploy\Worker;
 use Eloquent;
 use Deploy\Interfaces\OutputInterface;
 use Deploy\Traits\OutputTrait;
+use Deploy\Worker\Job;
 
-class Job extends Eloquent implements OutputInterface, WorkableInterface
+class SampleTask extends Eloquent implements OutputInterface, WorkableInterface
 {
     use OutputTrait;
 
-    const TYPE_USER = 'user';
-    const TYPE_SYSTEM = 'system';
-
-    protected $table = 'jobs';
-
-    protected $guarded = array('id');
-
+    protected $table = 'sample_tasks';
 
     public function getOutputIdentify()
     {
-        return  'JOB:' . $this->id;
+        return 'SAMPLE:TASK:' . $this->id;
     }
 
     public function getWorkIdentify()
     {
-        return 'Job-' . $this->id;
+        return 'SampleTask-' . $this->id;
     }
 
     public function getWorkClass()
@@ -48,14 +43,22 @@ class Job extends Eloquent implements OutputInterface, WorkableInterface
         $this->attributes['message'] = json_encode($message);
     }
 
-    public function toArray()
-    {
-        return array_merge(parent::toArray(), array('output' => $this->getOutput()));
-    }
-
     public function delete()
     {
         $this->clear();
         parent::delete();
+    }
+
+    public function parentJob()
+    {
+        static $job = null;
+
+        if ($job === null) {
+            $job = Job::find($this->job_id);
+            if ($job === null) {
+                throw new \Exception('Can\'t find parent job!');
+            }
+        }
+        return $job;
     }
 }

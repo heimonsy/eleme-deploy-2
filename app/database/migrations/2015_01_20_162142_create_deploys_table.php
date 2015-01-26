@@ -23,6 +23,9 @@ class CreateDeploysTable extends Migration
             $table->string('deploy_kind');
             $table->string('deploy_to');
             $table->string('description');
+            $table->string('total_hosts');
+            $table->string('success_hosts')->default(0);
+            $table->string('error_hosts')->default(0);
             $table->string('commit');
             $table->timestamps();
         });

@@ -6,9 +6,11 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Config;
 use Log;
+use App;
 use Deploy\Worker\JobQueue;
 use Deploy\Worker\Job;
 use Deploy\Worker\Worker;
+use Deploy\Worker\SampleTask;
 
 class WorkerCommand extends Command
 {
@@ -44,13 +46,27 @@ class WorkerCommand extends Command
      */
     public function fire()
     {
-        $handler = function ($signal) {
+       $pid = getmypid();
+
+        $queueName = $this->argument('queue');
+        $queue = new JobQueue($queueName);
+        $id = $this->argument('id');
+        $type = $this->argument('type');
+        if ($type == 'sampletask') {
+            $job = SampleTask::find($id);
+        } else {
+            $job = Job::find($id);
+        }
+        $worker = new Worker($job, $queue, $pid);
+
+        $handler = function ($signal) use ($worker) {
             if ($signal == SIGINT) {
                 Log::info("RECV SIGINT");
             } elseif ($signal == SIGHUP) {
                 Log::info("RECV SIGHUP");
             } elseif ($signal == SIGUSR1) {
-                Log::info('RECV BUG');
+                Log::info('RECV USER KILL');
+                $worker->fireKillCallback();
                 exit;
             }
         };
@@ -58,13 +74,11 @@ class WorkerCommand extends Command
         pcntl_signal(SIGINT, $handler);
         pcntl_signal(SIGHUP, $handler);
 
-        $pid = getmypid();
+        App::fatal(function ($exception) use ($worker) {
+            $worker->fireFatalErrorCallback($exception);
+            die();
+        });
 
-        $queueName = $this->argument('queue');
-        $queue = new JobQueue($queueName);
-        $jobId = $this->argument('jobid');
-        $job = Job::find($jobId);
-        $worker = new Worker($job, $queue, $pid);
         $worker->run();
     }
 
@@ -76,8 +90,9 @@ class WorkerCommand extends Command
     protected function getArguments()
     {
         return array(
+            array('type', InputArgument::REQUIRED, 'WorkType'),
             array('queue', InputArgument::REQUIRED, 'Queue Name'),
-            array('jobid', InputArgument::REQUIRED, 'Job Id.'),
+            array('id', InputArgument::REQUIRED, 'Job Or Sample Task Id.'),
         );
     }
 

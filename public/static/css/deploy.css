@@ -43,4 +43,7 @@
 .output span.line-waiting { color: #FFFF00; }
 .output span.line-finish { color: #0099CC; }
 
+.label-num { margin-right: 2px; }
+
+.table-nomgb {margin-bottom: 0px;}
 

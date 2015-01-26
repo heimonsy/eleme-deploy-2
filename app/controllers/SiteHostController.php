@@ -21,9 +21,9 @@ class SiteHostController extends Controller
         $validator = Validator::make(
             Input::only('name', 'host_type_id', 'port', 'ip', 'type'),
             array(
-                'name' => 'required|unique:hosts,name',
+                'name' => 'required|unique:hosts,name,null,id,site_id,' . $site->id,
                 'host_type_id' => 'required|exists:host_types,id',
-                'ip' => 'required|ip|unique:hosts,ip',
+                'ip' => 'required|ip|unique:hosts,ip,null,id,site_id,' . $site->id . ',type,' . Input::get('type') ,
                 'port' => 'required|numeric',
                 'type' => 'required|in:APP,STATIC',
             ),
@@ -68,9 +68,9 @@ class SiteHostController extends Controller
         $validator = Validator::make(
             Input::only('name', 'host_type_id', 'port', 'ip', 'type'),
             array(
-                'name' => 'required|unique:hosts,name,' . $host->id,
+                'name' => 'required|unique:hosts,name,' . $host->id . ',id,site_id,' . $site->id,
                 'host_type_id' => 'required|exists:host_types,id',
-                'ip' => 'required|ip|unique:hosts,ip,' . $host->id,
+                'ip' => 'required|ip|unique:hosts,ip,' . $host->id, ',id,site_id,' . $site->id . ',type,' . Input::get('type'),
                 'port' => 'required|numeric',
                 'type' => 'required|in:APP,STATIC',
             ),

@@ -21,7 +21,7 @@ class SiteHostTypeController extends Controller
         Input::merge(array_map('trim', Input::only('name', 'catalog_id')));
         $validator = Validator::make(
             Input::only('name', 'catalog_id'),
-            array('name' => 'required|unique:host_types,name', 'catalog_id' => 'required|exists:host_type_catalogs,id'),
+            array('name' => 'required|unique:host_types,name,null,id,site_id,' . $site->id, 'catalog_id' => 'required|exists:host_type_catalogs,id'),
             array(
                 'name.required' => '机器分组名不能为空',
                 'name.unique' => '机器分组名已存在',
@@ -61,7 +61,7 @@ class SiteHostTypeController extends Controller
         Input::merge(array_map('trim', Input::only('name', 'catalog_id')));
         $validator = Validator::make(
             Input::only('name', 'catalog_id'),
-            array('name' => 'required|unique:host_types,name,' . $hosttype->id, 'catalog_id' => 'required|exists:host_type_catalogs,id'),
+            array('name' => 'required|unique:host_types,name,' . $hosttype->id . ',id,site_id,' . $site->id, 'catalog_id' => 'required|exists:host_type_catalogs,id'),
             array(
                 'name.required' => '机器分组名不能为空',
                 'name.unique' => '机器分组名已存在',

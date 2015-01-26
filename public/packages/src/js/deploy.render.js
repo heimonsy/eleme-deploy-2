@@ -107,9 +107,9 @@ var renderSystemConfigureForm = function (element) {
     React.render(<BasicConfigureForm />, element);
 };
 
-var renderJobInfo = function (element, jobId, haveHost) {
+var renderJobInfo = function (element, jobId, type) {
     $(element).html("");
-    var c = React.render(<JobInfoTabContent jobId={jobId} haveHost={haveHost}/>, element);
+    var c = React.render(<JobInfoTabContent jobId={jobId} jobType={type}/>, element);
     return c.timeoutEvent;
 };
 

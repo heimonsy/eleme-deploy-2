@@ -37,7 +37,7 @@ class DeployConfig extends Eloquent
     public function setDeployKeyAttribute($value)
     {
         if ($value != '******') {
-           Worker::push($job);
+            $this->attributes['deploy_key'] = $value === '' ? '' : Crypt::encrypt($value);
         }
     }
 

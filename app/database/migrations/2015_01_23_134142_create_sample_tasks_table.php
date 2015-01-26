@@ -3,8 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateDeployHostsTable extends Migration
-{
+class CreateSampleTasksTable extends Migration {
 
     /**
      * Run the migrations.
@@ -13,17 +12,12 @@ class CreateDeployHostsTable extends Migration
      */
     public function up()
     {
-        Schema::create('deploy_hosts', function (Blueprint $table) {
+        Schema::create('sample_tasks', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('site_id');
-            $table->string('deploy_id');
-            $table->string('host_type_id');
             $table->string('job_id');
-            $table->string('task_id');
-            $table->string('type');
-            $table->string('host_ip');
-            $table->string('host_name');
-            $table->string('host_port');
+            $table->string('class');
+            $table->string('description');
+            $table->text('message');
             $table->string('status');
             $table->timestamps();
         });
@@ -36,7 +30,7 @@ class CreateDeployHostsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('deploy_hosts');
+        Schema::drop('sample_tasks');
     }
 
 }

@@ -307,7 +307,6 @@ var RoleEditModalComponent = React.createClass({
         $("#roleModal").modal("show");
     },
     getInitialState: function () {
-        console.log(this.props.data);
         return {
             roleNameError: false,
             roleName: this.props.data.name,
@@ -398,9 +397,10 @@ var DeployModal = React.createClass({
                 <InlineFormAlertComponent alertType={this.props.alertType} alertMsg={this.props.alertMsg}/>
             );
         }
+        var lg = this.props.lg == 'lg' ?  'modal-lg' : '';
         return (
         <div className="modal fade" id={this.props.id} tabIndex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div className="modal-dialog">
+        <div className={'modal-dialog ' + lg}>
             <div className="modal-content">
                 <div className="modal-header">
                     <button type="button" className="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -576,7 +576,7 @@ var HostTypeAddComponent = React.createClass({
                 </div>
                 <div className="modal-body">
                     <div className="row">
-                        <div className="col-lg-12"><div class="alert">hi</div></div>
+                        <div className="col-lg-12"><div className="alert">hi</div></div>
                     </div>
                     <div className="row">
                         <div className="col-lg-12">
@@ -904,17 +904,17 @@ var SiteConfigComponent = React.createClass({
         return (
             <DeployRow>
                 <form id="siteConfigForm" onSubmit={this.handleEmpty}>
-                    <Input type="text" name="name" help="{name}" defaultValue={this.props.data.name} label="项目名" disabled/>
-                    <Input type="text" name="repo_git" help="{repo_git}" defaultValue={this.props.data.repo_git} label="Fetch Url" disabled/>
-                    <Input type="text" name="static_dir" help="{static_dir}" defaultValue={this.props.data.static_dir} label="静态文件目录" />
-                    <Input type="text" name="rsync_exclude_file" help="{rsync_exclude}" defaultValue={this.props.data.rsync_exclude_file} label="Rsync Exclude File" />
-                    <Input type="text" name="default_branch" help="{default_branch}" defaultValue={this.props.data.default_branch} label="默认Branch" />
-                    <Input type="text" name="build_command" help="{build_command}" defaultValue={this.props.data.build_command} label="Build Command" />
-                    <Input type="text" name="test_command" help="{test_command}" defaultValue={this.props.data.test_command} label="Test Command" />
+                    <Input type="text" name="name" defaultValue={this.props.data.name} label="项目名" disabled/>
+                    <Input type="text" name="repo_git" help="{{repo_git}}" defaultValue={this.props.data.repo_git} label="Fetch Url" disabled/>
+                    <Input type="text" name="static_dir" help="{{static_dir}}" defaultValue={this.props.data.static_dir} label="静态文件目录" />
+                    <Input type="text" name="rsync_exclude_file" help="{{rsync_exclude}}" defaultValue={this.props.data.rsync_exclude_file} label="Rsync Exclude File" />
+                    <Input type="text" name="default_branch" help="{{default_branch}}" defaultValue={this.props.data.default_branch} label="默认Branch" />
+                    <Input type="text" name="build_command" help="{{build_command}}" defaultValue={this.props.data.build_command} label="Build Command" />
+                    <Input type="text" name="test_command" help="{{test_command}}" defaultValue={this.props.data.test_command} label="Test Command" />
                     <Input type="textarea" name="pull_key" defaultValue={this.props.data.pull_key} label="Pull Key" />
                     <Input type="text" ref="passphrase" name="pull_key_passphrase" defaultValue={this.props.data.pull_key_passphrase} label="Pull Key Passphrase" />
-                    <Input type="text" name="hipchat_room" defaultValue={this.props.data.hipchat_room} label="Hipchat Room" />
-                    <Input type="text" name="hipchat_token" defaultValue={this.props.data.hipchat_token} label="Hipchat Token" />
+                    <Input type="text" name="hipchat_room" help="{{hipchat_room}}" defaultValue={this.props.data.hipchat_room} label="Hipchat Room" />
+                    <Input type="text" name="hipchat_token" help="{{hipchat_token}}" defaultValue={this.props.data.hipchat_token} label="Hipchat Token" />
                     <Button onClick={this.handleSubmit} bsStyle="primary" >保存</Button>
                     &nbsp;&nbsp;&nbsp;
                     <InlineFormAlertComponent alertType={this.state.alertType} alertMsg={this.state.alertMsg}/>
@@ -953,15 +953,21 @@ var SiteDeployConfigComponent = React.createClass({
         return {alertType: null, alertMsg: ''};
     },
     render: function () {
+        var scriptHelp = (<span>格式 , <code>@(after|before):(remote|local|handle)</code>,示例：<br /><code>
+                @after:remote<br />
+                //同步之前远端执行的命令<br />
+                @before:local<br />
+                //同步之后远端执行的命令<br />
+        </code>remote和local都是每次同步每个主机都要执行的命令，而handle命令是只执行一次的本地命令。<br />支持发布配置和项目配置的部分变量, 如 <code>ls &#123;&#123;remote_static_dir&#125;&#125;</code>。<br/>对于需要更改工作目录的命令，请使用<code>cd 目录 && 命令</code>的方式执行</span>);
         return (
             <DeployRow>
                 <form id="deployConfigForm" onSubmit={this.handleEmpty}>
-                    <Input type="text" name="remote_user" help="{remote_user}" defaultValue={this.props.data.remote_user} label="Remote User" />
-                    <Input type="text" name="remote_owner" help="{remote_owner}" defaultValue={this.props.data.remote_owner} label="Rmote Owner" />
-                    <Input type="text" name="remote_app_dir" help="{remote_app_dir}" defaultValue={this.props.data.remote_app_dir} label="Remote App Dir" />
-                    <Input type="text" name="remote_static_dir" help="{remote_static_dir}" defaultValue={this.props.data.remote_static_dir} label="Remote Static Dir" />
-                    <Input type="text" name="app_script" help="{app_script}" defaultValue={this.props.data.app_script} label="APP发布前后执行的脚本" />
-                    <Input type="text" name="static_script" help="{static_script}" defaultValue={this.props.data.static_script} label="静态文件发布前后执行的脚本" />
+                    <Input type="text" name="remote_user" help="{{remote_user}}" defaultValue={this.props.data.remote_user} label="Remote User" />
+                    <Input type="text" name="remote_owner" help="{{remote_owner}}" defaultValue={this.props.data.remote_owner} label="Rmote Owner" />
+                    <Input type="text" name="remote_app_dir" help="{{remote_app_dir}}" defaultValue={this.props.data.remote_app_dir} label="Remote App Dir" />
+                    <Input type="text" name="remote_static_dir" help="{{remote_static_dir}}" defaultValue={this.props.data.remote_static_dir} label="Remote Static Dir" />
+                    <Input type="textarea" name="app_script" rows="5" help="{{app_script}}" help={scriptHelp} defaultValue={this.props.data.app_script} label="APP发布前后执行的脚本" />
+                    <Input type="textarea" rows="5" name="static_script" help="同上" defaultValue={this.props.data.static_script} label="静态文件发布前后执行的脚本" />
                     <Input type="textarea" name="deploy_key" defaultValue={this.props.data.deploy_key} label="Deploy Login Key" />
                     <Input type="text" ref="passphrase" name="deploy_key_passphrase" defaultValue={this.props.data.deploy_key_passphrase} label="Deploy Login Key Passphrase" />
                     <Button onClick={this.handleSubmit} bsStyle="primary" >保存</Button>
@@ -1269,7 +1275,7 @@ var NewBuildForm = React.createClass({
             if (data.code == 0) {
                 state.checkout = '';
                 state.alertType = 'success';
-                location.hash = '#JobInfo-' + data.data.jobId;
+                location.hash = '#JobInfo-' + data.data.jobId + '-nj';
                 //this.props.updateCallback == null ? '' : this.props.updateCallback();
             } else {
                 state.checkoutError = true;
@@ -1333,16 +1339,75 @@ var OutputComponent = React.createClass({
     }
 });
 
+var HostDetailButton = React.createClass({
+    handleClick: function (e) {
+        this.props.clicked(e);
+    },
+    render: function () {
+        return (<button onClick={this.handleClick} className="btn btn-primary btn-xs">{this.props.children}</button>);
+    }
+});
+
+var HostDetailModal = React.createClass({
+    timeoutEvent: createTimeoutEvent(),
+
+    componentDidUpdate: function (prevProps, prevState) {
+        var height = $("#hostModal .modal-dialog").outerHeight(true);
+        $("#hostModal .modal-backdrop").css('height', height + 'px');
+    },
+
+    loadDataFromServer: function () {
+        $.getJSON('/api/site/' + siteId + '/deployhost/' + this.props.hostId, function (data) {
+            if (data.code == 0) {
+                this.setState(data.data);
+                if (data.data.status == 'Deploying' || data.data.status == 'Waiting') {
+                    this.timeoutEvent = window.setTimeout(this.loadDataFromServer, 3000);
+                }
+            } else {
+                alert(data.msg);
+            }
+        }.bind(this));
+    },
+    componentDidMount: function () {
+        this.loadDataFromServer();
+
+        $("#hostModal").modal("show");
+        $('#hostModal').data('bs.modal').handleUpdate();
+        $('#hostModal').on('hidden.bs.modal', function (e) {
+            this.timeoutEvent.clear();
+        }.bind(this));
+    },
+
+    getInitialState: function () {
+        return {};
+    },
+
+    render: function () {
+        var isFinish = !(this.state.status == 'Deploying' || this.state.status == 'Waiting');
+        var labels = {"Created": 'default', 'Waiting': 'default', 'Success': 'success', 'Error': 'danger', 'Doing': 'info', 'Finish': 'success'};
+        var title = this.state.host_name == undefined ? '正在加载...' : (<span>{this.state.host_name} ({this.state.host_ip})&nbsp;&nbsp;<span className={'label label-' + labels[this.state.status]}>{this.state.status}</span></span>);
+        var output = this.state.output === undefined ? (<div className="text-center"><img src="/static/ajax-loader.gif"/></div>) : (<OutputComponent isFinish={isFinish} output={this.state.output}/>);
+
+        return (
+             <DeployModal id="hostModal" lg="lg" title={title}>
+                <div className="row">
+                    <div className="col-lg-12">
+                        {output}
+                    </div>
+                </div>
+            </DeployModal>
+        );
+    }
+});
+
 var JobInfoTabContent = React.createClass({
     timeoutEvent: createTimeoutEvent(),
     loadStateFromServer: function () {
-        var state = this.state;
-        var url = '/api/site/' + siteId + '/job/' + this.props.jobId;
-        url = this.props.haveHost ? url + '?haveHost=1' : url;
+        var url = '/api/site/' + siteId + '/job/' + this.props.jobId + '?type=' + this.props.jobType;
         $.getJSON(url, function (data) {
             if (data.code == 0) {
                 this.setState(data.data);
-                if (data.data.status !== 'Error' && data.data.status !== 'Success') {
+                if (data.status == 'Doing') {
                     this.timeoutEvent.timeout = window.setTimeout(this.loadStateFromServer, 3000);
                 }
             } else {
@@ -1354,43 +1419,95 @@ var JobInfoTabContent = React.createClass({
         this.loadStateFromServer();
     },
     getInitialState : function () {
-        return {id: this.props.jobId };
+        return { job: {id: this.props.jobId} };
+    },
+    handleHostDetail: function (e) {
+        e.preventDefault();
+        var btn  = $(e.target);
+        var element = document.getElementById('normalModalWrapper');
+        $(element).html('');
+        React.render(<HostDetailModal hostId={btn.attr('data-host-id')} />, element);
     },
     render: function () {
-        var labels = {"Created": 'default', 'Waiting': 'default', 'Success': 'success', 'Error': 'danger', 'Doing': 'info'};
-        statusCls = 'label label-' + labels[this.state.status] + ' label-h4 ';
-        var isFinish = this.state.status == 'Error' || this.state.status == 'Success' ? true : false;
-        var output = this.state.output === undefined ? (<div className="text-center"><img src="/static/ajax-loader.gif"/></div>) : (<OutputComponent isFinish={isFinish} output={this.state.output}/>);
+        console.log("reload");
+
+        var labels = {"Created": 'default', 'Waiting': 'default', 'Success': 'success', 'Error': 'danger', 'Deploying': 'info', 'Doing': 'info', 'Finish': 'success'};
+        statusCls = 'label label-' + labels[this.state.job.status] + ' label-h4 ';
+        var isFinish = this.state.job.status == 'Error' || this.state.job.status == 'Success' ? true : false;
+        var output = this.state.job.output === undefined ? (<div className="text-center"><img src="/static/ajax-loader.gif"/></div>) : (<OutputComponent isFinish={isFinish} output={this.state.job.output}/>);
+
+        var selfTable = '';
+        if (this.props.jobType == 'deploy' && this.state.deploy != undefined) {
+            var deploy = this.state.deploy;
+            selfTable = (
+                <div className="panel panel-default">
+                    <div className="panel-heading">Deploy</div>
+                    <div className="panel-body">
+                        <table className="table table-hover small-table table-nomgb">
+                            <thead>
+                                <tr>
+                                    <th>Commit</th>
+                                    <th>发布到</th>
+                                    <th>状态</th>
+                                    <th>主机数</th>
+                                    <th>创建时间</th>
+                                    <th>更新时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{deploy.commit.substr(0, 7)}</td>
+                                    <td>{deploy.description}</td>
+                                    <td><span className={'label label-' + labels[deploy.status]}>{deploy.status}</span></td>
+                                    <td><span className="label label-default label-num">{deploy.total_hosts}</span><span className="label label-success label-num">{deploy.success_hosts}</span><span className="label label-danger label-num">{deploy.error_hosts}</span></td>
+                                    <td>{deploy.created_at}</td>
+                                    <td>{deploy.updated_at}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
         var table = '';
         if (this.state.hosts != undefined) {
             var trs = this.state.hosts.map(function (host) {
+                var btn = host.status == 'Waiting' ? '' : (<button onClick={this.handleHostDetail} className="btn btn-primary btn-xs" data-host-id={host.id}>详细输出</button>);
                 return (
                     <tr key={"host-" + host.id}>
-                        <td>host.host_name</td>
-                        <td>host.host_ip</td>
-                        <td>host.host_port</td>
-                        <td>host.host_status</td>
-                        <td>host.updated_at</td>
-                        <td><button className="btn btn-primary btn-xs" data-id={host.id}>详细输出</button></td>
+                        <td>{host.host_name}</td>
+                        <td>{host.host_ip}</td>
+                        <td>{host.host_port}</td>
+                        <td><span className={'label label-' + labels[host.status]}>{host.status}</span></td>
+                        <td>{host.created_at}</td>
+                        <td>{host.updated_at}</td>
+                        <td>{btn}</td>
                     </tr>
                 );
-            });
+            }.bind(this));
             table = (
-                <table class="table table-hover small-table">
-                    <thead>
-                        <tr>
-                            <th>主机名</th>
-                            <th>主机IP</th>
-                            <th>主机端口</th>
-                            <th>主机状态</th>
-                            <th>更新时间</th>
-                            <th>详细输出</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {trs}
-                    </tbody>
-                </table>
+                <div className="panel panel-default">
+                    <div className="panel-heading">机器列表</div>
+                    <div className="panel-body">
+                        <table className="table table-hover small-table table-nomgb">
+                            <thead>
+                                <tr>
+                                    <th>主机名</th>
+                                    <th>主机IP</th>
+                                    <th>主机端口</th>
+                                    <th>发布状态</th>
+                                    <th>创建时间</th>
+                                    <th>更新时间</th>
+                                    <th>详细输出</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {trs}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             );
         }
         return (
@@ -1398,12 +1515,17 @@ var JobInfoTabContent = React.createClass({
                 <div className="row">
                     <div className="col-lg-12 ">
                         <div className="well">
-                            <p className="job-title">Job #{this.state.id} &nbsp; <span className={statusCls}>{this.state.status}</span></p>
-                            <p dangerouslySetInnerHTML={{__html: this.state.description}}></p>
+                            <p className="job-title">Job #{this.state.job.id} &nbsp; <span className={statusCls}>{this.state.job.status}</span></p>
+                            <p dangerouslySetInnerHTML={{__html: this.state.job.description}}></p>
                             <p>
-                                创建时间：{this.state.created_at} &nbsp;&nbsp; 更新时间：{this.state.updated_at}
+                                创建时间：{this.state.job.created_at} &nbsp;&nbsp; 更新时间：{this.state.job.updated_at}
                             </p>
                         </div>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-lg-12">
+                        {selfTable}
                     </div>
                 </div>
                 <div className="row">
@@ -1448,7 +1570,6 @@ var DeployJobForm = React.createClass({
         e.preventDefault();
         var btn = $(e.target);
         var state = this.state;
-        console.log(this.state.deploy_to);
         if (this.state.deploy_to == null || this.state.deploy_to.isEmpty()) {
             state.deploy_toError = true;
             this.setState(state);
@@ -1465,10 +1586,12 @@ var DeployJobForm = React.createClass({
             state.alertMsg = data.msg
             if (data.code == 0) {
                 state.alertType = 'success';
+                this.setState(state);
+                location.hash = '#JobHost-' + data.data.jobId + '-nj';
             } else {
                 state.alertType = 'error';
+                this.setState(state);
             }
-            this.setState(state);
         }.bind(this), 'json');
     },
     componentDidMount: function () {

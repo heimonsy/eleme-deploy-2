@@ -5,19 +5,31 @@ use Symfony\Component\Process\Process;
 use SSHProcess\SSHProcess;
 use SSHProcess\RsyncProcess;
 use Deploy\Worker\GitProcess;
+use Deploy\Interfaces\OutputInterface;
 
 abstract class Task
 {
     protected $job;
     protected $message;
 
-    public function __construct($job)
+    public function __construct(OutputInterface $job)
     {
         $this->job = $job;
         $this->message = $job->message;
     }
 
     abstract public function fire($worker);
+
+    public function processCommands($CMDS, $remoteHostName = NULL, $address = null, $username = null, $identifyfile = null, $passphrase = null, $port = 22)
+    {
+        foreach ($CMDS as $command) {
+            if ($remoteHostName === NULL) {
+                $this->process($command);
+            } else {
+                $this->sshProcess($remoteHostName, $address, $username, $command, $identifyfile, $passphrase, null, $port);
+            }
+        }
+    }
 
     public function process($command, $cwd = null, $must = true)
     {

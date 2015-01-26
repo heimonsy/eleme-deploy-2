@@ -69,7 +69,7 @@ class Supervisor
             $jobId = $this->queue->pop();
             if ($jobId !== null) {
                 Log::info("LISTEN [ {$this->pid} ] : Job Recv [{$jobId}];");
-                $p = new Process("php artisan worker:job {$this->queue->queueName()} {$jobId}");
+                $p = new Process("php artisan worker:job job {$this->queue->queueName()} {$jobId}", base_path());
                 $p->start();
                 Log::info("LISTEN [ {$this->pid} ] : Job Started [{$jobId}] : {$p->getCommandLine()};");
             }
@@ -83,12 +83,12 @@ class Supervisor
     protected function recvTaskAndExecute()
     {
         try {
-            $taskId = $this->taskQueue->pop();
-            if ($taskId !== null) {
-                Log::info("LISTEN: Task Recv [{$taskId}];");
-                $p = new Process("php artisan worker:task {$this->taskQueue->queueName()} {$taskId}");
+            $sampleTaskId = $this->taskQueue->pop();
+            if ($sampleTaskId !== null) {
+                Log::info("LISTEN: Sample Task Recv [{$sampleTaskId}];");
+                $p = new Process("php artisan worker:job sampletask {$this->taskQueue->queueName()} {$sampleTaskId}", base_path());
                 $p->start();
-                Log::info("LISTEN: Task Started [{$taskId}] : {$p->getCommandLine()};");
+                Log::info("LISTEN: Sample Task Started [{$sampleTaskId}] : {$p->getCommandLine()};");
             }
             // todo push process to list
 

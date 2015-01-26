@@ -9,9 +9,11 @@ use Deploy\Hosts\HostTypeCatalog;
 use Deploy\Account\User;
 use Deploy\Facade\Worker;
 use Deploy\Worker\Job;
+use Deploy\Worker\DeployScript;
 use Deploy\Site\PullRequestBuild;
 use Deploy\Hosts\HostType;
 use Deploy\Hosts\Host;
+use Deploy\Worker\DeployHost;
 
 
 class ApiController extends Controller
@@ -162,10 +164,30 @@ class ApiController extends Controller
     public function updateDeployConfig(Site $site)
     {
         $deploy_config = $site->deploy_config()->first();
+        try {
+            $APP_SCRIPT = DeployScript::complie(Input::get('app_script'), DeployScript::varList($site, $deploy_config));
+            $STATIC_SCRIPT = DeployScript::complie(Input::get('static_script'), DeployScript::varList($site, $deploy_config));
+        } catch (Exception $e) {
+            Log::info($e);
+            return array('code' => 1, 'msg' => '脚本解析出错, ' . $e->getMessage());
+        }
+
         $deploy_config->fill(Input::only('remote_user', 'remote_owner', 'remote_app_dir', 'remote_static_dir', 
             'app_script', 'static_script', 'deploy_key', 'deploy_key_passphrase'));
 
         $deploy_config->save();
+
+        $user = Sentry::loginUser();
+        $deploy_key = Input::get('deploy_key');
+        if ($deploy_key != '******') {
+            $user = Sentry::loginUser();
+            $job = Worker::createJob(
+                'Deploy\Worker\Jobs\StoreKey',
+                "操作：Store Keys &nbsp; " . "项目：{$site->name} &nbsp;" . "操作者：{$user->name}({$user->login}) &nbsp;",
+                array('site_id' => $site->id)
+            );
+            Worker::push($job);
+        }
 
         return Response::json(array(
             'code' => 0,
@@ -218,45 +240,102 @@ class ApiController extends Controller
     public function siteDeploy(Site $site)
     {
         $user = Sentry::loginUser();
+        $deploy_kind = Input::get('deploy_kind');
+        $deploy_to = Input::get('deploy_to');
         $hosts = array();
-        if (Input::get('deploy_kind') == 'host') {
-            $host = Host::where(array('site_id' => $site->id, 'ip' => Input::get('deploy_to')))->first();
+
+        if ($deploy_kind == 'host') {
+            $host = Host::where(array('site_id' => $site->id, 'ip' => $deploy_to))->first();
+            $hostType = $host->host_types()->first();
+            $catalog = $hostType->catalog()->first();
+
             if ($host == null) {
                 return Response::json(array('code' => 1, 'msg' => 'IP错误或不存在'));
             }
 
-            if (!$user->control($host->host_type()->first()->catalog->accessAction())) {
+            if (!$user->control($catalog->accessAction())) {
                 return Response::json(array('code' => 1, 'msg' => '你没有发布到这台主机的权限'));
             }
-            $toName = $host->ip;
+            $hosts = array($host);
+            $toName = "$host->name($host->ip)";
 
-        } elseif (Input::get('deploy_kind') == 'env') {
-            $catalog = HostTypeCatalog::find(Input::get('deploy_to'));
+        } elseif ($deploy_kind == 'type') {
+            $hostType = HostType::findorFail($deploy_to);
+            if ($hostType == null) {
+                return Response::json(array('code' => 1, 'msg' => '分组不存在'));
+            }
+            $catalog = $hostType->catalog()->first();
+            $hosts = $hostType->hosts()->get();
+
+            $toName = $hostType->name;
+        } else {
+            $catalog = HostTypeCatalog::find($deploy_to);
             if ($catalog == null) {
                 return Response::json(array('code' => 1, 'msg' => '环境不存在'));
             }
-            $toName = $catalog->name;
-        } else {
-            $type = HostType::find(Input::get('deploy_to'));
-            if ($type == null) {
-                return Response::json(array('code' => 1, 'msg' => '主机分组不存在'));
+            $types = HostType::where('catalog_id', $deploy_to)->with('hosts')->get();
+
+            foreach ($types as $hostType) {
+                $hosts = array_merge($hosts, $hostType->hosts()->get());
             }
-            $toName = $type->name;
+            $toName = $catalog->name;
         }
+        if (count($hosts) == 0) {
+            return Response::json(array(
+                'code' => 1,
+                'msg' => '所选的发布环境没有配置主机'
+            ));
+        }
+
+        $commit = substr(Input::get('commit'), 0, 7);
+
+        $job = Worker::createJob(
+            'Deploy\Worker\Jobs\DeployCommit',
+            "操作：Deploy {$commit} To {$toName}; " . "项目：{$site->name} &nbsp;" . "操作者：{$user->name}({$user->login}) &nbsp;"
+        );
 
         $deploy = new Deploy;
         $deploy->fill(Input::only('deploy_kind', 'deploy_to', 'commit'));
         $deploy->user_id = $user->id;
-        $deploy->job_id = 1;
+        $deploy->job_id = $job->id;
         $deploy->site_id = $site->id;
+        $deploy->total_hosts = count($hosts);
         $deploy->description = $toName;
         $deploy->type = Deploy::TYPE_DEPLOY;
         $deploy->status = Deploy::STATUS_WAITING;
         $deploy->save();
 
+        $deployHosts = array();
+        $datetime = date('Y:m:d H:i:s');
+        foreach ($hosts as $host) {
+            $deployHosts[] = array(
+                'job_id' => $job->id,
+                'site_id' => $site->id,
+                'host_type_id' => $host->host_type_id,
+                'deploy_id' => $deploy->id,
+                'type' => $host->type,
+                'host_ip' => $host->ip,
+                'host_name' => $host->name,
+                'host_port' => $host->port,
+                'created_at' => $datetime,
+                'updated_at' => $datetime,
+                'status' => DeployHost::STATUS_WAITING
+            );
+        }
+        DeployHost::insert($deployHosts);
+
+        $job->message = array(
+            'site_id' => $site->id,
+            'deploy_id' => $deploy->id
+        );
+        Worker::push($job);
+
         return Response::json(array(
             'code' => 0,
-            'msg' => '发布成功'
+            'data' => array(
+                'jobId' => $job->id
+            ),
+            'msg' => '发布任务创建成功'
         ));
     }
 
