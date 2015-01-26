@@ -6,7 +6,7 @@ use Eloquent;
 class Deploy extends Eloquent
 {
     const TYPE_DEPLOY = 'deploy';
-    const TYPE_PR_DEPLOY = 'pr_deploy';
+    const TYPE_PR_DEPLOY = 'prdeploy';
 
     const STATUS_WAITING = 'Waiting';
     const STATUS_DEPLOYING = 'Deploying';

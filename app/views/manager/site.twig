@@ -129,7 +129,7 @@
                             <table id="prBuildTable" class="table table-hover small-table">
                                 <thead>
                                     <tr>
-                                        <th>Job</th>
+                                        <th>Number</th>
                                         <th min-width="220">Title</th>
                                         <th>Commit</th>
                                         <th>用户</th>
@@ -145,7 +145,30 @@
                         </div>
                     </div>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="PrDeploy">Pr Deploy</div>
+                <div role="tabpanel" class="tab-pane" id="PrDeploy">
+                    <div class="row">
+                        <div class="col-lg-12" id="prDeployJobWrapper">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <table id="prDeploysTable" class="table table-hover small-table">
+                                <thead>
+                                    <tr>
+                                        <th>Job</th>
+                                        <th>Type</th>
+                                        <th>Commit</th>
+                                        <th>发布到</th>
+                                        <th>状态</th>
+                                        <th>主机数</th>
+                                        <th>更新时间</th>
+                                        <th>详细输出</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
                 <div role="tabpanel" class="tab-pane" id="JobInfo"></div>
             </div>
         </div>
@@ -186,14 +209,88 @@ $(function () {
         return false;
     });
 
+    var showPrDeploy = function () {
+        var table = null;
+        var timeoutEvent = createTimeoutEvent();
+        return function () {
+            timeoutEvent.clear();
+            if (table == null) {
+                table = $('#prDeploysTable').DataTable({
+                    ajax: '/api/site/' + siteId + '/deploy?type=prdeploy',
+                    paging: false,
+                    ordering: false,
+                    info: false,
+                    columns: [
+                        {data: 'job_id'},
+                        {data: 'id'},
+                        {data: 'commit'},
+                        {data: 'description'},
+                        {data: 'status'},
+                        {data: 'id'},
+                        {data: 'updated_at'},
+                        {data: 'job_id'},
+
+                    ],
+                    columnDefs: [
+                    {
+                        render: function (data, type, row) {
+                            return 'PR Deploy';
+                        },
+                        targets: 1
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return data.substr(0, 7);
+                        },
+                        targets: 2
+                    },
+                    {
+                        render: function  (data, type, row) {
+                            return '<span class="label label-' + labels[data] + '">' + data + '</span>';
+                        },
+                        targets: 4
+                    },
+                    {
+                        render: function  (data, type, row) {
+                            return '<button class="btn btn-primary btn-xs btnShowJobHost" data-job-id="' + data + '">详细输出</button>';
+                        },
+                        targets: 7
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return '<span class="label label-default label-num">' + row.total_hosts + '</span><span class="label label-success label-num">' + row.success_hosts +'</span><span class="label label-danger label-num">' + row.error_hosts + '</span>';
+                        },
+                        targets: 5
+                    }
+                    ]
+                });
+            } else {
+                table.ajax.reload();
+            }
+
+            $('#prDeploysTable').unbind('draw.dt');
+            $('#prDeploysTable').on('draw.dt', function (e) {
+                initJobBtn();
+                timeoutEvent.timeout = window.setTimeout(table.ajax.reload, 5000);
+            }.bind(timeoutEvent, table));
+
+            var commit = $('#myTab a[href="#PrDeploy"]').attr('data-to-deploy');
+            $('#myTab a[href="#PrDeploy"]').attr('data-to-deploy', '');
+            renderDeployJob(document.getElementById("prDeployJobWrapper"), siteId, 'prdeploy', commit);
+
+            return timeoutEvent;
+        };
+    }();
+
     var showDeploy = function () {
         var table = null;
         var timeoutEvent = createTimeoutEvent();
         return function () {
             timeoutEvent.clear();
+            var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning"};
             if (table === null) {
                 table = $("#deploysTable").DataTable({
-                    ajax: '/api/site/' + siteId + '/deploy',
+                    ajax: '/api/site/' + siteId + '/deploy?type=deploy',
                     paging: false,
                     ordering: false,
                     info: false,
@@ -239,15 +336,14 @@ $(function () {
             }
 
             $('#deploysTable').unbind('draw.dt');
-            $('#deploysTable').on('draw.dt');
-
-            $('#deploysTable').unbind('draw.dt');
             $('#deploysTable').on('draw.dt', function (e) {
                 initJobBtn();
                 timeoutEvent.timeout = window.setTimeout(table.ajax.reload, 5000);
             }.bind(timeoutEvent, table));
 
-            renderDeployJob(document.getElementById("deployJobWrapper"), siteId);
+            var commit = $('#myTab a[href="#Deploy"]').attr('data-to-deploy');
+            $('#myTab a[href="#Deploy"]').attr('data-to-deploy', '');
+            renderDeployJob(document.getElementById("deployJobWrapper"), siteId, 'deploy', commit);
 
             return timeoutEvent;
         };
@@ -289,10 +385,16 @@ $(function () {
                     columnDefs: [
                     {
                         render: function (data, type, row) {
+                            return '<a href="https://github.com/' + row.repo_name + '/pull/' + row.number + '" target="_blank">' + row.number + '</a>'
+                        },
+                        targets: 0
+                    },
+                    {
+                        render: function (data, type, row) {
                             if (row.status == 'open' && (row.build_status == 'Error' || row.test_status == 'Error' )) {
                                 return '<button class="btn btn-primary btn-xs btnRebuild" data-pr-id="' + row.id + '"/>Rebuild</button>';
                             } else if (row.status == 'open' && row.build_status == 'Success' && row.test_status == 'Success') {
-                                return '<button class="btn btn-primary btn-xs" data-commit="' + row.commit + '"/>Deploy</button>';
+                                return '<button class="btn btn-primary btn-xs btnToDeploy" data-type="#PrDeploy" data-commit="' + row.commit + '"/>Deploy</button>';
                             }
                             return '<i>无</i>';
                         },
@@ -403,6 +505,10 @@ $(function () {
             showJobHostInfo(btn.attr('data-job-id'));
             btn.button('reset');
         });
+        $('.btnToDeploy').click(function (e) {
+            $('#myTab a[href="' + $(this).attr('data-type') + '"]').attr("data-to-deploy", $(this).attr('data-commit'));
+            $('#myTab a[href="' + $(this).attr('data-type') + '"]').tab("show");
+        });
     };
 
     var showBuilds = function () {
@@ -424,11 +530,17 @@ $(function () {
                         {data: 'status_info'},
                         {data: 'updated_at'},
                         {data: 'job_id'},
-                        {data: 'id'},
+                        {data: 'commit'},
                     ],
                     createdRow: function (row, data, index) {
                     },
                     columnDefs: [
+                    {
+                        render: function (data, type, row) {
+                            return '<button class="btn btn-primary btn-xs btnToDeploy" data-type="#Deploy" data-commit="' + data + '"/>Deploy</button>';
+                        },
+                        targets: 7,
+                    },
                     {
                         render: function (data, type, row) {
                             return '<button class="btn btn-primary btn-xs btnOpenJob" data-job-id="' + data + '"/>详细输出</button>';
@@ -684,7 +796,7 @@ $(function () {
             var thisTab = $(e.target);
             location.hash = addNj(thisTab.attr('href'));
 
-            console.log(thisTab.attr('href'));
+            /*console.log(thisTab.attr('href'));*/
             if (thisTab.attr('href').substr(0, 8) == '#JobHost') {
                 timeoutEvent = renderJobInfo(document.getElementById(thisTab.attr('href').substr(1)), thisTab.attr('data-job-id'), 'deploy');
                 return ;
@@ -696,6 +808,9 @@ $(function () {
             }
 
             switch (thisTab.attr('href')) {
+                case '#PrDeploy':
+                    timeoutEvent = showPrDeploy();
+                    return ;
                 case '#Deploy':
                     timeoutEvent = showDeploy();
                     return ;

@@ -224,15 +224,23 @@ class ApiController extends Controller
 
     public function siteTypeAndEnv(Site $site)
     {
+        $type = Input::get('type');
+
         $catalogs = HostTypeCatalog::all();
         $hostTypes = HostType::where('site_id', $site->id)->with('catalog')->orderBy('catalog_id')->get();
+        $commits = array();
+        if ($type == 'deploy') {
+            $commits = $site->commits()->orderBy('id', 'desc')->limit(30)->get();
+        } else {
+            $commits = PullRequestBuild::of($site)->open()->success()->orderBy('id', 'desc')->limit(30)->get();
+        }
 
         return Response::json(array(
             'code' => 0,
             'data' => array(
                 'envs' => $catalogs,
                 'types' => $hostTypes,
-                'commits' => $site->commits()->orderBy('id', 'desc')->get()
+                'commits' => $commits
             )
         ));
     }
@@ -287,11 +295,12 @@ class ApiController extends Controller
             ));
         }
 
+        $deployType = Input::get('type');
         $commit = substr(Input::get('commit'), 0, 7);
 
         $job = Worker::createJob(
             'Deploy\Worker\Jobs\DeployCommit',
-            "操作：Deploy {$commit} To {$toName}; " . "项目：{$site->name} &nbsp;" . "操作者：{$user->name}({$user->login}) &nbsp;"
+            '操作：' . ($deployType == 'prdeploy' ? 'PR ' : '') .  "Deploy {$commit} To {$toName}; " . "项目：{$site->name} &nbsp;" . "操作者：{$user->name}({$user->login}) &nbsp;"
         );
 
         $deploy = new Deploy;
@@ -301,7 +310,7 @@ class ApiController extends Controller
         $deploy->site_id = $site->id;
         $deploy->total_hosts = count($hosts);
         $deploy->description = $toName;
-        $deploy->type = Deploy::TYPE_DEPLOY;
+        $deploy->type = Input::get('type');
         $deploy->status = Deploy::STATUS_WAITING;
         $deploy->save();
 
@@ -346,7 +355,7 @@ class ApiController extends Controller
             'data' => Deploy::where(
                 array(
                     'site_id' => $site->id,
-                    'type' => Deploy::TYPE_DEPLOY,
+                    'type' => Input::get('type'),
                 )
             )->orderBy('id', 'desc')->limit(30)->get(),
         ));

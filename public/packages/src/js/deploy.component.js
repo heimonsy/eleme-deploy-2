@@ -1548,7 +1548,8 @@ var DeployJobForm = React.createClass({
         e.preventDefault();
     },
     getInitialState: function () {
-        return {alertType: null, alertMsg: null, commit: '', commitError: null, deploy_kind: 'type', deploy_kindError: null, deploy_toError: null, deploy_to: null, envs: [], types: [], commits: []};
+        var commit = this.props.toDeploy ? this.props.toDeploy : '';
+        return {alertType: null, alertMsg: null, commit: commit, commitError: null, deploy_kind: 'type', deploy_kindError: null, deploy_toError: null, deploy_to: null, envs: [], types: [], commits: []};
     },
     handleChange: function (e) {
         var state = this.state;
@@ -1572,11 +1573,21 @@ var DeployJobForm = React.createClass({
         var state = this.state;
         if (this.state.deploy_to == null || this.state.deploy_to.isEmpty()) {
             state.deploy_toError = true;
+            state.alertType = 'error';
+            state.alertMsg = '请选择发布到哪里';
             this.setState(state);
             return ;
         }
+        if (this.state.commit == null || this.state.commit.isEmpty()) {
+            state.commitError = true;
+            state.alertType = 'error';
+            state.alertMsg = '请选择Commit';
+            this.setState(state);
+            return ;
+        }
+
         btn.button('loading');
-        $.post('/api/site/' + this.props.siteId + '/deploy', {
+        $.post('/api/site/' + this.props.siteId + '/deploy?type=' + this.props.deployType, {
             _token: csrfToken,
             deploy_kind: this.state.deploy_kind,
             deploy_to: this.state.deploy_to,
@@ -1595,14 +1606,11 @@ var DeployJobForm = React.createClass({
         }.bind(this), 'json');
     },
     componentDidMount: function () {
-        $.getJSON('/api/site/' + this.props.siteId + '/typenv', function (data) {
+        $.getJSON('/api/site/' + this.props.siteId + '/typenv?type=' + this.props.deployType, function (data) {
             if (data.code == 0) {
                 state = this.state;
                 state.envs = data.data.envs;
                 state.commits = data.data.commits;
-                if (state.commits.length > 0) {
-                    state.commit = state.commits[0].commit;
-                }
                 state.types = data.data.types;
                 this.setState(state);
             } else {
@@ -1641,8 +1649,13 @@ var DeployJobForm = React.createClass({
         }
 
         var commits = this.state.commits.map(function (commit) {
-            return (<option key={'commit-' + commit.id} onChange={this.handleChange} value={commit.commit}>[{commit.checkout.substr(0, 16)}]&nbsp;&nbsp;{commit.commit.substr(0, 7)}</option>);
-        });
+            if (this.props.deployType == 'deploy') {
+                return (<option key={'commit-' + commit.id} onChange={this.handleChange} value={commit.commit}>[{commit.checkout.substr(0, 16)}]&nbsp;&nbsp;{commit.commit.substr(0, 7)}</option>);
+            } else {
+                return (<option key={'commit-' + commit.id} onChange={this.handleChange} value={commit.commit}>[{commit.number}]&nbsp;&nbsp;{commit.commit.substr(0, 7)}</option>);
+            }
+        }.bind(this));
+        var btnName = this.props.deployType == 'deploy' ? 'Deploy' : 'PR Deploy';
 
         return (
             <form className="form-inline" role="form" onSubmit={this.emptySubmitHandle}>
@@ -1655,10 +1668,11 @@ var DeployJobForm = React.createClass({
                 {kind}
                 &nbsp;
                 <Input type="select" name="commit" value={this.state.commit} onChange={this.handleChange}>
+                    <option value="">请选择Commit...</option>
                     {commits}
                 </Input>
                 &nbsp;
-                <Button bsStyle="primary" data-loading-text="加载中..." onClick={this.handleSubmit} autoComplete="off">Deploy</Button>
+                <Button bsStyle="primary" data-loading-text="加载中..." onClick={this.handleSubmit} autoComplete="off">{btnName}</Button>
                 &nbsp; &nbsp;
                 <InlineFormAlertComponent alertType={this.state.alertType} alertMsg={this.state.alertMsg}/>
             </form>

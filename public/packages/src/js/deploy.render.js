@@ -114,9 +114,9 @@ var renderJobInfo = function (element, jobId, type) {
 };
 
 
-var renderDeployJob = function (element, siteId) {
+var renderDeployJob = function (element, siteId, type, toDeploy) {
     $(element).html("");
-    var c = React.render(<DeployJobForm siteId={siteId} />, element);
+    var c = React.render(<DeployJobForm siteId={siteId} deployType={type} toDeploy={toDeploy}/>, element);
 };
 
 ;
