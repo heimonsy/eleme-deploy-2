@@ -74,6 +74,10 @@ class DeployCommit extends Task
             //执行同步后本地命令
             $this->processCommands($APP_SCRIPT['after']['handle']);
 
+            // 监控任务执行情况
+            $this->watchDeployToHost($this->deploy->id);
+
+            Log::info("$this->LOG_PREFIX Start Watch DeployToHost");
             $this->deploy->setStatus(Deploy::STATUS_SUCCESS);
             $worker->deleteJob();
 
@@ -93,7 +97,7 @@ class DeployCommit extends Task
         $redis = app('redis')->connection();
 
         $lock = null;
-        try{
+        try {
             while (!$hosts->isEmpty()) {
                 $host = $hosts->shift();
                 $type = $host->host_type_id;
@@ -137,6 +141,30 @@ class DeployCommit extends Task
         }
     }
 
+    public function watchDeployToHost($deployId)
+    {
+        $start = time();
+        while (true) {
+            $deploy = Deploy::find($deployId);
+            if ($deploy->total_hosts == $deploy->success_hosts + $deploy->error_hosts) {
+                break;
+            }
+
+            if (time() - $start > 600) {
+                $hosts = DeployHost::of($deploy)->deploying()->get();
+                if (count($hosts) == 0) {
+                    throw new Exception("Unknow Error");
+                }
+                $hostsStr = '';
+                foreach ($hosts as $host) {
+                    $hostsStr .= "{$host->host_name}({$host->host_ip}) ";
+                }
+                throw new Exception("Deploy To {$hostsStr} Error");
+            }
+
+            sleep(5);
+        }
+    }
 
     public function arrayToQueue($hosts)
     {

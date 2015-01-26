@@ -4,6 +4,7 @@ namespace Deploy\Worker;
 use Eloquent;
 use Deploy\Interfaces\OutputInterface;
 use Deploy\Traits\OutputTrait;
+use Deploy\Site\Deploy;
 
 class DeployHost extends Eloquent
 {
@@ -33,6 +34,11 @@ class DeployHost extends Eloquent
     public function scopeWaiting($query)
     {
         return $query->where('status', self::STATUS_WAITING);
+    }
+
+    public function scopeOf($query, Deploy $deploy)
+    {
+        return $query->where('deploy_id', $deploy->id);
     }
 
     public function scopeType($query, $host_type_id)
