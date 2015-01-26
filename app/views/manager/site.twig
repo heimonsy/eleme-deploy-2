@@ -13,10 +13,12 @@
         <div class="col-lg-12">
             <!-- Nav tabs -->
             <ul id="myTab" class="nav nav-tabs" role="tablist">
+                {% if can_manage %}
                 <li role="presentation"><a href="#Setting" role="tab" data-toggle="tab">项目配置</a></li>
                 <li role="presentation"><a href="#DeploySetting" role="tab" data-toggle="tab">发布配置</a></li>
                 <li role="presentation"><a href="#HostType" role="tab" data-toggle="tab">机器分组</a></li>
                 <li role="presentation"><a href="#Hosts" role="tab" data-toggle="tab">机器配置</a></li>
+                {% endif %}
                 <li role="presentation"><a href="#Build" role="tab" data-toggle="tab">Build</a></li>
                 <li role="presentation"><a href="#Deploy" role="tab" data-toggle="tab">Deploy</a></li>
                 <li role="presentation"><a href="#PrBuild" role="tab" data-toggle="tab">PR Build</a></li>
@@ -30,7 +32,9 @@
                 <div role="tabpanel" class="tab-pane" id="DeploySetting"></div>
                 <div role="tabpanel" class="tab-pane" id="HostType">
                     <div class="row">
+                    {% if can_manage %}
                         <div class="col-lg-12"><button class="btn btn-primary" id="newHostType">新增</button></div>
+                    {% endif %}
                     </div>
                     <div class="row">
                         <div class="col-lg-12">
@@ -50,7 +54,9 @@
                 </div>
                 <div role="tabpanel" class="tab-pane" id="Hosts">
                     <div class="row">
+                    {% if can_manage %}
                         <div class="col-lg-12"><button class="btn btn-primary" id="newHost">新增</button></div>
+                    {% endif %}
                     </div>
                     <div class="row">
                         <div class="col-lg-12">

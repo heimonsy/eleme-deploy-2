@@ -59,7 +59,7 @@ $(function () {
                     var html = '';
                     for (var i in row.roles) {
                         var role = row.roles[i];
-                        var clss = role.is_admin_role ? 'label-danger' : 'label-default';
+                        var clss = role.is_admin_role == 1 ? 'label-danger' : 'label-default';
                         if (role.is_admin_role == 1 && data == loginUser.id)  {
                             html += "<span class=\"tag label " + clss + "\"> <span>" + role.name + "</span></span>";
                         } else {

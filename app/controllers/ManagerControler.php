@@ -28,9 +28,13 @@ class ManagerController extends BaseController
 
     public function site(Site $site)
     {
+        $user = \Sentry::loginUser();
+        $canManager = $user->control($site->manageAction());
+
         return Response::view('manager.site', array(
             'site' => $site,
-            'payload_url' => url('payload/site/' . $site->id)
+            'payload_url' => url('payload/site/' . $site->id),
+            'can_manage' => $canManager
         ));
     }
 
