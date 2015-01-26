@@ -1679,4 +1679,44 @@ var DeployJobForm = React.createClass({
         );
     }
 });
+
+var WatchComponent = React.createClass({
+    getInitialState: function () {
+        return { isWatching: this.props.isWatching };
+    },
+    handleClick: function (e) {
+        var btn = $(e.target);
+        var action = btn.attr('class') == 'do-watch' ? 'watch' : 'unwatch';
+        $.post('/api/site/' + this.props.siteId + '/' + action, {
+            _token : csrfToken,
+        }, function (data) {
+            if (data.code == 0) {
+                this.setState({isWatching: action == 'watch' ? true : false});
+            } else {
+                alert(data.msg);
+            }
+        }.bind(this), 'json');
+    },
+    render: function () {
+        var watch = this.state.isWatching ? (
+            <button type="button" className="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown">
+                Watching <span className="caret"></span>
+            </button>
+        ) : (
+            <button type="button" className="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+                Not Watch <span className="caret"></span>
+            </button>
+        );
+        return (
+            <div className="btn-group">
+                {watch}
+                <ul className="dropdown-menu">
+                    <li><a href="#" className="do-watch" onClick={this.handleClick} data-id="web2">Watch</a></li>
+                    <li><a href="#" className="not-watch" onClick={this.handleClick} data-id="web2">Not Watch</a></li>
+                </ul>
+            </div>
+        );
+    }
+});
+
 ;

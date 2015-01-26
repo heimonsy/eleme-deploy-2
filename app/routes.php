@@ -164,6 +164,16 @@ Route::group(
             'before' => array('csrf'),
             'uses' =>  'ApiController@updateDeployConfig'
         ));
+
+        Route::post('/api/site/{site}/watch', array(
+            'before' => array('csrf'),
+            'uses' => 'SiteController@watch'
+        ));
+
+        Route::post('/api/site/{site}/unwatch', array(
+            'before' => array('csrf'),
+            'uses' => 'SiteController@unwatch'
+        ));
     }
 );
 

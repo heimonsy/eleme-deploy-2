@@ -119,4 +119,8 @@ var renderDeployJob = function (element, siteId, type, toDeploy) {
     var c = React.render(<DeployJobForm siteId={siteId} deployType={type} toDeploy={toDeploy}/>, element);
 };
 
+var renderWatchButton = function (element, siteId, isWatching) {
+    $(element).html("");
+    React.render(<WatchComponent siteId={siteId} isWatching={isWatching}/>, element);
+};
 ;

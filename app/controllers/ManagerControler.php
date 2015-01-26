@@ -30,11 +30,13 @@ class ManagerController extends BaseController
     {
         $user = \Sentry::loginUser();
         $canManager = $user->control($site->manageAction());
+        $isWatching = $user->watchs->contains($site->id);
 
         return Response::view('manager.site', array(
             'site' => $site,
             'payload_url' => url('payload/site/' . $site->id),
-            'can_manage' => $canManager
+            'can_manage' => $canManager,
+            'isWatching' => $isWatching
         ));
     }
 

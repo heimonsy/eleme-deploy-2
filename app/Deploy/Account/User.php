@@ -122,4 +122,9 @@ class User extends Eloquent implements ControllerInterface
     {
         return array_merge(parent::toArray(), array('permissions' => $this->permissions()));
     }
+
+    public function watchs()
+    {
+        return $this->belongsToMany('Deploy\Site\Site', 'watchs', 'user_id', 'site_id');
+    }
 }

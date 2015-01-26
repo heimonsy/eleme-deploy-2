@@ -115,4 +115,9 @@ class Site extends Eloquent implements AccessProtectedInterface, ManageProtected
         $value = $this->attributes['pull_key_passphrase'];
         return $value == '' ? '' : Crypt::decrypt($value);
     }
+
+    public function watchers()
+    {
+        return $this->belongsToMany('Deploy\Account\User', 'watchs', 'site_id', 'user_id');
+    }
 }

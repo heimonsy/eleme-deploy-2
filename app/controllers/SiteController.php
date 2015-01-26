@@ -100,4 +100,29 @@ class SiteController extends Controller
             'msg' => '删除成功',
         ));
     }
+
+    public function watch(Site $site)
+    {
+        $user = Sentry::loginUser();
+        if (!$user->watchs->contains($site->id)) {
+            $user->watchs()->attach($site->id);
+        }
+
+        return Response::json(array(
+            'code' => 0,
+            'msg' => 'Watch Success'
+        ));
+    }
+
+    public function unwatch(Site $site)
+    {
+        $user = Sentry::loginUser();
+
+        $user->watchs()->detach($site->id);
+
+        return Response::json(array(
+            'code' => 0,
+            'msg' => 'Un Watch Success'
+        ));
+    }
 }
