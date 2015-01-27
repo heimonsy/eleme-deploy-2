@@ -125,7 +125,7 @@ class ApiController extends Controller
     public function updateSiteConfig(Site $site)
     {
         $site->fill(Input::only('static_dir', 'rsync_exclude_file', 'default_branch', 'build_command', 'test_command',
-                                'hipchat_room', 'hipchat_token', 'pull_key', 'pull_key_passphrase'));
+                                'hipchat_room', 'hipchat_token', 'pull_key', 'pull_key_passphrase', 'github_token'));
         $site->save();
 
         $pull_key = Input::get('pull_key');

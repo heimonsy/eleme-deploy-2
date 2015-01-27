@@ -104,6 +104,21 @@ class Site extends Eloquent implements AccessProtectedInterface, ManageProtected
         return $value;
     }
 
+    public function setGithubTokenAttribute($value)
+    {
+        if ($value != '******') {
+            $this->attributes['github_token'] = $value;
+        }
+    }
+
+    public function getGithubTokenAttribute($value)
+    {
+        if (!empty($value)) {
+            $value = '******';
+        }
+        return $value;
+    }
+
     public function realPullKey()
     {
         $value = $this->attributes['pull_key'];
@@ -120,6 +135,11 @@ class Site extends Eloquent implements AccessProtectedInterface, ManageProtected
     {
         $value = $this->attributes['hipchat_token'];
         return $value;
+    }
+
+    public function realGithubToken()
+    {
+        return $this->attributes['github_token'];
     }
 
     public function watchers()

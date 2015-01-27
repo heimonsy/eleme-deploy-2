@@ -14,9 +14,15 @@ use Deploy\Site\Commit;
 use Deploy\Site\Build;
 use Deploy\Exception\BaseException;
 use Deploy\Site\PullRequestBuild;
+use Deploy\Facade\Worker;
 
 class BuildPullRequest extends Task
 {
+    protected $site;
+    protected $pr;
+
+    protected $LOG_PREFIX;
+
     public function fire($worker)
     {
         $site = Site::with('deploy_config')->findOrFail($this->message['site_id']);
@@ -24,6 +30,10 @@ class BuildPullRequest extends Task
 
         $LOG_PREFIX = "[Site {$site->name}] [PR Build #{$pr->title}],";
         $redis = app('redis')->connection();
+
+        $this->site = $site;
+        $this->pr = $pr;
+        $this->LOG_PREFIX = $LOG_PREFIX;
 
         $lock = null;
         $process = 0;
@@ -98,7 +108,8 @@ class BuildPullRequest extends Task
                 }
             } catch (Exception $e) {
                 $pr->setCommandStatus(null, PullRequestBuild::STATUS_ABORT);
-                throw $e;
+                $this->sendNotify('failure', 'Build Failure');
+                throw new Exception("Build Failure", 1379);
             }
 
             try {
@@ -108,16 +119,21 @@ class BuildPullRequest extends Task
                 }
             } catch (Exception $e) {
                 $pr->setCommandStatus(null, PullRequestBuild::STATUS_ERROR);
-                throw $e;
+                $this->sendNotify('failure', 'Test Failure');
+                throw new Exception("Test Failure", 1379);
             }
             $pr->setCommandStatus(PullRequestBuild::STATUS_SUCCESS, PullRequestBuild::STATUS_SUCCESS);
             $worker->deleteJob();
-
             $worker->log("{$LOG_PREFIX} Build Pull Request Success");
+
+            $this->sendNotify('success', 'Build & Test Success');
 
         } catch (Exception $e) {
             if ($lock != null) {
                 $lock->release();
+            }
+            if ($e->getCode() != 1379) {
+                $this->sendNotify('error', 'Job Error');
             }
             $worker->log("{$LOG_PREFIX} Build Pull Request Error [{$e->getLine()}: {$e->getMessage()}]");
 
@@ -136,6 +152,24 @@ class BuildPullRequest extends Task
             $pr->setCommandStatus(PullRequestBuild::STATUS_ERROR, null);
 
             throw $e;
+        }
+    }
+
+    public function sendNotify($status, $description)
+    {
+        try {
+            $task = Worker::createTask('Deploy\Worker\Tasks\PRStatusNotify', "发送notify", array(
+                'site_id' => $this->site->id,
+                'pr_id' => $this->pr->id,
+                'job_id' => $this->job->id,
+                'description' => $description,
+                'status' => $status
+            ), $this->job->id);
+
+            Worker::pushTask($task);
+        } catch (Exception $e) {
+            Log::error($e);
+            Log::error("PR Deploy Notify Error");
         }
     }
 }

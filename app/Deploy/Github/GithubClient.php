@@ -46,10 +46,13 @@ class GithubClient
         }
 
         $json = json_decode($this->response->getBody(), true);
+        $code = $this->response->getStatusCode() . '';
 
-        if ($this->response->getStatusCode() != 200) {
-            $params = http_build_query($url);
-            throw new GithubException('Github Api Error', "github api error. api={$url}; params={$params}; method={$method}; response_body={$this->response->getBody()}");
+        if ($code[0] != '2') {
+            if (is_array($params)) {
+                $params = http_build_query($params);
+            }
+            throw new GithubException('Github Api Error', "github api error. code={$this->response->getStatusCode()}; api={$url}; params={$params}; method={$method}; response_body={$this->response->getBody()}");
         }
 
         return $json;
