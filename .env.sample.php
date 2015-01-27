@@ -17,6 +17,14 @@ return array(
     'REDIS_PORT' => 6379,
     'REDIS_DATABASE' => 0,
 
+    'SMTP_HOST' => '',
+    'SMTP_PORT' => 222,
+    'SMTP_ENCRYPTION' => 'ssl',
+    'SMTP_FROM_ADDRESS' => '',
+    'SMTP_FROM_NAME' => '',
+    'SMTP_USER' => '',
+    'SMTP_PASS' => '',
+
     'GITHUB_ORGANIZATION' => '',
     'GITHUB_CLIENT_ID' => '',
     'GITHUB_CLIENT_SECRET' => '',
