@@ -19,6 +19,7 @@ class DeployCommit extends Task
 {
     private $site;
     private $deploy;
+    private $hosts;
 
     private $LOG_PREFIX;
     private $COMMIT;
@@ -41,7 +42,7 @@ class DeployCommit extends Task
 
             $statics = DeployHost::where('deploy_id', $this->deploy->id)->static()->get();
             $apps = DeployHost::where('deploy_id', $this->deploy->id)->app()->get();
-            $hosts = array(
+            $this->hosts = array(
                 'static' => $this->arrayToQueue($statics),
                 'app' => $this->arrayToQueue($apps),
             );
@@ -57,7 +58,7 @@ class DeployCommit extends Task
              *****************************************/
             //执行同步前本地命令
             $this->processCommands($STATIC_SCRIPT['before']['handle']);
-            $this->deployPlan($hosts['static']);
+            $this->deployPlan($this->hosts['static']);
             //执行同步后本地命令
             $this->processCommands($STATIC_SCRIPT['after']['handle']);
 
@@ -70,7 +71,7 @@ class DeployCommit extends Task
              *****************************************/
             //执行同步前本地命令
             $this->processCommands($APP_SCRIPT['before']['handle']);
-            $this->deployPlan($hosts['app']);
+            $this->deployPlan($this->hosts['app']);
             //执行同步后本地命令
             $this->processCommands($APP_SCRIPT['after']['handle']);
 
@@ -83,12 +84,15 @@ class DeployCommit extends Task
 
             Log::info("$this->LOG_PREFIX Success");
 
+            $this->sendNotify('Success');
+
         } catch (Exception $e) {
             $this->deploy->setStatus(Deploy::STATUS_ERROR);
             Log::info($e);
 
             $worker->deleteJob(Workerable::STATUS_ERROR);
             Log::info("$this->LOG_PREFIX Error");
+            $this->sendNotify('Error');
         }
     }
 
@@ -124,12 +128,12 @@ class DeployCommit extends Task
                         Log::info("$this->LOG_PREFIX Start Deploy To {$host->host_name}");
                     } else {
                         Log::info("$this->LOG_PREFIX LOCK push back $host->host_name");
-                        $hosts['static']->push($host);
+                        $hosts->push($host);
                         $lock = null;
                     }
                 } else {
                     Log::info("$this->LOG_PREFIX FULL push back $host->host_name");
-                    $hosts['static']->push($host);
+                    $hosts->push($host);
                 }
                 sleep(1);
             };
@@ -173,6 +177,24 @@ class DeployCommit extends Task
             $hostQueue->push($host);
         }
         return $hostQueue;
+    }
+
+    public function sendNotify($status)
+    {
+        try {
+            $task = Worker::createTask('Deploy\Worker\Tasks\DeployNotify', "发送notify", array(
+                'site_id' => $this->site->id,
+                'deploy_id' => $this->deploy->id,
+                'job_id' => $this->job->id,
+                'status' => $status,
+            ), $this->job->id);
+            Worker::pushTask($task);
+
+            Log::info("{$this->LOG_PREFIX} Push Notify Success");
+        } catch (Exception $e) {
+            Log::info($e);
+            Log::info("{$this->LOG_PREFIX} Push Notify Faild");
+        }
     }
 }
 

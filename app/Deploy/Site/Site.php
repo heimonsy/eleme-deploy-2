@@ -116,8 +116,22 @@ class Site extends Eloquent implements AccessProtectedInterface, ManageProtected
         return $value == '' ? '' : Crypt::decrypt($value);
     }
 
+    public function realHipchatToken()
+    {
+        $value = $this->attributes['hipchat_token'];
+        return $value;
+    }
+
     public function watchers()
     {
         return $this->belongsToMany('Deploy\Account\User', 'watchs', 'site_id', 'user_id');
+    }
+
+    public function repoName()
+    {
+        if (preg_match('/github\.com:(.+?)\.git$/i', $this->repo_git, $matchs)) {
+            return $matchs[1];
+        }
+        return null;
     }
 }

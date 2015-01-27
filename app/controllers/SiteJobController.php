@@ -23,7 +23,7 @@ class SiteJobController extends Controller
         if ($type == 'deploy') {
             $response['data']['hosts'] = DeployHost::where('job_id', $job->id)->get();
             $response['data']['deploy'] = $deploy = Deploy::where('job_id', $job->id)->first();
-            $response['status'] = $deploy->total_hosts <= $deploy->success_hosts + $deploy->error_hosts ? 
+            $response['status'] = $deploy->isSuccess() && $job->isSuccess() && ($deploy->total_hosts <= $deploy->success_hosts + $deploy->error_hosts) ?
                 'Finish' : 'Doing';
         } else {
             $response['status'] = $job->status != WorkableInterface::STATUS_ERROR && $job->status != WorkableInterface::STATUS_ERROR ? 'Doing' : 'Finish';

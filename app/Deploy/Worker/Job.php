@@ -16,6 +16,10 @@ class Job extends Eloquent implements OutputInterface, WorkableInterface
 
     protected $guarded = array('id');
 
+    public function isSuccess()
+    {
+        return $this->status == WorkableInterface::STATUS_SUCCESS;
+    }
 
     public function getOutputIdentify()
     {
