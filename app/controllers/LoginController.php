@@ -62,7 +62,8 @@ class LoginController extends Controller
 
         $user = User::firstOrNew(array('login' => $userJson['login']));
         $user->email = $email;
-        $user->token = $accessToken;
+        $user->token = '';
+        //$user->token = $accessToken;
         if ($user->status === null) {
             $user->status = User::STATUS_REGISTER;
             $route = 'register';
