@@ -172,7 +172,7 @@ class ApiController extends Controller
             return array('code' => 1, 'msg' => '脚本解析出错, ' . $e->getMessage());
         }
 
-        $deploy_config->fill(Input::only('remote_user', 'remote_owner', 'remote_app_dir', 'remote_static_dir', 
+        $deploy_config->fill(Input::only('remote_user', 'remote_owner', 'remote_app_dir', 'remote_static_dir',
             'app_script', 'static_script', 'deploy_key', 'deploy_key_passphrase'));
 
         $deploy_config->save();
@@ -358,6 +358,125 @@ class ApiController extends Controller
                     'type' => Input::get('type'),
                 )
             )->orderBy('id', 'desc')->limit(30)->get(),
+        ));
+    }
+
+    public function siteMultiHost(Site $site)
+    {
+        $hostTypes = HostType::where('site_id', 2)->lists('id', 'name');
+        $date = date('Y-m-d H:i:s');
+
+        $hostList = preg_replace('/ +/m', ' ', Input::get('host_list'));
+        $hostList = explode("\n", $hostList);
+
+        $errors = array();
+        $input_hosts = array();
+        $input_names = array();
+        $input_ips = array(
+            'APP' => array(),
+            'STATIC' => array(),
+        );
+        $input_host_types = array();
+        $f_error_to_msg = function ($errors) {
+            $str = '';
+            foreach ($errors as $key => $value) {
+                $str .= "{$value}：{$key}<br>";
+            }
+            return $str;
+        };
+
+        $f_is_ip = function ($ip) {
+            return
+                preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/', $ip)
+                > 0;
+        };
+        $f_is_port = function ($port) {
+            return $port > 0 && $port < 65536;
+        };
+        $f_have_duplicate = function ($arr) {
+            $new = array_unique($arr);
+            return count($new) !== count($arr);
+        };
+
+        foreach ($hostList as $line) {
+            $line = trim($line);
+            if ($line == '') continue;
+
+            $host = explode(' ', $line);
+            if (count($host) != 5) {
+                $errors[$line] = '该行字段数不正确';
+                continue;
+            }
+            $hosts[] = array(
+                'name' => $host[2],
+                'host_type_id' => isset($hostTypes[$host[0]]) ? $hostTypes[$host[0]] : 0,
+                'ip' => $host[3],
+                'port' => $host[4],
+                'site_id' => $site->id,
+                'type' => $host[1],
+                'created_at' => $date,
+                'updated_at' => $date,
+            );
+
+            if (!isset($hostTypes[$host[0]])) {
+                $errors[$host[0]] = '分组不存在';
+            }
+
+            $host[1] = strtoupper($host[1]);
+            if ($host[1] !== 'APP' && $host[1] !== 'STATIC') {
+                $errors[$host[1]] = '发布类型不存在';
+            } elseif ($f_is_ip($host[3])) {
+                $input_ips[$host[1]][] = $host[3];
+            } else {
+                $errors[$host[3]] = 'IP格式错误';
+            }
+
+            if (!$f_is_port($host[4])) {
+                $errors[$host[4]] = '端口格式错误';
+            }
+
+            $input_names[] = $host[2];
+        }
+        $have_ips = array();
+        if (count($input_ips['APP']) > 0) {
+            $have_ips = array_merge($have_ips, Host::where(array('site_id' => $site->id, 'type' => 'APP'))->whereIn('ip', $input_ips['APP'])->lists('ip'));
+            if ($f_have_duplicate($input_ips['APP'])) {
+                $errors['IP-ERROR'] = '输入的IP有重复';
+            }
+        }
+        if (count($input_ips['STATIC']) > 0) {
+            $have_ips = array_merge($have_ips, Host::where(array('site_id' => $site->id, 'type' => 'STATIC'))->whereIn('ip', $input_ips['STATIC'])->lists('ip'));
+            if ($f_have_duplicate($input_ips['STATIC'])) {
+                $errors['IP-ERROR'] = '输入的IP有重复';
+            }
+        }
+        foreach ($have_ips as $ip) {
+            $errors[$ip] = 'IP已存在';
+        }
+
+        $have_names = array();
+        if (count($input_names) > 0) {
+            $have_names = Host::where(array('site_id' => $site->id))->whereIn('name', $input_names)->lists('name');
+            if ($f_have_duplicate($input_names)) {
+                $errors['NAME-ERRORS'] = '输入主机名有重复';
+            }
+        }
+        foreach ($have_names as $name) {
+            $errors[$name] = '主机名已存在';
+        }
+
+        if (count($errors) > 0) {
+            return Response::json(array(
+                'code' => 1,
+                'msg' => $f_error_to_msg($errors)
+            ));
+        }
+
+        Host::insert($hosts);
+
+        return Response::json(array(
+            'code' => 0,
+            'msg' => '添加成功'
         ));
     }
 }

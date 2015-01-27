@@ -55,7 +55,7 @@
                 <div role="tabpanel" class="tab-pane" id="Hosts">
                     <div class="row">
                     {% if can_manage %}
-                        <div class="col-lg-12"><button class="btn btn-primary" id="newHost">新增</button></div>
+                        <div class="col-lg-12"><button class="btn btn-primary" id="newHost">新增</button>&nbsp;&nbsp;&nbsp;<button class="btn btn-primary" id="newHostMany">批量添加</button></div>
                     {% endif %}
                     </div>
                     <div class="row">
@@ -636,7 +636,7 @@ $(function () {
                 table.ajax.reload();
             }
 
-            $('#newHost').unbind();
+            $('#newHost').unbind('click');
             $('#newHost').click(function (data) {
                 var btn = $(this);
                 btn.button('loading');
@@ -644,6 +644,19 @@ $(function () {
                     btn.button('reset');
                     if (data.code == 0) {
                         renderSiteHosts(normalModalWrapper, 'new', {host_types: data.data}, table.ajax.reload);
+                    } else {
+                        alert(data.msg);
+                    }
+                });
+            });
+            $('#newHostMany').unbind('click');
+            $('#newHostMany').click(function (e) {
+                var btn = $(this);
+                btn.button('loading');
+                $.getJSON('/api/site/' + siteId + '/hosttype', function (data) {
+                    btn.button('reset');
+                    if (data.code == 0) {
+                        renderSiteHostsMany(normalModalWrapper, {host_types: data.data}, table.ajax.reload);
                     } else {
                         alert(data.msg);
                     }

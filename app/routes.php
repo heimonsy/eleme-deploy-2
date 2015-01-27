@@ -148,6 +148,11 @@ Route::group(
             'uses' => 'ApiController@siteDeploy'
         ));
 
+        Route::post('/api/site/{site}/multihost', array(
+            'before' => array('csrf'),
+            'uses' => 'ApiController@siteMultiHost'
+        ));
+
         Route::get('/api/site/{site}/deploy', 'ApiController@indexDeploy');
 
         Route::put('/api/site/{site}/prrebuild', array(

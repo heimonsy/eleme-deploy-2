@@ -123,4 +123,9 @@ var renderWatchButton = function (element, siteId, isWatching) {
     $(element).html("");
     React.render(<WatchComponent siteId={siteId} isWatching={isWatching}/>, element);
 };
+
+var renderSiteHostsMany = function (element, data, updateCallback) {
+    $(element).html("");
+    var c = React.render(<AddSiteHostsMany data={data} updateCallback={updateCallback} />, element); };
+
 ;

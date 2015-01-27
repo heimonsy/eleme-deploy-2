@@ -11,7 +11,7 @@ class SiteHostController extends Controller
     {
         return Response::json(array(
             'code' => 0,
-            'data' => Host::where('site_id', '=', $site->id)->with('host_type')->get()
+            'data' => Host::where('site_id', '=', $site->id)->with('host_type')->orderBy('type')->orderBy('id', 'desc')->get()
         ));
     }
 

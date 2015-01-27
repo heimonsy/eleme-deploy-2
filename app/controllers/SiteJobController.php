@@ -26,7 +26,7 @@ class SiteJobController extends Controller
             $response['status'] = $deploy->isSuccess() && $job->isSuccess() && ($deploy->total_hosts <= $deploy->success_hosts + $deploy->error_hosts) ?
                 'Finish' : 'Doing';
         } else {
-            $response['status'] = $job->status != WorkableInterface::STATUS_ERROR && $job->status != WorkableInterface::STATUS_ERROR ? 'Doing' : 'Finish';
+            $response['status'] = $job->status != WorkableInterface::STATUS_ERROR && $job->status != WorkableInterface::STATUS_SUCCESS ? 'Doing' : 'Finish';
         }
 
         return Response::json($response);

@@ -1720,4 +1720,88 @@ var WatchComponent = React.createClass({
     }
 });
 
+var AddSiteHostsMany = React.createClass({
+    emptySubmitHandle: function (e) {
+        e.preventDefault();
+    },
+
+    handleSubmit: function (btn) {
+        btn = $(btn);
+        var state = this.state;
+        if (state.hostList.isEmpty()) {
+            state.alertType = 'danger';
+            state.alertMsg = '不能为空';
+            this.setState(state);
+            return ;
+        }
+        btn.button('loading');
+        $.post('/api/site/' + siteId + '/multihost', {
+            _token: csrfToken,
+            host_list: state.hostList
+        }, function (data) {
+            state.alertMsg = data.msg;
+            if (data.code == 0) {
+                state.alertType = 'success';
+                setTimeout(function () {$("#ctModal").modal("hide")}, 1000);
+                this.props.updateCallback == null ? '' : this.props.updateCallback();
+            } else {
+                state.alertType = 'danger';
+            }
+            btn.button('reset');
+            this.setState(state);
+        }.bind(this), 'json');
+    },
+
+    handleChange: function (e) {
+        var state = this.state;
+        state.hostList = e.target.value;
+        state.alertType = null;
+        this.setState(state);
+    },
+
+    getInitialState: function () {
+        return {hostList: '', alertType: null, alertMsg: ''};
+    },
+
+    componentDidMount: function () {
+        $("#ctModal").modal({
+            backdrop: 'static',
+            keyboard: false
+        });
+        $("#ctModal").modal("show");
+    },
+
+    render: function () {
+        var groups = '';
+        for (var i=0; i < this.props.data.host_types.length; i++) {
+            groups = groups + this.props.data.host_types[i].name;
+            if (i != this.props.data.host_types.length - 1) {
+                groups += ', ';
+            }
+        }
+        var areaStyle = {resize: 'none'};
+        return (
+            <DeployModal id="ctModal" title="批量添加主机" btn="添加" clickCallback={this.handleSubmit}>
+                <div className="row">
+                    <div className="col-lg-12">
+                        <BlockAlert msgType={this.state.alertType}>{this.state.alertMsg}</BlockAlert>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-lg-12">
+                        <form role="form" onSubmit={this.emptySubmitHandle}>
+                            <p>格式 <code>分组名 发布类型 主机名 ip 端口</code> , 各个字段使用空格分隔</p>
+                            <p>主机分组有：{groups}</p>
+                            <p>发布类型有：STATIC, APP</p>
+                            <Input value={this.state.hostList} id="hostList" onChange={this.handleChange} name="host_list" rows="6" sytle={areaStyle} type="textarea">
+                            </Input>
+                        </form>
+                    </div>
+                </div>
+            </DeployModal>
+        );
+    }
+});
+
+
 ;
