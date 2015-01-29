@@ -48,6 +48,7 @@ class SiteController extends Controller
         $site = new Site;
         $site->name = Input::get('name');
         $site->repo_git = Input::get('repo_git');
+        $site->pull_key = '';
         $site->save();
 
         return Response::json(array(

@@ -26,7 +26,7 @@ abstract class Task
             if ($remoteHostName === NULL) {
                 $this->process($command);
             } else {
-                $this->sshProcess($remoteHostName, $address, $username, $command, $identifyfile, $passphrase, null, $port);
+                $this->sshProcess($remoteHostName, $address, $username, $command, $identifyfile, $passphrase, null, $port, false);
             }
         }
     }

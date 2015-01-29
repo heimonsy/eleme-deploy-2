@@ -7,6 +7,7 @@ use Deploy\Site\Site;
 use Deploy\Site\Deploy;
 use Deploy\Hosts\HostType;
 use Deploy\Hosts\Host;
+use Exception;
 use Log;
 use SplQueue;
 use Deploy\Locks\JobLock;
@@ -107,11 +108,11 @@ class DeployCommit extends Task
                 $type = $host->host_type_id;
                 Log::info("$this->LOG_PREFIX shift $host->host_name");
 
-                $total = DeployHost::deploy($this->deploy->id)->type($type)->count();
-                $count = DeployHost::deploy($this->deploy->id)->type($type)->deploying()->count();
-                Log::info("$this->LOG_PREFIX ($count, $total)");
+                $total = DeployHost::deploy($this->deploy->id)->deployType($host->type)->type($type)->count();
+                $count = DeployHost::deploy($this->deploy->id)->deployType($host->type)->type($type)->deploying()->count();
+                Log::info("$this->LOG_PREFIX ({$host->type}, $count, $total)");
 
-                if ($count <= $this->MAX_DEPLOYS && $count <= floor($total / 2)) {
+                if ($count < $this->MAX_DEPLOYS && $count < ceil($total / 2)) {
                     $lock = new Lock($redis, JobLock::deployHostLock($this->site->id, $host->host_ip), array('timeout' => 30000, 'blocking' => false));
                     if ($lock->acquire()) {
                         //释放掉，因为在DeployToHost里面也会锁住

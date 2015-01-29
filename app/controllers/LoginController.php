@@ -102,12 +102,9 @@ class LoginController extends Controller
 
     public function register()
     {
+        $user = Sentry::loginUser();
         return Response::view('register', array(
-            'data' => json_encode(array(
-                'login' => 'heimonsy',
-                'name' => '',
-                'email' => 'heimonsy@gmail.com',
-            )),
+            'data' => $user,
         ));
     }
 }

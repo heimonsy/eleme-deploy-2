@@ -14,9 +14,9 @@ class CreateSampleTasksTable extends Migration {
     {
         Schema::create('sample_tasks', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('job_id');
+            $table->integer('job_id');
             $table->string('class');
-            $table->string('description');
+            $table->string('description')->default('');
             $table->text('message');
             $table->string('status');
             $table->timestamps();

@@ -15,11 +15,11 @@ class CreateDeployHostsTable extends Migration
     {
         Schema::create('deploy_hosts', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('site_id');
-            $table->string('deploy_id');
-            $table->string('host_type_id');
-            $table->string('job_id');
-            $table->string('task_id');
+            $table->integer('site_id');
+            $table->integer('deploy_id');
+            $table->integer('host_type_id');
+            $table->integer('job_id');
+            $table->integer('task_id')->default(0);
             $table->string('type');
             $table->string('host_ip');
             $table->string('host_name');

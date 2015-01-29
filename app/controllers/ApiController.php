@@ -124,6 +124,7 @@ class ApiController extends Controller
 
     public function updateSiteConfig(Site $site)
     {
+        Input::merge(array_map('trim', Input::all()));
         $site->fill(Input::only('static_dir', 'rsync_exclude_file', 'default_branch', 'build_command', 'test_command',
                                 'hipchat_room', 'hipchat_token', 'pull_key', 'pull_key_passphrase', 'github_token'));
         $site->save();
@@ -152,6 +153,7 @@ class ApiController extends Controller
         if ($deploy_config == null) {
             $deploy_config = new DeployConfig;
             $deploy_config->site()->associate($site);
+            $deploy_config->deploy_key = '';
             $deploy_config->save();
         }
 
@@ -163,6 +165,7 @@ class ApiController extends Controller
 
     public function updateDeployConfig(Site $site)
     {
+        Input::merge(array_map('trim', Input::all()));
         $deploy_config = $site->deploy_config()->first();
         try {
             $APP_SCRIPT = DeployScript::complie(Input::get('app_script'), DeployScript::varList($site, $deploy_config));
@@ -363,7 +366,7 @@ class ApiController extends Controller
 
     public function siteMultiHost(Site $site)
     {
-        $hostTypes = HostType::where('site_id', 2)->lists('id', 'name');
+        $hostTypes = HostType::where('site_id', $site->id)->lists('id', 'name');
         $date = date('Y-m-d H:i:s');
 
         $hostList = preg_replace('/ +/m', ' ', Input::get('host_list'));

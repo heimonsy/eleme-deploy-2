@@ -46,6 +46,11 @@ class DeployHost extends Eloquent
         return $query->where('host_type_id', $host_type_id);
     }
 
+    public function scopeDeployType($query, $deploy_type)
+    {
+        return $query->where('type', $deploy_type);
+    }
+
     public function scopeDeploy($query, $deploy_id)
     {
         return $query->where('deploy_id', $deploy_id);

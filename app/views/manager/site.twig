@@ -293,7 +293,7 @@ $(function () {
         var timeoutEvent = createTimeoutEvent();
         return function () {
             timeoutEvent.clear();
-            var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning"};
+            var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning", "Deploying" : "info"};
             if (table === null) {
                 table = $("#deploysTable").DataTable({
                     ajax: '/api/site/' + siteId + '/deploy?type=deploy',

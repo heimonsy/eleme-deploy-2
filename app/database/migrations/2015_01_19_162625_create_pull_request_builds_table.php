@@ -16,17 +16,17 @@ class CreatePullRequestBuildsTable extends Migration
         Schema::create('pull_request_builds', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('site_id');
-            $table->integer('job_id');
+            $table->integer('job_id')->default(0);
             $table->integer('pull_request_id');
-            $table->string('title');
-            $table->integer('number');
-            $table->string('commit');
-            $table->string('repo_name');
-            $table->string('user_login');
-            $table->string('status');
-            $table->string('build_status');
-            $table->string('test_status');
-            $table->string('merged_by');
+            $table->string('title')->default('');
+            $table->integer('number')->default(0);
+            $table->string('commit')->default('');
+            $table->string('repo_name')->default('');
+            $table->string('user_login')->default('');
+            $table->string('status')->default('');
+            $table->string('build_status')->default('');
+            $table->string('test_status')->default('');
+            $table->string('merged_by')->default('');
             $table->timestamps();
         });
     }

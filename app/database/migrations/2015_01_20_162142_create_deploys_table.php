@@ -15,15 +15,15 @@ class CreateDeploysTable extends Migration
     {
         Schema::create('deploys', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('user_id');
-            $table->string('site_id');
-            $table->string('job_id');
+            $table->integer('user_id');
+            $table->integer('site_id');
+            $table->integer('job_id')->default(0);
             $table->string('status');
-            $table->string('type');
-            $table->string('deploy_kind');
-            $table->string('deploy_to');
-            $table->string('description');
-            $table->string('total_hosts');
+            $table->string('type')->default('deploy');;
+            $table->string('deploy_kind')->default('');
+            $table->string('deploy_to')->default('');
+            $table->string('description')->default('');
+            $table->string('total_hosts')->default('');
             $table->string('success_hosts')->default(0);
             $table->string('error_hosts')->default(0);
             $table->string('commit');

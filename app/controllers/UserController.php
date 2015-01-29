@@ -46,7 +46,10 @@ class UserController extends Controller
         $user->save();
 
         if ($user->id == 1) {
-            $role = Role::where(array('is_admin_role' => 1))->first();
+            $role = Role::where(array('type' => Role::TYPE_SYSTEM, 'is_admin_role' => 1))->first();
+            $user->roles()->attach($role->id);
+        } else {
+            $role = Role::where(array('type' => Role::TYPE_SYSTEM, 'is_admin_role' => 0))->first();
             $user->roles()->attach($role->id);
         }
 

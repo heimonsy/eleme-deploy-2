@@ -16,14 +16,14 @@ class CreateDeployConfigsTable extends Migration
         Schema::create('deploy_configs', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('site_id');
-            $table->string('remote_user');
-            $table->string('remote_owner');
-            $table->string('remote_static_dir');
-            $table->string('remote_app_dir');
-            $table->string('app_script');
-            $table->string('static_script');
+            $table->string('remote_user')->default('');
+            $table->string('remote_owner')->default('');
+            $table->string('remote_static_dir')->default('');
+            $table->string('remote_app_dir')->default('');
+            $table->string('app_script')->default('');
+            $table->string('static_script')->default('');
             $table->text('deploy_key');
-            $table->string('deploy_key_passphrase');
+            $table->string('deploy_key_passphrase')->default('');
             $table->timestamps();
         });
     }

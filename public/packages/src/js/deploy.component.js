@@ -118,7 +118,7 @@ var RegisterFormComponent = React.createClass({
                             <input className="form-control" placeholder="Login" name="login" type="text" value={this.state.login} disabled/>
                         </div>
                         <div className={this.state.name.isEmpty() ? 'form-group has-error' : 'form-group'}>
-                            <input className="form-control" placeholder="Name" onChange={this.handleChange} name="name" type="text" value={this.state.name} autofocus/>
+                            <input className="form-control" placeholder="真实姓名" onChange={this.handleChange} name="name" type="text" value={this.state.name} autofocus/>
                         </div>
                         <div className={!this.state.email.isEmail() ? 'form-group has-error' : 'form-group'}>
                             <input className="form-control" placeholder="Notify Email" onChange={this.handleChange} name="email" type="email" value={this.state.email}/>

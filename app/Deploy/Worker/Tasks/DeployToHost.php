@@ -9,6 +9,7 @@ use SSHProcess\RsyncProcess;
 use Deploy\Worker\DeployHost;
 use Deploy\Site\Site;
 use Deploy\Site\DeployConfig;
+use Exception;
 use Log;
 use Deploy\Worker\DeployScript;
 use Eleme\Rlock\Lock;
@@ -105,7 +106,7 @@ class DeployToHost extends Task
 
         } catch (Exception $e) {
             $this->job->parentJob()->errorLine("{$host->host_name}({$host->host_ip}) error: " . $e->getMessage());
-            $thos->job->errorLine($e->getMessage());
+            $this->job->errorLine($e->getMessage());
             $host->setStatus(DeployHost::STATUS_ERROR);
             $deploy->increaseError();
 
@@ -130,7 +131,7 @@ class DeployToHost extends Task
         }
         $danger_path = array('', '/', '/root', '/boot', '/etc', '/dev'. '/lib');
         if (in_array($realPath, $danger_path)) {
-            throw new \Exception('Remote Dir (Or Static Dir)  Is Danger Path : ' . $str);
+            throw new Exception('Remote Dir (Or Static Dir)  Is Danger Path : ' . $str);
         }
         return $realPath .  '/';
     }

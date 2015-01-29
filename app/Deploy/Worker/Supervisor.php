@@ -47,7 +47,7 @@ class Supervisor
                 $this->recvTaskAndExecute();
 
                 pcntl_signal_dispatch();
-                sleep(3);
+                sleep(2);
             }
         } catch (Exception $e) {
             Log::error($e);
