@@ -256,13 +256,13 @@ class ApiController extends Controller
         $hosts = array();
 
         if ($deploy_kind == 'host') {
-            $host = Host::where(array('site_id' => $site->id, 'ip' => $deploy_to))->first();
-            $hostType = $host->host_types()->first();
-            $catalog = $hostType->catalog()->first();
-
+            $host = Host::where(array('site_id' => $site->id, 'name' => $deploy_to))->first();
             if ($host == null) {
-                return Response::json(array('code' => 1, 'msg' => 'IP错误或不存在'));
+                return Response::json(array('code' => 1, 'msg' => '机器名不存在'));
             }
+
+            $hostType = $host->host_type()->first();
+            $catalog = $hostType->catalog()->first();
 
             if (!$user->control($catalog->accessAction())) {
                 return Response::json(array('code' => 1, 'msg' => '你没有发布到这台主机的权限'));
@@ -284,10 +284,14 @@ class ApiController extends Controller
             if ($catalog == null) {
                 return Response::json(array('code' => 1, 'msg' => '环境不存在'));
             }
-            $types = HostType::where('catalog_id', $deploy_to)->with('hosts')->get();
+            $types = HostType::where('catalog_id', $deploy_to)->where('site_id', $site->id)->with('hosts')->get();
 
             foreach ($types as $hostType) {
-                $hosts = array_merge($hosts, $hostType->hosts()->get());
+                $tHosts = $hostType->hosts;
+
+                foreach ($tHosts as $host) {
+                    $hosts[] = $host;
+                }
             }
             $toName = $catalog->name;
         }

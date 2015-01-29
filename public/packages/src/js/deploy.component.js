@@ -1646,7 +1646,7 @@ var DeployJobForm = React.createClass({
                 </Input>
             );
         } else {
-            kind = (<Input onChange={this.handleChange} bsStyle={this.state.deploy_toError ? 'error' : null} type="text" name="deploy_to" value={this.state.deploy_to} placeholder="机器IP" />);
+            kind = (<Input onChange={this.handleChange} bsStyle={this.state.deploy_toError ? 'error' : null} type="text" name="deploy_to" value={this.state.deploy_to} placeholder="机器名" />);
         }
 
         var commits = this.state.commits.map(function (commit) {
