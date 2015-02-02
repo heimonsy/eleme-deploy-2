@@ -3,6 +3,7 @@ namespace Deploy\Github;
 
 use GuzzleHttp\Client;
 use Deploy\Exception\GithubException;
+use Log;
 
 class GithubClient
 {
@@ -16,7 +17,9 @@ class GithubClient
     {
         $this->access_token = $access_token;
 
-        $defaults = array();
+        $defaults = array(
+            'timeout' => 5
+        );
         if (!empty($proxy)) {
             $defaults['proxy'] = $proxy;
         }

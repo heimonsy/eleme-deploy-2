@@ -8,8 +8,9 @@ class GithubAuth
 {
     public static function accessToken($clientId, $clientSecret, $code, $proxy = null)
     {
-        $defaults = array();
-
+        $defaults = array(
+            'timeout' => 5
+        );
         if (!empty($proxy)) {
             $defaults['proxy'] = $proxy;
         }
