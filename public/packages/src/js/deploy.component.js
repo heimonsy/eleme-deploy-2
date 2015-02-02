@@ -1309,15 +1309,19 @@ var OutputComponent = React.createClass({
         for (var i in this.props.output) {
             last = i;
             var start = this.props.output[i].substr(0, 3);
+
             switch(start){
                 case 'err':
-                    lines.push(<p key={i}><a>{i * 1 +1}</a><span className="line-error">{this.props.output[i].substr(4)}</span></p>);
+                    var o = ansi_up.ansi_to_html(this.props.output[i].substr(4));
+                    lines.push(<p key={i}><a>{i * 1 +1}</a><span className="line-error" dangerouslySetInnerHTML={{__html: o}}></span></p>);
                     break;
                 case 'out':
-                    lines.push(<p key={i}><a>{i * 1 +1}</a><span>{this.props.output[i].substr(4)}</span></p>);
+                    var o = ansi_up.ansi_to_html(this.props.output[i].substr(4));
+                    lines.push(<p key={i}><a>{i * 1 +1}</a><span dangerouslySetInnerHTML={{__html: o}}></span></p>);
                     break;
                 case 'cmd':
-                    lines.push(<p key={i}><a>{i * 1 +1}</a><span className="line-cmd">{"$ " + this.props.output[i].substr(4)}</span></p>);
+                    var o = '$ ' + this.props.output[i].substr(4);
+                    lines.push(<p key={i}><a>{i * 1 +1}</a><span className="line-cmd" dangerouslySetInnerHTML={{__html: o}}></span></p>);
                     break;
             }
         }

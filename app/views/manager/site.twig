@@ -66,8 +66,8 @@
                                         <th>机器名</th>
                                         <th>IP</th>
                                         <th>SSH 端口</th>
-                                        <th>发布类型</th>
                                         <th>机器分组</th>
+                                        <th>发布类型</th>
                                         <th>修改</th>
                                         <th>删除</th>
                                     </tr>
@@ -597,8 +597,8 @@ $(function () {
                         {data: 'name'},
                         {data: 'ip'},
                         {data: 'port'},
-                        {data: 'type'},
                         {data: 'host_type'},
+                        {data: 'type'},
                         {data: 'id'},
                         {data: 'id'},
                     ],
@@ -608,14 +608,14 @@ $(function () {
                         render: function (data, type, row) {
                             return data.name;
                         },
-                        targets: 4,
+                        targets: 3,
                     },
                     {
                         render: function (data, type, row) {
                             var clss = data == 'APP' ? 'label-success' : 'label-default';
                             return "<span class=\"label " + clss + "\">" + data + "</span>";
                         },
-                        targets: 3
+                        targets: 4
                     },
                     {
                         render: function (data, type, row) {
