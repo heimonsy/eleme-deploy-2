@@ -2,9 +2,10 @@
 
 ### requirements
 ```
+apt-get install nodejs nodejs-legacy
+apt-get install npm
 npm install -g react-tools
 apt-get install extract
-apt-get install node
 ```
 
 ### config
