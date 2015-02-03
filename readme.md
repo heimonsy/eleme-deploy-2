@@ -4,6 +4,7 @@
 ```
 npm install -g react-tools
 apt-get install extract
+apt-get install node
 ```
 
 ### config
