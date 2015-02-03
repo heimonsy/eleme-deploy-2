@@ -1,6 +1,7 @@
 <?php
 
 use Deploy\Site\Site;
+use Deploy\Site\DeployConfig;
 
 class SiteController extends Controller
 {
@@ -50,6 +51,11 @@ class SiteController extends Controller
         $site->repo_git = Input::get('repo_git');
         $site->pull_key = '';
         $site->save();
+
+        $dc = new DeployConfig;
+        $dc->site_id = $site->id;
+        $dc->deploy_key = '';
+        $dc->save();
 
         return Response::json(array(
             'code' => 0,
