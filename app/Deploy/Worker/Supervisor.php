@@ -21,11 +21,14 @@ class Supervisor
     protected $redis;
     protected $pid;
 
+    protected $workers;
+
     public function __construct(JobQueue $queue, JobQueue $taskQueue)
     {
         $this->queue = $queue;
         $this->taskQueue = $taskQueue;
         $this->redis = app('redis')->connection();
+        $this->workers = array();
     }
 
     public function listen($pid)
@@ -46,6 +49,7 @@ class Supervisor
                 $this->recvAndExecute();
                 $this->recvTaskAndExecute();
 
+                $this->removeTerminatedWorker();
                 pcntl_signal_dispatch();
                 sleep(2);
             }
@@ -61,6 +65,18 @@ class Supervisor
     protected function waitExit()
     {
         // todo
+        echo "Wait Process Exit..\n";
+        while (count($this->workers) > 0) {
+            $this->removeTerminatedWorker();
+            sleep(2);
+        }
+    }
+
+    protected function removeTerminatedWorker()
+    {
+        $this->workers = array_filter($this->workers, function ($worker) {
+            return !$worker->isTerminated();
+        });
     }
 
     protected function recvAndExecute()
@@ -72,6 +88,7 @@ class Supervisor
                 $p = new Process("php artisan worker:job job {$this->queue->queueName()} {$jobId}", base_path());
                 $p->start();
                 Log::info("LISTEN [ {$this->pid} ] : Job Started [{$jobId}] : {$p->getCommandLine()};");
+                $this->workers[] = $p;
             }
             // todo push process to list
 
@@ -89,6 +106,7 @@ class Supervisor
                 $p = new Process("php artisan worker:job sampletask {$this->taskQueue->queueName()} {$sampleTaskId}", base_path());
                 $p->start();
                 Log::info("LISTEN: Sample Task Started [{$sampleTaskId}] : {$p->getCommandLine()};");
+                $this->workers[] = $p;
             }
             // todo push process to list
 
