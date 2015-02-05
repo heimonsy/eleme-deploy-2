@@ -5,6 +5,7 @@ use Deploy\Worker\Task;
 use Deploy\Site\Deploy;
 use Deploy\Site\Site;
 use Log;
+use Config;
 use Deploy\Site\PullRequestBuild;
 use Deploy\Github\GithubClient;
 
