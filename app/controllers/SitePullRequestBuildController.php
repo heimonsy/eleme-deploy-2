@@ -11,7 +11,7 @@ class SitePullRequestBuildController extends Controller
     {
         return Response::json(array(
             'code' => 0,
-            'data' => PullRequestBuild::of($site)->orderBy('id', 'desc')->limit(30)->get()
+            'data' => PullRequestBuild::of($site)->open()->orderBy('id', 'desc')->limit(30)->get()
         ));
     }
 
