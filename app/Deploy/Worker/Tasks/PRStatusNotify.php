@@ -25,10 +25,12 @@ class PRStatusNotify extends Task
 
         $LOG_PREFIX = "[Send PR Notify {$site->name} $pr->number]";
 
+        $PROXY = Config::get('github.proxy');
+
         try {
             if (!empty($TOKEN)) {
                 Log::info("{$LOG_PREFIX} Start");
-                $client = new GithubClient($TOKEN);
+                $client = new GithubClient($TOKEN, $PROXY);
 
                 $response = $client->request("repos/{$REPO_NAME}/statuses/{$COMMIT}", json_encode(array(
                     'state' => $STATUS,
