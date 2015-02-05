@@ -15,6 +15,7 @@ use Deploy\Facade\Worker;
 use Deploy\Worker\DeployHost;
 use Deploy\Site\DeployConfig;
 use Eleme\Rlock\Lock;
+use Deploy\Worker\WorkableInterface;
 
 class DeployCommit extends Task
 {
@@ -76,10 +77,10 @@ class DeployCommit extends Task
             //执行同步后本地命令
             $this->processCommands($APP_SCRIPT['after']['handle']);
 
+            Log::info("$this->LOG_PREFIX Start Watch DeployToHost");
             // 监控任务执行情况
             $this->watchDeployToHost($this->deploy->id);
 
-            Log::info("$this->LOG_PREFIX Start Watch DeployToHost");
             $this->deploy->setStatus(Deploy::STATUS_SUCCESS);
             $worker->deleteJob();
 
@@ -91,7 +92,7 @@ class DeployCommit extends Task
             $this->deploy->setStatus(Deploy::STATUS_ERROR);
             Log::info($e);
 
-            $worker->deleteJob(Workerable::STATUS_ERROR);
+            $worker->deleteJob(WorkableInterface::STATUS_ERROR);
             Log::info("$this->LOG_PREFIX Error");
             $this->sendNotify('Error');
         }
@@ -151,7 +152,7 @@ class DeployCommit extends Task
         $start = time();
         while (true) {
             $deploy = Deploy::find($deployId);
-            if ($deploy->total_hosts == $deploy->success_hosts + $deploy->error_hosts) {
+            if ($deploy->total_hosts <= $deploy->success_hosts + $deploy->error_hosts) {
                 break;
             }
 

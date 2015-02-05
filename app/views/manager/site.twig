@@ -190,7 +190,7 @@ var timeoutEvent = null;
 var refreshInterval = null;
 var prevJobId = null;
 
-var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning"};
+var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning", 'Deploying': 'info'};
 
 function clearNj(hash)
 {
@@ -360,7 +360,7 @@ $(function () {
         var timeoutEvent = createTimeoutEvent();
         return function () {
             timeoutEvent.clear();
-            var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning"};
+            var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning", "Deploying": 'info'};
             if (table === null) {
                 table = $("#prBuildTable").DataTable({
                     ajax: '/api/site/' + siteId + '/prbuild',

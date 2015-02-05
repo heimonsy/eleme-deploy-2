@@ -14,6 +14,7 @@ use Log;
 use Deploy\Worker\DeployScript;
 use Eleme\Rlock\Lock;
 use Deploy\Locks\JobLock;
+use Deploy\Worker\WorkableInterface;
 
 class DeployToHost extends Task
 {
@@ -105,7 +106,7 @@ class DeployToHost extends Task
             $deploy->increaseSuccess();
 
         } catch (Exception $e) {
-            $this->job->parentJob()->errorLine("{$host->host_name}({$host->host_ip}) error: " . $e->getMessage());
+            //$this->job->parentJob()->errorLine("{$host->host_name}({$host->host_ip}) error: " . $e->getMessage());
             $this->job->errorLine($e->getMessage());
             $host->setStatus(DeployHost::STATUS_ERROR);
             $deploy->increaseError();
@@ -116,7 +117,7 @@ class DeployToHost extends Task
             Log::error($e);
             Log::info("$LOG_PREFIX Error");
 
-            $worker->deleteJob(Workerable::STATUS_ERROR);
+            $worker->deleteJob(WorkableInterface::STATUS_ERROR);
         }
     }
 

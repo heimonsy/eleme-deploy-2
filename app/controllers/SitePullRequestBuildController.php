@@ -27,7 +27,7 @@ class SitePullRequestBuildController extends Controller
                 if ($info->action == PullRequestBuild::PR_STATUS_CLOSED) {
                     PullRequestBuild::where('pull_request_id', $data['pull_request_id'])->update(array(
                         'status' => PullRequestBuild::PR_STATUS_CLOSED,
-                        'merged_by' => $info->pull_request->merged_by->login
+                        //'merged_by' => $info->pull_request->merged_by->login
                     ));
                 } elseif ($info->action == 'reopened') {
                     PullRequestBuild::where('pull_request_id', $data['pull_request_id'])->update(array(

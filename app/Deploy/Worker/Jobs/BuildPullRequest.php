@@ -109,7 +109,7 @@ class BuildPullRequest extends Task
             } catch (Exception $e) {
                 $pr->setCommandStatus(null, PullRequestBuild::STATUS_ABORT);
                 $this->sendNotify('failure', 'Build Failure');
-                throw new Exception("Build Failure", 1379);
+                throw new Exception("Build Failure: " . $e->getMessage(), 1379);
             }
 
             try {
@@ -120,7 +120,7 @@ class BuildPullRequest extends Task
             } catch (Exception $e) {
                 $pr->setCommandStatus(null, PullRequestBuild::STATUS_ERROR);
                 $this->sendNotify('failure', 'Test Failure');
-                throw new Exception("Test Failure", 1379);
+                throw new Exception("Test Failure: " . $e->getMessage(), 1379);
             }
             $pr->setCommandStatus(PullRequestBuild::STATUS_SUCCESS, PullRequestBuild::STATUS_SUCCESS);
             $worker->deleteJob();
