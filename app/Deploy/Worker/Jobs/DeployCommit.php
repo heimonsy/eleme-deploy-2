@@ -114,7 +114,7 @@ class DeployCommit extends Task
                 Log::info("$this->LOG_PREFIX ({$host->type}, $count, $total)");
 
                 if ($count < $this->MAX_DEPLOYS && $count < ceil($total / 2)) {
-                    $lock = new Lock($redis, JobLock::deployHostLock($this->site->id, $host->host_ip), array('timeout' => 30000, 'blocking' => false));
+                    $lock = new Lock($redis, JobLock::deployHostLock($host->host_ip), array('timeout' => 30000, 'blocking' => false));
                     if ($lock->acquire()) {
                         //释放掉，因为在DeployToHost里面也会锁住
                         $lock->release(); $lock = null;
@@ -129,9 +129,9 @@ class DeployCommit extends Task
                         $this->job->commandLine("Start Deploy To {$host->host_name}({$host->host_ip})");
                         Log::info("$this->LOG_PREFIX Start Deploy To {$host->host_name}");
                     } else {
+                        $lock = null;
                         Log::info("$this->LOG_PREFIX LOCK push back $host->host_name");
                         $hosts->push($host);
-                        $lock = null;
                     }
                 } else {
                     Log::info("$this->LOG_PREFIX FULL push back $host->host_name");

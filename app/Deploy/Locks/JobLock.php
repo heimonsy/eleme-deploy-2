@@ -21,8 +21,8 @@ class JobLock
         return self::KEY_PREFIX . 'BUILD:PULLREQUEST:' . $siteId;
     }
 
-    public static function deployHostLock($siteId, $hostIp)
+    public static function deployHostLock($hostIp)
     {
-        return self::KEY_PREFIX . "DEPLOY:COMMIT:{$siteId}:{$hostIp}";
+        return self::KEY_PREFIX . "DEPLOY:COMMIT:{$hostIp}";
     }
 }

@@ -77,7 +77,7 @@ class DeployToHost extends Task
             $REMOTE_DIR = $this->clearDirString($REMOTE_DIR);
 
             $redis = app('redis')->connection();
-            $lock = new Lock($redis, JobLock::deployHostLock($site->id, $host->host_ip), array('timeout' => 600000, 'blocking' => true));
+            $lock = new Lock($redis, JobLock::deployHostLock($host->host_ip), array('timeout' => 600000, 'blocking' => true));
             $lock->acquire();
             Log::info("$LOG_PREFIX Start");
 
