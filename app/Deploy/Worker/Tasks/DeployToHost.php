@@ -82,9 +82,9 @@ class DeployToHost extends Task
             Log::info("$LOG_PREFIX Start");
 
             //执行同步前每次都执行的本地命令
-            $this->processCommands($COMMAND_SCRIPT['before']['local']);
+            $haveError = $this->processCommands($COMMAND_SCRIPT['before']['local']);
             //执行同步前每次都执行的远端命令
-            $this->processCommands($COMMAND_SCRIPT['before']['remote'], $HOST_NAME, $HOST_IP, $REMOTE_USER, $DEPLOY_KEY_FILE, $DEPLOY_KEY_PASSPHRASE, $HOST_PORT);
+            $haveError = $this->processCommands($COMMAND_SCRIPT['before']['remote'], $HOST_NAME, $HOST_IP, $REMOTE_USER, $DEPLOY_KEY_FILE, $DEPLOY_KEY_PASSPHRASE, $HOST_PORT) || $haveError;
 
             $this->sshProcess($HOST_NAME, $HOST_IP, $REMOTE_USER, "sudo mkdir -p {$REMOTE_DIR}", $DEPLOY_KEY_FILE, $DEPLOY_KEY_PASSPHRASE, null, $HOST_PORT);
             $this->sshProcess($HOST_NAME, $HOST_IP, $REMOTE_USER, "sudo chown {$REMOTE_USER} -R {$REMOTE_DIR}", $DEPLOY_KEY_FILE, $DEPLOY_KEY_PASSPHRASE, null, $HOST_PORT);
@@ -92,18 +92,23 @@ class DeployToHost extends Task
             $this->sshProcess($HOST_NAME, $HOST_IP, $REMOTE_USER, "sudo chown {$REMOTE_OWNER} -R {$REMOTE_DIR}", $DEPLOY_KEY_FILE, $DEPLOY_KEY_PASSPHRASE, null, $HOST_PORT);
 
             //执行同步后每次都执行的本地命令
-            $this->processCommands($COMMAND_SCRIPT['after']['local']);
+            $haveError = $this->processCommands($COMMAND_SCRIPT['after']['local']) || $haveError;
             //执行同步后每次都执行的远端命令
-            $this->processCommands($COMMAND_SCRIPT['after']['remote'], $HOST_NAME, $HOST_IP, $REMOTE_USER, $DEPLOY_KEY_FILE, $DEPLOY_KEY_PASSPHRASE, $HOST_PORT);
+            $haveError = $this->processCommands($COMMAND_SCRIPT['after']['remote'], $HOST_NAME, $HOST_IP, $REMOTE_USER, $DEPLOY_KEY_FILE, $DEPLOY_KEY_PASSPHRASE, $HOST_PORT) || $haveError;
             $lock->release();
             $lock = null;
 
-            Log::info("$LOG_PREFIX Success");
-
-            $host->setStatus(DeployHost::STATUS_FINISH);
-            $worker->deleteJob();
-
-            $deploy->increaseSuccess();
+            if ($haveError) {
+                Log::info("$LOG_PREFIX Have Error");
+                $host->setStatus(DeployHost::STATUS_ERROR);
+                $worker->deleteJob();
+                $deploy->increaseError();
+            } else {
+                Log::info("$LOG_PREFIX Success");
+                $host->setStatus(DeployHost::STATUS_FINISH);
+                $worker->deleteJob();
+                $deploy->increaseSuccess();
+            }
 
         } catch (Exception $e) {
             //$this->job->parentJob()->errorLine("{$host->host_name}({$host->host_ip}) error: " . $e->getMessage());

@@ -190,7 +190,7 @@ var timeoutEvent = null;
 var refreshInterval = null;
 var prevJobId = null;
 
-var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning", 'Deploying': 'info'};
+var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning", 'Deploying': 'info', 'Have Error': 'warning'};
 
 function clearNj(hash)
 {
@@ -252,7 +252,13 @@ $(function () {
                     },
                     {
                         render: function  (data, type, row) {
-                            return '<span class="label label-' + labels[data] + '">' + data + '</span>';
+                            var status = data;
+                            if (row.total_hosts == row.error_hosts) {
+                                status = 'Error';
+                            } else if (row.error_hosts > 0) {
+                                status = 'Have Error';
+                            }
+                            return '<span class="label label-' + labels[status] + '">' + status + '</span>';
                         },
                         targets: 4
                     },
@@ -293,7 +299,7 @@ $(function () {
         var timeoutEvent = createTimeoutEvent();
         return function () {
             timeoutEvent.clear();
-            var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning", "Deploying" : "info"};
+            var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning", "Deploying" : "info", "Have Error": "warning"};
             if (table === null) {
                 table = $("#deploysTable").DataTable({
                     ajax: '/api/site/' + siteId + '/deploy?type=deploy',
@@ -319,7 +325,13 @@ $(function () {
                     },
                     {
                         render: function  (data, type, row) {
-                            return '<span class="label label-' + labels[data] + '">' + data + '</span>';
+                            var status = data;
+                            if (row.total_hosts == row.error_hosts) {
+                                status = 'Error';
+                            } else if (row.error_hosts > 0) {
+                                status = 'Have Error';
+                            }
+                            return '<span class="label label-' + labels[status] + '">' + status + '</span>';
                         },
                         targets: 3
                     },

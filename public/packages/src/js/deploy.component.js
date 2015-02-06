@@ -1436,7 +1436,7 @@ var JobInfoTabContent = React.createClass({
     render: function () {
         console.log("reload");
 
-        var labels = {"Created": 'default', 'Waiting': 'default', 'Success': 'success', 'Error': 'danger', 'Deploying': 'info', 'Doing': 'info', 'Finish': 'success'};
+        var labels = {"Created": 'default', 'Waiting': 'default', 'Success': 'success', 'Error': 'danger', 'Deploying': 'info', 'Doing': 'info', 'Finish': 'success', 'Have Error': 'warning'};
         statusCls = 'label label-' + labels[this.state.job.status] + ' label-h4 ';
         var isFinish = this.state.job.status == 'Error' || this.state.job.status == 'Success' ? true : false;
         var output = this.state.job.output === undefined ? (<div className="text-center"><img src="/static/ajax-loader.gif"/></div>) : (<OutputComponent isFinish={isFinish} output={this.state.job.output}/>);
@@ -1444,6 +1444,12 @@ var JobInfoTabContent = React.createClass({
         var selfTable = '';
         if (this.props.jobType == 'deploy' && this.state.deploy != undefined) {
             var deploy = this.state.deploy;
+            var status = deploy.status;
+            if (deploy.total_hosts == deploy.error_hosts) {
+                status = 'Error';
+            } else if (deploy.error_hosts > 0) {
+                status = 'Have Error';
+            }
             selfTable = (
                 <div className="panel panel-default">
                     <div className="panel-heading">Deploy</div>
@@ -1463,7 +1469,7 @@ var JobInfoTabContent = React.createClass({
                                 <tr>
                                     <td>{deploy.commit.substr(0, 7)}</td>
                                     <td>{deploy.description}</td>
-                                    <td><span className={'label label-' + labels[deploy.status]}>{deploy.status}</span></td>
+                                    <td><span className={'label label-' + labels[status]}>{status}</span></td>
                                     <td><span className="label label-default label-num">{deploy.total_hosts}</span><span className="label label-success label-num">{deploy.success_hosts}</span><span className="label label-danger label-num">{deploy.error_hosts}</span></td>
                                     <td>{deploy.created_at}</td>
                                     <td>{deploy.updated_at}</td>

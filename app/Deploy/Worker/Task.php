@@ -22,13 +22,16 @@ abstract class Task
 
     public function processCommands($CMDS, $remoteHostName = NULL, $address = null, $username = null, $identifyfile = null, $passphrase = null, $port = 22)
     {
+        $error = false;
         foreach ($CMDS as $command) {
             if ($remoteHostName === NULL) {
-                $this->process($command);
+                $process = $this->process($command, null, false);
             } else {
-                $this->sshProcess($remoteHostName, $address, $username, $command, $identifyfile, $passphrase, null, $port, false);
+                $process = $this->sshProcess($remoteHostName, $address, $username, $command, $identifyfile, $passphrase, null, $port, false);
             }
+            $error = $error || !$process->isSuccessful();
         }
+        return $error;
     }
 
     public function process($command, $cwd = null, $must = true)
