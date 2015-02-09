@@ -1460,6 +1460,7 @@ var JobInfoTabContent = React.createClass({
                                 <tr>
                                     <th>Commit</th>
                                     <th>发布到</th>
+                                    <th>操作者</th>
                                     <th>状态</th>
                                     <th>主机数</th>
                                     <th>创建时间</th>
@@ -1470,6 +1471,7 @@ var JobInfoTabContent = React.createClass({
                                 <tr>
                                     <td>{deploy.commit.substr(0, 7)}</td>
                                     <td>{deploy.description}</td>
+                                    <td>{deploy.user.name}</td>
                                     <td><span className={'label label-' + labels[status]}>{status}</span></td>
                                     <td><span className="label label-default label-num">{deploy.total_hosts}</span><span className="label label-success label-num">{deploy.success_hosts}</span><span className="label label-danger label-num">{deploy.error_hosts}</span></td>
                                     <td>{deploy.created_at}</td>
@@ -1494,8 +1496,8 @@ var JobInfoTabContent = React.createClass({
                         <td>{host.host_port}</td>
                         <td><span className={'label label-' + labels[host.status]}>{host.status}</span></td>
                         <td>{host.created_at}</td>
-                        <td>{host.updated_at}</td>
                         <td>{costTime}</td>
+                        <td>{btn}</td>
                     </tr>
                 );
             }.bind(this));
