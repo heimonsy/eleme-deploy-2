@@ -134,7 +134,10 @@ class BuildPullRequest extends Task
             }
             if ($e->getCode() != 1379) {
                 $this->sendNotify('error', 'Job Error');
+            } else {
+                $pr->setCommandStatus(PullRequestBuild::STATUS_ERROR, null);
             }
+
             $worker->log("{$LOG_PREFIX} Build Pull Request Error [{$e->getLine()}: {$e->getMessage()}]");
 
             switch ($process) {
@@ -146,10 +149,8 @@ class BuildPullRequest extends Task
                 $this->process("rm -rf {$COMMIT_PATH}", null, false);
                 break;
             }
-
             $worker->deleteJob(Job::STATUS_ERROR);
-            $this->job->errorLine($e);
-            $pr->setCommandStatus(PullRequestBuild::STATUS_ERROR, null);
+            //$this->job->errorLine($e);
 
             throw $e;
         }
