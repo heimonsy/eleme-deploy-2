@@ -90,8 +90,9 @@
                                         <th>Checkout</th>
                                         <th>Commit</th>
                                         <th>状态</th>
-                                        <th>状态消息</th>
-                                        <th max-width="150">更新时间</th>
+                                        <th>操作者</th>
+                                        <th>创建时间</th>
+                                        <th>耗时(s)</th>
                                         <th max-width="80">详细</th>
                                         <th>发布</th>
                                     </tr>
@@ -115,8 +116,9 @@
                                         <th>发布到</th>
                                         <th>状态</th>
                                         <th>主机数</th>
+                                        <th>操作者</th>
                                         <th>创建时间</th>
-                                        <th>更新时间</th>
+                                        <th>耗时(s)</th>
                                         <th>详细输出</th>
                                     </tr>
                                 </thead>
@@ -135,14 +137,15 @@
                             <table id="prBuildTable" class="table table-hover small-table">
                                 <thead>
                                     <tr>
-                                        <th>Number</th>
+                                        <th>Num</th>
                                         <th min-width="220">Title</th>
                                         <th>Commit</th>
                                         <th>用户</th>
-                                        <th max-width="150">创建时间</th>
                                         <th>状态</th>
                                         <th>Build</th>
                                         <th>Test</th>
+                                        <th max-width="150">创建时间</th>
+                                        <th>耗时(s)</th>
                                         <th>详细</th>
                                         <th>操作</th>
                                     </tr>
@@ -162,12 +165,13 @@
                                 <thead>
                                     <tr>
                                         <th>Job</th>
-                                        <th>Type</th>
                                         <th>Commit</th>
                                         <th>发布到</th>
                                         <th>状态</th>
                                         <th>主机数</th>
-                                        <th>更新时间</th>
+                                        <th>操作者</th>
+                                        <th>创建时间</th>
+                                        <th>耗时(s)</th>
                                         <th>详细输出</th>
                                     </tr>
                                 </thead>
@@ -228,11 +232,12 @@ $(function () {
                     info: false,
                     columns: [
                         {data: 'job_id'},
-                        {data: 'id'},
                         {data: 'commit'},
                         {data: 'description'},
                         {data: 'status'},
                         {data: 'id'},
+                        {data: 'user'},
+                        {data: 'created_at'},
                         {data: 'updated_at'},
                         {data: 'job_id'},
 
@@ -240,15 +245,15 @@ $(function () {
                     columnDefs: [
                     {
                         render: function (data, type, row) {
-                            return 'PR Deploy';
+                            return data.name;
                         },
-                        targets: 1
+                        targets: 5
                     },
                     {
                         render: function (data, type, row) {
                             return data.substr(0, 7);
                         },
-                        targets: 2
+                        targets: 1
                     },
                     {
                         render: function  (data, type, row) {
@@ -260,19 +265,25 @@ $(function () {
                             }
                             return '<span class="label label-' + labels[status] + '">' + status + '</span>';
                         },
-                        targets: 4
+                        targets: 3
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return Math.ceil(((new Date(data)).getTime() - (new Date(row.created_at)).getTime()) / 1000);
+                        },
+                        targets: 7
                     },
                     {
                         render: function  (data, type, row) {
                             return '<button class="btn btn-primary btn-xs btnShowJobHost" data-job-id="' + data + '">详细输出</button>';
                         },
-                        targets: 7
+                        targets: 8
                     },
                     {
                         render: function (data, type, row) {
                             return '<span class="label label-default label-num">' + row.total_hosts + '</span><span class="label label-success label-num">' + row.success_hosts +'</span><span class="label label-danger label-num">' + row.error_hosts + '</span>';
                         },
-                        targets: 5
+                        targets: 4
                     }
                     ]
                 });
@@ -312,6 +323,7 @@ $(function () {
                         {data: 'description'},
                         {data: 'status'},
                         {data: 'id'},
+                        {data: 'user'},
                         {data: 'created_at'},
                         {data: 'updated_at'},
                         {data: 'job_id'},
@@ -322,6 +334,18 @@ $(function () {
                             return data.substr(0, 7);
                         },
                         targets: 1
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return data.name;
+                        },
+                        targets: 5
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return data.substr(5);
+                        },
+                        targets: 6
                     },
                     {
                         render: function  (data, type, row) {
@@ -336,8 +360,14 @@ $(function () {
                         targets: 3
                     },
                     {
-                        render: function  (data, type, row) {
+                        render: function (data, type, row) {
                             return '<button class="btn btn-primary btn-xs btnShowJobHost" data-job-id="' + data + '">详细输出</button>';
+                        },
+                        targets: 8
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return Math.ceil(((new Date(data)).getTime() - (new Date(row.created_at)).getTime()) / 1000);
                         },
                         targets: 7
                     },
@@ -384,10 +414,11 @@ $(function () {
                         {data: 'title'},
                         {data: 'commit'},
                         {data: 'user_login'},
-                        {data: 'created_at'},
                         {data: 'status'},
                         {data: 'build_status'},
                         {data: 'test_status'},
+                        {data: 'created_at'},
+                        {data: 'updated_at'},
                         {data: 'job_id'},
                         {data: 'job_id'},
                     ],
@@ -416,11 +447,17 @@ $(function () {
                             }
                             return '<i>无</i>';
                         },
-                        targets: 9
+                        targets: 10
                     },
                     {
                         render: function (data, type, row) {
                             return '<button class="btn btn-primary btn-xs btnOpenJob" data-job-id="' + data + '"/>详细输出</button>';
+                        },
+                        targets: 9
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return Math.ceil(((new Date(data)).getTime() - (new Date(row.created_at)).getTime()) / 1000);
                         },
                         targets: 8
                     },
@@ -434,7 +471,7 @@ $(function () {
                         render: function (data, type, row) {
                             return data.substr(5);
                         },
-                        targets: 4
+                        targets: 7
                     },
                     {
                         render: function (data, type, row) {
@@ -444,9 +481,16 @@ $(function () {
                     },
                     {
                         render: function (data, type, row) {
+                            console.log('444');
                             if (data == 'closed') {
                                 return 'Merged(<a target="_blank" href="https://github.com/' + row.merged_by +'">' + row.merged_by + '</a>)';
                             }
+                            return '<span class="label label-' + labels[data] + '">' + data + '</span>';
+                        },
+                        targets: 4
+                    },
+                    {
+                        render: function (data, type, row) {
                             return '<span class="label label-' + labels[data] + '">' + data + '</span>';
                         },
                         targets: 5
@@ -456,12 +500,6 @@ $(function () {
                             return '<span class="label label-' + labels[data] + '">' + data + '</span>';
                         },
                         targets: 6
-                    },
-                    {
-                        render: function (data, type, row) {
-                            return '<span class="label label-' + labels[data] + '">' + data + '</span>';
-                        },
-                        targets: 7
                     }
                     ]
                 });
@@ -545,7 +583,8 @@ $(function () {
                         {data: 'checkout'},
                         {data: 'commit'},
                         {data: 'status'},
-                        {data: 'status_info'},
+                        {data: 'user'},
+                        {data: 'created_at'},
                         {data: 'updated_at'},
                         {data: 'job_id'},
                         {data: 'commit'},
@@ -557,13 +596,19 @@ $(function () {
                         render: function (data, type, row) {
                             return '<button class="btn btn-primary btn-xs btnToDeploy" data-type="#Deploy" data-commit="' + data + '"/>Deploy</button>';
                         },
-                        targets: 7,
+                        targets: 8,
                     },
                     {
                         render: function (data, type, row) {
                             return '<button class="btn btn-primary btn-xs btnOpenJob" data-job-id="' + data + '"/>详细输出</button>';
                         },
-                        targets: 6,
+                        targets: 7,
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return Math.ceil(((new Date(data)).getTime() - (new Date(row.created_at)).getTime()) / 1000);
+                        },
+                        targets: 6
                     },
                     {
                         render: function (data, type, row) {
@@ -577,6 +622,12 @@ $(function () {
                             return '<span class="label '+ cls[data] +'">' + data +  '</span>';
                         },
                         targets: 3
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return data.name;
+                        },
+                        targets: 4
                     }
                     ]
                 });

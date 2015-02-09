@@ -364,7 +364,9 @@ class ApiController extends Controller
                     'site_id' => $site->id,
                     'type' => Input::get('type'),
                 )
-            )->orderBy('id', 'desc')->limit(30)->get(),
+            )->with(array('user' => function ($query) {
+                $query->select('name', 'login', 'id');
+            }))->orderBy('id', 'desc')->limit(30)->get(),
         ));
     }
 
