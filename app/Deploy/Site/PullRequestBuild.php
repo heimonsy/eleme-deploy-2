@@ -44,6 +44,11 @@ class PullRequestBuild extends Eloquent
         return $query->where('build_status', '=', self::STATUS_SUCCESS)->where('test_status', '=', self::STATUS_SUCCESS);
     }
 
+    public function scopeClosed($query)
+    {
+        return $query->where('status', '=', self::PR_STATUS_CLOSED);
+    }
+
     public function setStatus($status)
     {
         $this->status = $status;

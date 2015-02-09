@@ -70,7 +70,7 @@ class SiteClear extends Task
                     }
                 }
 
-                $prBuilds = PullRequestBuild::where('site_id', $site->id)->orderBy('id', 'desc')->skip(30)->take(1000)->get();
+                $prBuilds = PullRequestBuild::of($site)->closed()->orderBy('id', 'desc')->skip(30)->take(1000)->get();
                 $totalPrBuilds = count($prBuilds);
                 Log::info("$LOG_PREFIX Total Pr Builds: $totalPrBuilds");
                 if ($totalPrBuilds > 0) {

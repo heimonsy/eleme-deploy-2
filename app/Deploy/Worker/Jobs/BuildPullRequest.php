@@ -128,13 +128,30 @@ class BuildPullRequest extends Task
 
             $this->sendNotify('success', 'Build & Test Success');
 
+            try {
+                $prbs = PullRequestBuild::where('number', $pr->number)->where('status', '<>', PullRequestBuild::STATUS_DOING)->where('status', '<>', PullRequestBuild::STATUS_WAITING)->where('commit', '<>', $pr->commit)->where('id', '<', $pr->id)->get();
+                foreach ($prbs as $prb) {
+                    Log::info("$LOG_PREFIX Delete {$prb->commit}");
+                    $job = Job::find($prb->job_id);
+                    if ($job != null) {
+                        $job->delete();
+                    }
+                    if (!empty($prb->commit)) {
+                        $this->process('rm -rf ' . $PR_COMMIT_DIR . '/' . $prb->commit);
+                    }
+                    $prb->delete();
+                }
+            } catch (Exception $e) {
+                Log::error($e);
+                Log::error("$LOG_PREFIX Delete Pr Prev Commit Error");
+            }
+
         } catch (Exception $e) {
             if ($lock != null) {
                 $lock->release();
             }
             if ($e->getCode() != 1379) {
                 $this->sendNotify('error', 'Job Error');
-            } else {
                 $pr->setCommandStatus(PullRequestBuild::STATUS_ERROR, null);
             }
 
