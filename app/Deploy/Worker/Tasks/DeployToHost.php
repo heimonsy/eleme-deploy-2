@@ -79,6 +79,7 @@ class DeployToHost extends Task
             $redis = app('redis')->connection();
             $lock = new Lock($redis, JobLock::deployHostLock($host->host_ip), array('timeout' => 600000, 'blocking' => true));
             $lock->acquire();
+            $host->created_at = date('Y-m-d H:i:s');
             Log::info("$LOG_PREFIX Start");
 
             //执行同步前每次都执行的本地命令

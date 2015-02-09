@@ -1450,6 +1450,7 @@ var JobInfoTabContent = React.createClass({
             } else if (deploy.error_hosts > 0) {
                 status = 'Have Error';
             }
+            var costTime = Math.ceil(((new Date(convertDate(deploy.updated_at))).getTime() - (new Date(convertDate(deploy.created_at))).getTime()) / 1000);
             selfTable = (
                 <div className="panel panel-default">
                     <div className="panel-heading">Deploy</div>
@@ -1462,7 +1463,7 @@ var JobInfoTabContent = React.createClass({
                                     <th>状态</th>
                                     <th>主机数</th>
                                     <th>创建时间</th>
-                                    <th>更新时间</th>
+                                    <th>耗时(s)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1472,7 +1473,7 @@ var JobInfoTabContent = React.createClass({
                                     <td><span className={'label label-' + labels[status]}>{status}</span></td>
                                     <td><span className="label label-default label-num">{deploy.total_hosts}</span><span className="label label-success label-num">{deploy.success_hosts}</span><span className="label label-danger label-num">{deploy.error_hosts}</span></td>
                                     <td>{deploy.created_at}</td>
-                                    <td>{deploy.updated_at}</td>
+                                    <td>{costTime}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1485,6 +1486,7 @@ var JobInfoTabContent = React.createClass({
         if (this.state.hosts != undefined) {
             var trs = this.state.hosts.map(function (host) {
                 var btn = host.status == 'Waiting' ? '' : (<button onClick={this.handleHostDetail} className="btn btn-primary btn-xs" data-host-id={host.id}>详细输出</button>);
+                var costTime = Math.ceil(((new Date(convertDate(host.updated_at))).getTime() - (new Date(convertDate(host.created_at))).getTime()) / 1000);
                 return (
                     <tr key={"host-" + host.id}>
                         <td>{host.host_name}</td>
@@ -1493,7 +1495,7 @@ var JobInfoTabContent = React.createClass({
                         <td><span className={'label label-' + labels[host.status]}>{host.status}</span></td>
                         <td>{host.created_at}</td>
                         <td>{host.updated_at}</td>
-                        <td>{btn}</td>
+                        <td>{costTime}</td>
                     </tr>
                 );
             }.bind(this));
@@ -1509,7 +1511,7 @@ var JobInfoTabContent = React.createClass({
                                     <th>主机端口</th>
                                     <th>发布状态</th>
                                     <th>创建时间</th>
-                                    <th>更新时间</th>
+                                    <th>耗时(s)</th>
                                     <th>详细输出</th>
                                 </tr>
                             </thead>
