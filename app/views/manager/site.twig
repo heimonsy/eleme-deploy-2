@@ -196,6 +196,11 @@ var prevJobId = null;
 
 var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning", 'Deploying': 'info', 'Have Error': 'warning'};
 
+function convertDate(str)
+{
+    return str.replace(/-/g, "/");
+}
+
 function clearNj(hash)
 {
     if (hash.substr(-3) == '-nj') {
@@ -269,7 +274,7 @@ $(function () {
                     },
                     {
                         render: function (data, type, row) {
-                            return Math.ceil(((new Date(data)).getTime() - (new Date(row.created_at)).getTime()) / 1000);
+                            return Math.ceil(((new Date(convertDate(data))).getTime() - (new Date(convertDate(row.created_at))).getTime()) / 1000);
                         },
                         targets: 7
                     },
@@ -367,7 +372,7 @@ $(function () {
                     },
                     {
                         render: function (data, type, row) {
-                            return Math.ceil(((new Date(data)).getTime() - (new Date(row.created_at)).getTime()) / 1000);
+                            return Math.ceil(((new Date(convertDate(data))).getTime() - (new Date(convertDate(row.created_at))).getTime()) / 1000);
                         },
                         targets: 7
                     },
@@ -457,7 +462,7 @@ $(function () {
                     },
                     {
                         render: function (data, type, row) {
-                            return Math.ceil(((new Date(data)).getTime() - (new Date(row.created_at)).getTime()) / 1000);
+                            return Math.ceil(((new Date(convertDate(data))).getTime() - (new Date(convertDate(row.created_at))).getTime()) / 1000);
                         },
                         targets: 8
                     },
@@ -481,7 +486,6 @@ $(function () {
                     },
                     {
                         render: function (data, type, row) {
-                            console.log('444');
                             if (data == 'closed') {
                                 return 'Merged(<a target="_blank" href="https://github.com/' + row.merged_by +'">' + row.merged_by + '</a>)';
                             }
@@ -606,7 +610,7 @@ $(function () {
                     },
                     {
                         render: function (data, type, row) {
-                            return Math.ceil(((new Date(data)).getTime() - (new Date(row.created_at)).getTime()) / 1000);
+                            return Math.ceil(((new Date(convertDate(data))).getTime() - (new Date(convertDate(row.created_at))).getTime()) / 1000);
                         },
                         targets: 6
                     },
