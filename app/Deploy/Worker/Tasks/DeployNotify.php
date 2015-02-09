@@ -37,17 +37,18 @@ class DeployNotify extends Task
 
         $LOG_PREFIX = "[Send Deploy Notify {$site->name}]";
 
+        $DIFF_MSG = '';
+        $DIFF_URL = '';
+        if (!empty($PREV_COMMIT) && $PREV_COMMIT != $COMMIT ) {
+            $DIFF_URL = "https://github.com/{$REPO_NAME}/compare/{$PREV_COMMIT}...{$COMMIT}";
+            $DIFF_MSG = 'Diff: ' . $DIFF_URL;
+        }
+
         try {
             Log::info("{$LOG_PREFIX} Start");
             if (!empty($HIPCHAT_TOKEN) && !empty($HIPCHAT_ROOM)) {
                 $client = new HipChat($HIPCHAT_TOKEN, $HIPCHAT_ROOM);
-                $DIFF_MSG = '';
-                $DIFF_URL = null;
-                if (!empty($PREV_COMMIT) && $PREV_COMMIT != $COMMIT ) {
-                    $DIFF_URL = "https://github.com/{$REPO_NAME}/compare/{$PREV_COMMIT}...{$COMMIT}";
-                    $DIFF_MSG = 'Diff: ' . $DIFF_URL;
-                }
-                $HIPCHAT_MSG = <<<EOT
+                                $HIPCHAT_MSG = <<<EOT
 Message: Deploy {$site->name} Success
 Hosts: [Total {$deploy->total_hosts}] [Success {$deploy->success_hosts}] [Error {$deploy->error_hosts}]
 Job Url: {$JOB_URL}
