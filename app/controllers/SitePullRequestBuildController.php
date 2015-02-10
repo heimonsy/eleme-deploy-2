@@ -48,7 +48,7 @@ class SitePullRequestBuildController extends Controller
                 $data['number'] = $info->pull_request->number;
                 $data['repo_name'] = $info->pull_request->base->repo->full_name;
                 $data['user_login'] = $info->pull_request->user->login;
-                $data['status'] = PullRequestBuild::PR_STATUS_OPEN;
+                $data['status'] = $info->pull_request->state;
                 $data['build_status'] = PullRequestBuild::STATUS_WAITING;
                 $data['test_status'] = PullRequestBuild::STATUS_WAITING;
                 $build = new PullRequestBuild;
