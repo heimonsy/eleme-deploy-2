@@ -1627,6 +1627,7 @@ var DeployJobForm = React.createClass({
                 state.envs = data.data.envs;
                 state.commits = data.data.commits;
                 state.types = data.data.types;
+                state.hosts = data.data.hosts;
                 this.setState(state);
             } else {
                 alert(data.msg);
@@ -1660,7 +1661,15 @@ var DeployJobForm = React.createClass({
                 </Input>
             );
         } else {
-            kind = (<Input onChange={this.handleChange} bsStyle={this.state.deploy_toError ? 'error' : null} type="text" name="deploy_to" value={this.state.deploy_to} placeholder="机器名" />);
+            var hosts = this.state.hosts.map(function (host) {
+                return (<option key={'host-' + host.id} value={host.id}>{host.name} {host.ip} {host.type}</option>);
+            });
+            kind = (
+                <Input bsStyle={this.state.deploy_toError ? 'error' : null} onChange={this.handleChange} type="select" name="deploy_to" value={this.state.deploy_to}>
+                    <option key="env-0" value="">请选择...</option>
+                    {hosts}
+                </Input>
+            );
         }
 
         var commits = this.state.commits.map(function (commit) {

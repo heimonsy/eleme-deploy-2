@@ -229,6 +229,8 @@ class ApiController extends Controller
     {
         $type = Input::get('type');
 
+        $hosts = DB::select("select id, name, type, ip from hosts where site_id = ? group by name, type, ip order by name,ip,type", array($site->id));
+
         $catalogs = HostTypeCatalog::all();
         $hostTypes = HostType::where('site_id', $site->id)->with('catalog')->orderBy('catalog_id')->get();
         $commits = array();
@@ -243,7 +245,8 @@ class ApiController extends Controller
             'data' => array(
                 'envs' => $catalogs,
                 'types' => $hostTypes,
-                'commits' => $commits
+                'commits' => $commits,
+                'hosts' => $hosts
             )
         ));
     }
@@ -256,7 +259,7 @@ class ApiController extends Controller
         $hosts = array();
 
         if ($deploy_kind == 'host') {
-            $host = Host::where(array('site_id' => $site->id, 'name' => $deploy_to))->first();
+            $host = Host::find($deploy_to);
             if ($host == null) {
                 return Response::json(array('code' => 1, 'msg' => '机器名不存在'));
             }
@@ -299,6 +302,20 @@ class ApiController extends Controller
             return Response::json(array(
                 'code' => 1,
                 'msg' => '所选的发布环境没有配置主机'
+            ));
+        }
+        $realHosts = array(
+            'APP' => array(),
+            'STATIC' => array()
+        );
+        foreach ($hosts as $host) {
+            $realHosts[$host->type][$host->ip] = $host;
+        }
+        $hosts = array_merge($realHosts['APP'], $realHosts['STATIC']);
+        if (count($hosts) == 0) {
+            return Response::json(array(
+                'code' => 1,
+                'msg' => '2: 所选的发布环境没有配置主机'
             ));
         }
 
@@ -446,33 +463,33 @@ class ApiController extends Controller
 
             $input_names[] = $host[2];
         }
-        $have_ips = array();
-        if (count($input_ips['APP']) > 0) {
-            $have_ips = array_merge($have_ips, Host::where(array('site_id' => $site->id, 'type' => 'APP'))->whereIn('ip', $input_ips['APP'])->lists('ip'));
-            if ($f_have_duplicate($input_ips['APP'])) {
-                $errors['IP-ERROR'] = '输入的IP有重复';
-            }
-        }
-        if (count($input_ips['STATIC']) > 0) {
-            $have_ips = array_merge($have_ips, Host::where(array('site_id' => $site->id, 'type' => 'STATIC'))->whereIn('ip', $input_ips['STATIC'])->lists('ip'));
-            if ($f_have_duplicate($input_ips['STATIC'])) {
-                $errors['IP-ERROR'] = '输入的IP有重复';
-            }
-        }
-        foreach ($have_ips as $ip) {
-            $errors[$ip] = 'IP已存在';
-        }
+        //$have_ips = array();
+        //if (count($input_ips['APP']) > 0) {
+            //$have_ips = array_merge($have_ips, Host::where(array('site_id' => $site->id, 'type' => 'APP'))->whereIn('ip', $input_ips['APP'])->lists('ip'));
+            //if ($f_have_duplicate($input_ips['APP'])) {
+                //$errors['IP-ERROR'] = '输入的IP有重复';
+            //}
+        //}
+        //if (count($input_ips['STATIC']) > 0) {
+            //$have_ips = array_merge($have_ips, Host::where(array('site_id' => $site->id, 'type' => 'STATIC'))->whereIn('ip', $input_ips['STATIC'])->lists('ip'));
+            //if ($f_have_duplicate($input_ips['STATIC'])) {
+                //$errors['IP-ERROR'] = '输入的IP有重复';
+            //}
+        //}
+        //foreach ($have_ips as $ip) {
+            //$errors[$ip] = 'IP已存在';
+        //}
 
-        $have_names = array();
-        if (count($input_names) > 0) {
-            $have_names = Host::where(array('site_id' => $site->id))->whereIn('name', $input_names)->lists('name');
-            if ($f_have_duplicate($input_names)) {
-                $errors['NAME-ERRORS'] = '输入主机名有重复';
-            }
-        }
-        foreach ($have_names as $name) {
-            $errors[$name] = '主机名已存在';
-        }
+        //$have_names = array();
+        //if (count($input_names) > 0) {
+            //$have_names = Host::where(array('site_id' => $site->id))->whereIn('name', $input_names)->lists('name');
+            //if ($f_have_duplicate($input_names)) {
+                //$errors['NAME-ERRORS'] = '输入主机名有重复';
+            //}
+        //}
+        //foreach ($have_names as $name) {
+            //$errors[$name] = '主机名已存在';
+        //}
 
         if (count($errors) > 0) {
             return Response::json(array(
