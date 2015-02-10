@@ -320,7 +320,7 @@ class ApiController extends Controller
         }
 
         $deployType = Input::get('type');
-        $commit = substr(Input::get('commit'), 0, 7);
+        $commit= substr(Input::get('commit'), 0, 7);
 
         $job = Worker::createJob(
             'Deploy\Worker\Jobs\DeployCommit',

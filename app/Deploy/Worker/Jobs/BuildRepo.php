@@ -75,10 +75,10 @@ class BuildRepo extends Task
             $lock = null;
 
             $this->process("git checkout {$CHECKOUT} ", $CHECKOUT_PATH);
-            $show = $this->process("git show {$CHECKOUT} | grep -E 'commit (.+)' | cut -c8- ", $CHECKOUT_PATH);
+            $show = $this->process("git show {$CHECKOUT} | grep -E '^commit ([0-9a-fA-F]+)$' | head -1 | cut -c8- ", $CHECKOUT_PATH);
             $COMMIT = trim($show->getOutput());
             if (!Commit::isCommit($COMMIT)) {
-                throw new BaseException("{$LOG_PREFIX} [Checkout {$CHECKOUT}] 获取commit出错");
+                throw new BaseException("{$LOG_PREFIX} [Checkout {$CHECKOUT}] 获取commit出错, {$COMMIT}");
             }
             $COMMIT_PATH = $COMMIT_DIR . '/' . $COMMIT;
 

@@ -82,7 +82,7 @@ class BuildPullRequest extends Task
             if (!File::exists($COMMIT_PATH)) {
                 $this->gitProcess("git fetch -f origin +refs/pull/{$pr->number}/head", $PR_BRANCH_DIR, $PULL_KEY_FILE, $PULL_KEY_PASSPHRASE);
 
-                $show = $this->process("git show FETCH_HEAD | grep -E 'commit (.+)' | cut -c8- ", $PR_BRANCH_DIR);
+                $show = $this->process("git show FETCH_HEAD | grep -E '^commit ([0-9a-fA-F]+)$' | head -1 | cut -c8- ", $PR_BRANCH_DIR);
                 $REAL_COMMIT = trim($show->getOutput());
 
                 if ($REAL_COMMIT != $pr->commit) {
