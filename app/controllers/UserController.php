@@ -49,8 +49,8 @@ class UserController extends Controller
             $role = Role::where(array('type' => Role::TYPE_SYSTEM, 'is_admin_role' => 1))->first();
             $user->roles()->attach($role->id);
         } else {
-            $role = Role::where(array('type' => Role::TYPE_SYSTEM, 'is_admin_role' => 0))->first();
-            $user->roles()->attach($role->id);
+            //$role = Role::where(array('type' => Role::TYPE_SYSTEM, 'is_admin_role' => 0))->first();
+            //$user->roles()->attach($role->id);
         }
 
         //Worker::push('Deploy\Worker\Jobs\UpdateUserTeams', Job::TYPE_USER, "Update User {$user->login}",

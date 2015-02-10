@@ -4,6 +4,7 @@ class SystemController extends BaseController
 {
     public function dashboard()
     {
-        return Response::view('dashboard', array('hehe' => 'test 123'));
+        $dashboard = addcslashes(file_get_contents(base_path() . '/dashboard.md'), "\n\"");
+        return Response::view('dashboard', array('dashboard' => $dashboard));
     }
 }

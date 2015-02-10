@@ -128,4 +128,11 @@ var renderSiteHostsMany = function (element, data, updateCallback) {
     $(element).html("");
     var c = React.render(<AddSiteHostsMany data={data} updateCallback={updateCallback} />, element); };
 
+//var marked = require('marked');
+var renderDashboard = function (element, data) {
+    var html = marked(data);
+    $(element).html(html);
+};
+
 ;
+
