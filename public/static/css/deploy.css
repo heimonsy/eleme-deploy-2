@@ -28,7 +28,7 @@
 .small-table .btn-xs {font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace; font-size: 11px;}
 #hostList {font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace; font-size: 12px;}
 
-.output { font-size: 13px; margin: 0; line-height:20px; padding-top: 6px; background-color: #2A2A2A; padding-bottom: 6px; font-family: monospace;}
+.output { font-size: 13px; margin: 0; line-height:20px; padding-top: 6px; background-color: #2A2A2A; padding-bottom: 6px; font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;}
 .output p { margin: 0; white-space: pre-wrap; padding-left: 50px; padding-right 30px; background-color: #2A2A2A;}
 .output p:hover { background-color: #444444; }
 .output a { color: rgb(102, 102, 102); display: inline-block; width: 34px; padding-right: 11px; text-align: right; margin-left: -40px; text-decoration: none;}
