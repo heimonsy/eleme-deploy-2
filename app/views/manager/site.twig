@@ -366,7 +366,11 @@ $(function () {
                     },
                     {
                         render: function (data, type, row) {
-                            return '<button class="btn btn-primary btn-xs btnShowJobHost" data-job-id="' + data + '">详细输出</button>';
+                            var html = '<button class="btn btn-primary btn-xs btnShowJobHost" data-job-id="' + data + '">详细输出</button>';
+                            if (row.success_hosts == row.total_hosts) {
+                                html += '&nbsp;&nbsp;<button data-loading-text="回滚" class="btn btn-warning btn-xs btnRollback" data-commit="' + row.commit + '" data-deploy-kind="' + row.deploy_kind + '" data-deploy-to="' + row.deploy_to + '">回滚</button>';
+                            }
+                            return html;
                         },
                         targets: 8
                     },
@@ -564,6 +568,24 @@ $(function () {
             btn.button('loading');
             showJobHostInfo(btn.attr('data-job-id'));
             btn.button('reset');
+        });
+        $('.btnRollback').click(function (data) {
+            var btn = $(this);
+            console.log("hehe");
+            btn.button('loading');
+            $.post('/api/site/' + siteId + '/deploy?type=deploy', {
+                _token: csrfToken,
+                commit: btn.attr('data-commit'),
+                deploy_to: btn.attr('data-deploy-to'),
+                deploy_kind: btn.attr('data-deploy-kind'),
+            }, function (data) {
+                btn.button('reset');
+                if (data.code == 0) {
+                    location.hash = '#JobHost-' + data.data.jobId + '-nj';
+                } else {
+                    alert(data.msg);
+                }
+            }, 'json');
         });
         $('.btnToDeploy').click(function (e) {
             $('#myTab a[href="' + $(this).attr('data-type') + '"]').attr("data-to-deploy", $(this).attr('data-commit'));
