@@ -15,6 +15,7 @@ class DeployHost extends Eloquent
     const STATUS_DEPLOYING = 'Deploying';
     const STATUS_ERROR = 'Error';
     const STATUS_FINISH = 'Finish';
+    const STATUS_KILL = 'Kill';
 
     public function scopeDeploying($query)
     {

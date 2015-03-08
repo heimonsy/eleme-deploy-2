@@ -1433,10 +1433,20 @@ var JobInfoTabContent = React.createClass({
         $(element).html('');
         React.render(<HostDetailModal hostId={btn.attr('data-host-id')} />, element);
     },
+    killDeploy: function (e) {
+        var btn = $(e.target);
+        btn.button('loading');
+        $.post('/api/site/' + siteId + '/kill-deploy', {
+            _token: csrfToken,
+            deploy_id: this.state.deploy.id
+        }, function (data) {
+            if (data.code != 0) {
+                alert(data.msg);
+            }
+        }, 'json');
+    },
     render: function () {
-        console.log("reload");
-
-        var labels = {"Created": 'default', 'Waiting': 'default', 'Success': 'success', 'Error': 'danger', 'Deploying': 'info', 'Doing': 'info', 'Finish': 'success', 'Have Error': 'warning'};
+        var labels = {"Created": 'default', 'Waiting': 'default', 'Success': 'success', 'Error': 'danger', 'Deploying': 'info', 'Doing': 'info', 'Finish': 'success', 'Have Error': 'warning', 'Kill' : 'warning'};
         statusCls = 'label label-' + labels[this.state.job.status] + ' label-h4 ';
         var isFinish = this.state.job.status == 'Error' || this.state.job.status == 'Success' ? true : false;
         var output = this.state.job.output === undefined ? (<div className="text-center"><img src="/static/ajax-loader.gif"/></div>) : (<OutputComponent isFinish={isFinish} output={this.state.job.output}/>);
@@ -1449,6 +1459,10 @@ var JobInfoTabContent = React.createClass({
                 status = 'Error';
             } else if (deploy.error_hosts > 0) {
                 status = 'Have Error';
+            }
+            var operation = '';
+            if (this.state.job.status == 'Doing' || this.state.job.status == 'Waiting') {
+                operation = (<button className="btn btn-warning btn-xs" onClick={this.killDeploy}>终止发布</button>);
             }
             var costTime = Math.ceil(((new Date(convertDate(deploy.updated_at))).getTime() - (new Date(convertDate(deploy.created_at))).getTime()) / 1000);
             selfTable = (
@@ -1465,6 +1479,7 @@ var JobInfoTabContent = React.createClass({
                                     <th>主机数</th>
                                     <th>创建时间</th>
                                     <th>耗时(s)</th>
+                                    <th>操作</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1476,6 +1491,7 @@ var JobInfoTabContent = React.createClass({
                                     <td><span className="label label-default label-num">{deploy.total_hosts}</span><span className="label label-success label-num">{deploy.success_hosts}</span><span className="label label-danger label-num">{deploy.error_hosts}</span></td>
                                     <td>{deploy.created_at}</td>
                                     <td>{costTime}</td>
+                                    <td>{operation}</td>
                                 </tr>
                             </tbody>
                         </table>

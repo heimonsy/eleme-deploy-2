@@ -89,7 +89,11 @@ class DeployCommit extends Task
             $this->sendNotify('Success');
 
         } catch (Exception $e) {
-            $this->deploy->setStatus(Deploy::STATUS_ERROR);
+            if ($e->getCode() == 999) {
+                $this->deploy->setStatus(Deploy::STATUS_KILL);
+            } else {
+                $this->deploy->setStatus(Deploy::STATUS_ERROR);
+            }
             Log::info($e);
 
             $worker->deleteJob(WorkableInterface::STATUS_ERROR);
@@ -105,6 +109,13 @@ class DeployCommit extends Task
         $lock = null;
         try {
             while (!$hosts->isEmpty()) {
+                if ($this->recvKillMessage()) {
+                    $affectedRows = DeployHost::where(array('deploy_id' => $this->deploy->id, 'status' => DeployHost::STATUS_WAITING))->update(array('status' => DeployHost::STATUS_KILL));
+                    while($affectedRows--) {
+                        $this->deploy->increaseError();
+                    }
+                    throw new Exception('手动终止', 999);
+                }
                 $host = $hosts->shift();
                 $type = $host->host_type_id;
                 Log::info("$this->LOG_PREFIX shift $host->host_name");
@@ -197,6 +208,16 @@ class DeployCommit extends Task
             Log::info($e);
             Log::info("{$this->LOG_PREFIX} Push Notify Faild");
         }
+    }
+
+    private function recvKillMessage()
+    {
+        return app('redis')->connection()->get('KILL:DEPLOY:' . $this->deploy->id) === 'kill';
+    }
+
+    public static function sendKillMessage(Deploy $deploy)
+    {
+        app('redis')->connection()->setex('KILL:DEPLOY:' . $deploy->id, 120, 'kill');
     }
 }
 

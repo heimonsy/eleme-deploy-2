@@ -194,7 +194,7 @@ var timeoutEvent = null;
 var refreshInterval = null;
 var prevJobId = null;
 
-var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning", 'Deploying': 'info', 'Have Error': 'warning'};
+var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning", 'Deploying': 'info', 'Have Error': 'warning', 'Kill' : 'warning'};
 
 function convertDate(str)
 {
@@ -315,7 +315,7 @@ $(function () {
         var timeoutEvent = createTimeoutEvent();
         return function () {
             timeoutEvent.clear();
-            var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning", "Deploying" : "info", "Have Error": "warning"};
+            var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning", "Deploying" : "info", "Have Error": "warning", 'Kill' : 'warning'};
             if (table === null) {
                 table = $("#deploysTable").DataTable({
                     ajax: '/api/site/' + siteId + '/deploy?type=deploy',
@@ -357,7 +357,7 @@ $(function () {
                             var status = data;
                             if (row.total_hosts == row.error_hosts) {
                                 status = 'Error';
-                            } else if (row.error_hosts > 0) {
+                            } else if (row.error_hosts > 0 && status != 'Kill') {
                                 status = 'Have Error';
                             }
                             return '<span class="label label-' + labels[status] + '">' + status + '</span>';

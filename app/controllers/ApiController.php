@@ -14,6 +14,7 @@ use Deploy\Site\PullRequestBuild;
 use Deploy\Hosts\HostType;
 use Deploy\Hosts\Host;
 use Deploy\Worker\DeployHost;
+use Deploy\Worker\Jobs\DeployCommit;
 
 
 class ApiController extends Controller
@@ -503,6 +504,24 @@ class ApiController extends Controller
         return Response::json(array(
             'code' => 0,
             'msg' => '添加成功'
+        ));
+    }
+
+    public function killDeploy(Site $site)
+    {
+        $deploy = Deploy::find(Input::get('deploy_id'));
+        if (!$deploy) {
+            return Response::json(array(
+                'code' => 1,
+                'msg' => 'deploy 不存在'
+            ));
+        }
+
+        DeployCommit::sendKillMessage($deploy);
+
+        return Response::json(array(
+            'code' => 0,
+            'msg' => 'ok'
         ));
     }
 }

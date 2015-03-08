@@ -148,6 +148,11 @@ Route::group(
             'uses' => 'ApiController@siteDeploy'
         ));
 
+        Route::post('/api/site/{site}/kill-deploy', array(
+            'before' => array('csrf'),
+            'uses' => 'ApiController@killDeploy',
+        ));
+
         Route::post('/api/site/{site}/multihost', array(
             'before' => array('csrf'),
             'uses' => 'ApiController@siteMultiHost'
