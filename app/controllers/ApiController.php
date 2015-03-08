@@ -309,7 +309,7 @@ class ApiController extends Controller
             'STATIC' => array()
         );
         foreach ($hosts as $host) {
-            $realHosts[$host->type][$host->ip] = $host;
+            $realHosts[$host->type][$host->id] = $host;
         }
         $hosts = array_merge($realHosts['APP'], $realHosts['STATIC']);
         if (count($hosts) == 0) {
