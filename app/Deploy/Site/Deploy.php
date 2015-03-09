@@ -12,6 +12,7 @@ class Deploy extends Eloquent
     const STATUS_DEPLOYING = 'Deploying';
     const STATUS_ERROR = 'Error';
     const STATUS_SUCCESS = 'Success';
+    const STATUS_KILL = 'Kill';
 
     const KIND_HOST_TYPE = 'type';
     const KIND_TYPE = 'type';
@@ -28,7 +29,7 @@ class Deploy extends Eloquent
 
     public function isSuccess()
     {
-        return $this->status = self::STATUS_SUCCESS;
+        return $this->status == self::STATUS_SUCCESS;
     }
 
     public function increaseSuccess()

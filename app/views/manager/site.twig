@@ -119,7 +119,7 @@
                                         <th>操作者</th>
                                         <th>创建时间</th>
                                         <th>耗时(s)</th>
-                                        <th>详细输出</th>
+                                        <th>操作</th>
                                     </tr>
                                 </thead>
                             </table>
@@ -366,7 +366,8 @@ $(function () {
                     },
                     {
                         render: function (data, type, row) {
-                            var html = '<button class="btn btn-primary btn-xs btnShowJobHost" data-job-id="' + data + '">详细输出</button>';
+                            var html =""
+                            html += '<button class="btn btn-primary btn-xs btnShowJobHost" data-job-id="' + data + '">详细输出</button>';
                             if (row.success_hosts == row.total_hosts) {
                                 html += '&nbsp;&nbsp;<button data-loading-text="回滚" class="btn btn-warning btn-xs btnRollback" data-commit="' + row.commit + '" data-deploy-kind="' + row.deploy_kind + '" data-deploy-to="' + row.deploy_to + '">回滚</button>';
                             }
@@ -571,21 +572,22 @@ $(function () {
         });
         $('.btnRollback').click(function (data) {
             var btn = $(this);
-            console.log("hehe");
-            btn.button('loading');
-            $.post('/api/site/' + siteId + '/deploy?type=deploy', {
-                _token: csrfToken,
-                commit: btn.attr('data-commit'),
-                deploy_to: btn.attr('data-deploy-to'),
-                deploy_kind: btn.attr('data-deploy-kind'),
-            }, function (data) {
-                btn.button('reset');
-                if (data.code == 0) {
-                    location.hash = '#JobHost-' + data.data.jobId + '-nj';
-                } else {
-                    alert(data.msg);
-                }
-            }, 'json');
+            if (confirm("确定要回滚到" + btn.attr('data-commit').substr(0, 7) + '吗?')) {
+                btn.button('loading');
+                $.post('/api/site/' + siteId + '/deploy?type=deploy', {
+                    _token: csrfToken,
+                    commit: btn.attr('data-commit'),
+                    deploy_to: btn.attr('data-deploy-to'),
+                    deploy_kind: btn.attr('data-deploy-kind'),
+                }, function (data) {
+                    btn.button('reset');
+                    if (data.code == 0) {
+                        location.hash = '#JobHost-' + data.data.jobId + '-nj';
+                    } else {
+                        alert(data.msg);
+                    }
+                }, 'json');
+            }
         });
         $('.btnToDeploy').click(function (e) {
             $('#myTab a[href="' + $(this).attr('data-type') + '"]').attr("data-to-deploy", $(this).attr('data-commit'));

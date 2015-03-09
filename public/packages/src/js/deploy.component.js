@@ -1457,9 +1457,10 @@ var JobInfoTabContent = React.createClass({
             var status = deploy.status;
             if (deploy.total_hosts == deploy.error_hosts) {
                 status = 'Error';
-            } else if (deploy.error_hosts > 0) {
+            } else if (deploy.error_hosts > 0 && status != 'Kill') {
                 status = 'Have Error';
             }
+
             var operation = '';
             if (this.state.job.status == 'Doing' || this.state.job.status == 'Waiting') {
                 operation = (<button className="btn btn-warning btn-xs" onClick={this.killDeploy}>终止发布</button>);
