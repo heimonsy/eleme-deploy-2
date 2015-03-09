@@ -119,6 +119,7 @@
                                         <th>操作者</th>
                                         <th>创建时间</th>
                                         <th>耗时(s)</th>
+                                        <th>详细输出</th>
                                         <th>操作</th>
                                     </tr>
                                 </thead>
@@ -332,6 +333,7 @@ $(function () {
                         {data: 'created_at'},
                         {data: 'updated_at'},
                         {data: 'job_id'},
+                        {data: 'job_id'}
                     ],
                     columnDefs: [
                     {
@@ -368,12 +370,19 @@ $(function () {
                         render: function (data, type, row) {
                             var html =""
                             html += '<button class="btn btn-primary btn-xs btnShowJobHost" data-job-id="' + data + '">详细输出</button>';
-                            if (row.success_hosts == row.total_hosts) {
-                                html += '&nbsp;&nbsp;<button data-loading-text="回滚" class="btn btn-warning btn-xs btnRollback" data-commit="' + row.commit + '" data-deploy-kind="' + row.deploy_kind + '" data-deploy-to="' + row.deploy_to + '">回滚</button>';
-                            }
                             return html;
                         },
                         targets: 8
+                    },
+                    {
+                        render: function (data, type, row) {
+                            var html = "";
+                            if (row.success_hosts == row.total_hosts) {
+                                html += '<button data-loading-text="回滚" class="btn btn-warning btn-xs btnRollback" data-commit="' + row.commit + '" data-deploy-kind="' + row.deploy_kind + '" data-deploy-to="' + row.deploy_to + '">回滚</button>';
+                            }
+                            return html;
+                        },
+                        targets: 9
                     },
                     {
                         render: function (data, type, row) {
