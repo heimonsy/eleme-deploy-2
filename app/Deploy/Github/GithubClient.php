@@ -18,7 +18,7 @@ class GithubClient
         $this->access_token = $access_token;
 
         $defaults = array(
-            'timeout' => 5
+            'timeout' => 30
         );
         if (!empty($proxy)) {
             $defaults['proxy'] = $proxy;
