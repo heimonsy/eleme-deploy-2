@@ -1,6 +1,7 @@
 <?php
 
 use Deploy\Hosts\HostTypeCatalog;
+use Deploy\Hosts\HostType;
 
 class HostTypeCatalogController extends Controller
 {
@@ -88,6 +89,15 @@ class HostTypeCatalogController extends Controller
 
     public function destroy(HostTypeCatalog $catalog)
     {
+        $count = HostType::where('catalog_id', $catalog->id)->count();
+        if ($count > 0) {
+            return Response::json(array(
+                'code' => 1,
+                'data' => [],
+                'msg' => '请先删除该环境下的机器分组',
+            ));
+        }
+
         $catalog->delete();
         return Response::json(array(
             'code' => 0,

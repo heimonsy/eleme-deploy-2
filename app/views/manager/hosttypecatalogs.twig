@@ -72,7 +72,7 @@ $(function () {
 
     $('#hostTypeCatalog').on('click', '.btnDel', function (e) {
         var btn = $(this);
-        if (confirm("确定要删除发布环境“" + btn.attr('”data-name') + "吗？")) {
+        if (confirm("确定要删除发布环境“" + btn.attr('data-name') + "”吗？")) {
             btn.button('loading');
             $.post('/api/hosttypecatalog/' + btn.attr("data-id"), {
                 _method: 'DELETE',

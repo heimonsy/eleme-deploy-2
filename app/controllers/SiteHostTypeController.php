@@ -3,6 +3,7 @@
 use Deploy\Hosts\HostType;
 use Deploy\Site\Site;
 use Deploy\Hosts\HostTypeCatalog;
+use Deploy\Hosts\Host;
 
 class SiteHostTypeController extends Controller
 {
@@ -96,8 +97,10 @@ class SiteHostTypeController extends Controller
 
     public function destroy(Site $site, HostType $hosttype)
     {
-        $hosttype->delete();
-        // todo 添加删除hosts的代码
+        DB::transaction(function () use ($hosttype){
+            Host::where('host_type_id', $hosttype->id)->delete();
+            $hosttype->delete();
+        });
 
         return Response::json(array(
             'code' => 0,
