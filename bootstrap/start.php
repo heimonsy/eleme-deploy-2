@@ -26,7 +26,7 @@ $app = new Illuminate\Foundation\Application;
 
 $env = $app->detectEnvironment(array(
 
-	'local' => array('homestead', '*.local', 'vagrant-ubuntu-trusty-64', 'i-0yl8yhc0'),
+	'local' => array('homestead', 'virtual', '*.local', 'vagrant-ubuntu-trusty-64', 'i-0yl8yhc0'),
 
 ));
 
