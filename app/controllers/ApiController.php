@@ -310,9 +310,9 @@ class ApiController extends Controller
             'STATIC' => array()
         );
         foreach ($hosts as $host) {
-            $realHosts[$host->type][$host->id] = $host;
+            $realHosts[$host->type][$host->ip] = $host;
         }
-        $hosts = array_merge($realHosts['APP'], $realHosts['STATIC']);
+        $hosts = array_merge(array_values($realHosts['APP']), array_values($realHosts['STATIC']));
         if (count($hosts) == 0) {
             return Response::json(array(
                 'code' => 1,
