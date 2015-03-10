@@ -107,7 +107,7 @@ class BuildPullRequest extends Task
                     $this->process($site->build_command, $COMMIT_PATH);
                 }
             } catch (Exception $e) {
-                $pr->setCommandStatus(null, PullRequestBuild::STATUS_ABORT);
+                $pr->setCommandStatus(PullRequestBuild::STATUS_ERROR, PullRequestBuild::STATUS_ABORT);
                 $this->sendNotify('failure', 'Build Failure');
                 throw new Exception("Build Failure: " . $e->getMessage(), 1379);
             }
@@ -118,7 +118,7 @@ class BuildPullRequest extends Task
                     $this->process($site->test_command, $COMMIT_PATH);
                 }
             } catch (Exception $e) {
-                $pr->setCommandStatus(null, PullRequestBuild::STATUS_ERROR);
+                $pr->setCommandStatus(PullRequestBuild::STATUS_ERROR, PullRequestBuild::STATUS_ABORT);
                 $this->sendNotify('failure', 'Test Failure');
                 throw new Exception("Test Failure: " . $e->getMessage(), 1379);
             }
