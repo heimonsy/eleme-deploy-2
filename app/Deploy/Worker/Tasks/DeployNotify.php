@@ -73,7 +73,7 @@ EOT;
                 $emails[] = $watcher['notify_email'];
             }
 
-            $emails = array_unique($emails);
+            $emails = array_map('trim', array_unique($emails));
             if (count($emails) > 0) {
                 $mailer = \Mail::getSwiftMailer();
                 $transport = $mailer->getTransport();
