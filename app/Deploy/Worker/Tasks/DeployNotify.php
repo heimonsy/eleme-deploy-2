@@ -68,7 +68,13 @@ EOT;
 
         try {
             $watchers = $site->watchers()->get()->toArray();
-            if (count($watchers) > 0) {
+            $emails = $config->notify_emails == '' ? array() : explode(';', $config->notify_emails);
+            foreach ($watchers as $watcher) {
+                $emails[] = $watcher['notify_email'];
+            }
+
+            $emails = array_unique($emails);
+            if (count($emails) > 0) {
                 $mailer = \Mail::getSwiftMailer();
                 $transport = $mailer->getTransport();
                 $transport->stop();
@@ -84,11 +90,11 @@ EOT;
                     'diffUrl' => $DIFF_URL
                 );
 
-                \Mail::send('layout.notify', $data, function($message) use ($watchers, $STATUS) {
-                    $user = array_pop($watchers);
-                    $message->to($user['notify_email'])->subject('Deploy ' . $STATUS . '!');
-                    foreach ($watchers as $user) {
-                        $message->cc($user['notify_email']);
+                \Mail::send('layout.notify', $data, function($message) use ($emails, $STATUS) {
+                    $email = array_pop($emails);
+                    $message->to($email)->subject('Deploy ' . $STATUS . '!');
+                    foreach ($emails as $email) {
+                        $message->cc($email);
                     }
                 });
                 Log::info("{$LOG_PREFIX} Send Email Success");

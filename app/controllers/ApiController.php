@@ -177,7 +177,7 @@ class ApiController extends Controller
         }
 
         $deploy_config->fill(Input::only('remote_user', 'remote_owner', 'remote_app_dir', 'remote_static_dir',
-            'app_script', 'static_script', 'deploy_key', 'deploy_key_passphrase'));
+            'app_script', 'static_script', 'deploy_key', 'deploy_key_passphrase', 'notify_emails'));
 
         $deploy_config->save();
 

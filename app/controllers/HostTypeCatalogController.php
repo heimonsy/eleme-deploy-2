@@ -45,6 +45,7 @@ class HostTypeCatalogController extends Controller
 
         $m = new HostTypeCatalog;
         $m->name = Input::get('name');
+        $m->is_send_notify = Input::get('is_send_notify');
         $m->save();
 
         return Response::json(array(
@@ -78,6 +79,7 @@ class HostTypeCatalogController extends Controller
         }
 
         $catalog->name = Input::get('name');
+        $catalog->is_send_notify = Input::get('is_send_notify');
         $catalog->save();
 
         return Response::json(array(

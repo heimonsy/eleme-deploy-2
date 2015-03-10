@@ -16,6 +16,7 @@ use Deploy\Worker\DeployHost;
 use Deploy\Site\DeployConfig;
 use Eleme\Rlock\Lock;
 use Deploy\Worker\WorkableInterface;
+use Deploy\Hosts\HostTypeCatalog;
 
 class DeployCommit extends Task
 {
@@ -195,15 +196,25 @@ class DeployCommit extends Task
     public function sendNotify($status)
     {
         try {
-            $task = Worker::createTask('Deploy\Worker\Tasks\DeployNotify', "发送notify", array(
-                'site_id' => $this->site->id,
-                'deploy_id' => $this->deploy->id,
-                'job_id' => $this->job->id,
-                'status' => $status,
-            ), $this->job->id);
-            Worker::pushTask($task);
+            if ($this->deploy->deploy_kind == 'host') {
+                $catalog = Host::find($this->deploy->deploy_to)->host_type_catalog()->first();
+            } elseif ($this->deploy->deploy_kind == 'type'){
+                $catalog = HostType::find($this->deploy->deploy_to)->catalog()->first();
+            } else {
+                $catalog = HostTypeCatalog::find($this->deploy->deploy_to);
+            }
 
-            Log::info("{$this->LOG_PREFIX} Push Notify Success");
+            if ($catalog->is_send_notify == 1) {
+                $task = Worker::createTask('Deploy\Worker\Tasks\DeployNotify', "发送notify", array(
+                    'site_id' => $this->site->id,
+                    'deploy_id' => $this->deploy->id,
+                    'job_id' => $this->job->id,
+                    'status' => $status,
+                ), $this->job->id);
+                Worker::pushTask($task);
+
+                Log::info("{$this->LOG_PREFIX} Push Notify Success");
+            }
         } catch (Exception $e) {
             Log::info($e);
             Log::info("{$this->LOG_PREFIX} Push Notify Faild");

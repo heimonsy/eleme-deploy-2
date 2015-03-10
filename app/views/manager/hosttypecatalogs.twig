@@ -21,6 +21,7 @@
                     <tr>
                         <th>#</th>
                         <th>环境名</th>
+                        <th>是否发送Notify</th>
                         <th>修改</th>
                         <th>删除</th>
                     </tr>
@@ -46,6 +47,7 @@ $(function () {
             columns: [
                 {data: 'id'},
                 {data: 'name'},
+                {data: 'is_send_notify'},
                 {data: 'id'},
                 {data: 'id'}
             ],
@@ -53,15 +55,21 @@ $(function () {
             [
             {
                 render: function (data, type, row) {
-                    return "<button class='btn btn-primary btn-xs btnEdit' data-id='"+data+"'>修改</button>";
+                    return data == 1 ? '是' : '否';
                 },
                 targets: 2
             },
             {
                 render: function (data, type, row) {
-                    return "<button class='btn btn-warning btn-xs btnDel' data-name=" + row.name + " data-id='"+data+"'>删除</button>";
+                    return "<button class='btn btn-primary btn-xs btnEdit' data-id='"+data+"'>修改</button>";
                 },
                 targets: 3
+            },
+            {
+                render: function (data, type, row) {
+                    return "<button class='btn btn-warning btn-xs btnDel' data-name=" + row.name + " data-id='"+data+"'>删除</button>";
+                },
+                targets: 4
             }
             ]
     });

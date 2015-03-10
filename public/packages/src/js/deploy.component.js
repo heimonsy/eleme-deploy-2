@@ -447,10 +447,13 @@ var BlockAlert = React.createClass({
 
 var HostTypeCatalogEditComponent = React.createClass({
     changeHandle: function (e) {
+        var t = e.target;
         var state = this.state;
-        state.name = e.target.value;
-        state.nameError = false;
-        state.alertType = null;
+        state[t.name] = t.value;
+        if (t.name == 'name') {
+            state.nameError = false;
+            state.alertType = null;
+        }
         this.setState(state);
     },
     emptySubmitHandle: function (e) {
@@ -470,7 +473,8 @@ var HostTypeCatalogEditComponent = React.createClass({
         if (this.props.type == 'new') {
             $.post('/api/hosttypecatalog', {
                 _token: csrfToken,
-                name: this.state.name
+                name: this.state.name,
+                is_send_notify: this.state.is_send_notify
             }, function (data) {
                 btn.button('reset');
                 state.alertMsg = data.msg;
@@ -488,7 +492,8 @@ var HostTypeCatalogEditComponent = React.createClass({
             $.post('/api/hosttypecatalog/' + this.props.data.id, {
                 _method: 'PUT',
                 _token: csrfToken,
-                name: this.state.name
+                name: this.state.name,
+                is_send_notify: this.state.is_send_notify
             }, function (data) {
                 btn.button('reset');
                 state.alertMsg = data.msg;
@@ -509,9 +514,9 @@ var HostTypeCatalogEditComponent = React.createClass({
     },
     getInitialState: function (e) {
         if (this.props.type == 'edit') {
-            return {name: this.props.data.name, nameError: false, modalTitle: '修改发布环境', btn: "保存", alertType: null, alertMsg: ''};
+            return {name: this.props.data.name, is_send_notify: this.props.data.is_send_notify, nameError: false, modalTitle: '修改发布环境', btn: "保存", alertType: null, alertMsg: ''};
         }
-        return {name: '', nameError: false, modalTitle: '新建发布环境', btn: "新建", alertType: null, alertMsg: ''};
+        return {name: '', is_send_notify: 0, nameError: false, modalTitle: '新建发布环境', btn: "新建", alertType: null, alertMsg: ''};
     },
     render: function (e) {
         return (
@@ -525,6 +530,10 @@ var HostTypeCatalogEditComponent = React.createClass({
                     <div className="col-lg-12">
                         <form role="form" onSubmit={this.emptySubmitHandle}>
                             <Input name="name" value={this.state.name} onChange={this.changeHandle} type="text" bsStyle={this.state.nameError ? 'error' : null} label="环境名称" placeholder="环境名称"/>
+                            <Input type="select" name="is_send_notify" label="是否发送Notify" onChange={this.changeHandle} value={this.state.is_send_notify}>
+                                 <option value="0">不发送Notify</option>
+                                 <option value="1">发送Notify</option>
+                            </Input>
                         </form>
                     </div>
                 </div>
@@ -938,6 +947,20 @@ var SiteDeployConfigComponent = React.createClass({
             passphrase.focus();
             return ;
         }
+        var emails = $('#deployConfigForm input[name="notify_emails"]').get(0).value.trim();
+        var errorEmails = '';
+        if (emails.length > 0) {
+            emailArray = emails.split(';');
+            for (var i in emailArray) {
+                if (!emailArray[i].isEmail()) {
+                    errorEmails += emailArray[i] + ' ';
+                }
+            }
+        }
+        if (errorEmails.length > 0) {
+            alert('下列邮箱格式错误:' + errorEmails);
+            return ;
+        }
         btn.button('loading');
         $.post('/api/site/' + siteId + '/deploy_configure?_method=PUT&_token=' + csrfToken, $("#deployConfigForm").serialize(), function (data) {
             btn.button('reset');
@@ -971,6 +994,7 @@ var SiteDeployConfigComponent = React.createClass({
                     <Input type="textarea" rows="5" name="static_script" help="同上" defaultValue={this.props.data.static_script} label="静态文件发布前后执行的脚本" />
                     <Input type="textarea" name="deploy_key" defaultValue={this.props.data.deploy_key} label="Deploy Login Key" />
                     <Input type="text" ref="passphrase" name="deploy_key_passphrase" defaultValue={this.props.data.deploy_key_passphrase} label="Deploy Login Key Passphrase" />
+                    <Input type="text" help="使用;分割" name="notify_emails" defaultValue={this.props.data.notify_emails} label="Notify Emails" />
                     <Button onClick={this.handleSubmit} bsStyle="primary" >保存</Button>
                     &nbsp;&nbsp;&nbsp;
                     <InlineFormAlertComponent alertType={this.state.alertType} alertMsg={this.state.alertMsg}/>
