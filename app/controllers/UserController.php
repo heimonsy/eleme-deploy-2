@@ -29,18 +29,28 @@ class UserController extends Controller
 
     public function register()
     {
-        $input = Input::only('name', 'email');
+        Input::merge(array_map('trim', Input::only('name', 'email')));
         $validator = Validator::make(
-            $input,
-            array('name' => 'required', 'email' => 'required|email')
+            Input::only('name', 'email'),
+            array('name' => 'required', 'email' => 'required|email|unique:users,email'),
+            array(
+                'name.required' => '名字不能为空',
+                'email.required' => '邮箱不能为空',
+                'email.email' => '邮箱格式错误',
+                'email.unique' => '邮箱已存在',
+            )
         );
 
         if ($validator->fails()) {
-            return Response::json(array('res' => '1', 'info' => 'input error'));
+            return Response::json(array(
+                'code' => 1,
+                'msg' => $validator->messages()->all(":message\n"),
+            ));
         }
         $user = Sentry::loginUser();
-        $user->notify_email = $input['email'];
-        $user->name = $input['name'];
+        $user->email = Input::get('email');
+        $user->notify_email = Input::get('email');
+        $user->name = Input::get('name');
         //$user->status = User::STATUS_WAITING;
         $user->status = User::STATUS_NORMAL;
         $user->save();

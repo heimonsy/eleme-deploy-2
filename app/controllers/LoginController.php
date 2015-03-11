@@ -62,7 +62,8 @@ class LoginController extends Controller
         $email = isset($userJson['email']) ? $userJson['email'] : '';
 
         $user = User::firstOrNew(array('login' => $userJson['login']));
-        $user->email = $email;
+        $user->email = $userJson['login'] . '@noregister.com';
+        $user->notify_email = $email;
         $user->token = '';
         //$user->token = $accessToken;
         if ($user->status === null) {

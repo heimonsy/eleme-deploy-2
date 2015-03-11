@@ -104,11 +104,13 @@ var RegisterFormComponent = React.createClass({
         }, function (data) {
             if (data.res == 0) {
                 location.href=data.info;
+            } else {
+                alert(data.msg);
             }
         }, 'json');
     },
     getInitialState: function () {
-        return this.props.data;
+        return {login: this.props.data.login, name: this.props.data.name, email: this.props.data.notify_email};
     },
     render: function () {
         return (
