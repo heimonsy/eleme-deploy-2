@@ -5,7 +5,6 @@ use Deploy\Github\GithubAuth;
 use Deploy\Account\User;
 use Eleme\Deploy\Exception\RequestException;
 use Deploy\Worker\Job;
-use Log;
 
 class LoginController extends Controller
 {
