@@ -189,6 +189,16 @@
 <script>
 var siteObj = {{ site | raw }};
 var siteId = {{ site.id }};
+var gitRepo = '{{ site.repo_git }}';
+
+var projectUrl = (function () {
+    var match = gitRepo.match(/git@github.com:(.+).git/);
+    if (match) {
+        return match[1];
+    }
+    return null;
+})();
+
 var defaultBranch = '{{ site.default_branch }}';
 var csrfToken = '{{ csrf_token() }}';
 var timeoutEvent = null;
@@ -338,7 +348,12 @@ $(function () {
                     columnDefs: [
                     {
                         render: function (data, type, row) {
-                            return data.substr(0, 7);
+                            var commit = data;
+                            data = data.substr(0, 7);
+                            if (projectUrl) {
+                                return '<a href="https://github.com/' + projectUrl + '/commit/' + commit + '" target="_blank">' + data + '</a>'
+                            }
+                            return data;
                         },
                         targets: 1
                     },
@@ -649,9 +664,14 @@ $(function () {
                     },
                     {
                         render: function (data, type, row) {
-                            return data == '' ? ' ------ ' : data.substr(0, 7);
+                            var commit = data;
+                            data = data == '' ? ' ------ ' : data.substr(0, 7);
+                            if (projectUrl && commit) {
+                                return '<a href="https://github.com/' + projectUrl + '/commit/' + commit + '" target="_blank">' + data + '</a>'
+                            }
+                            return data;
                         },
-                        targets: 2,
+                        targets: 2
                     },
                     {
                         render: function (data, type, row) {
