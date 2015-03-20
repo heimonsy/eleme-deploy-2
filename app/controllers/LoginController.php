@@ -59,10 +59,11 @@ class LoginController extends Controller
         }
 
         $email = isset($userJson['email']) ? $userJson['email'] : '';
+        Session::put('user.github.email', $email);
 
         $user = User::firstOrNew(array('login' => $userJson['login']));
         $user->email = $userJson['login'] . '@noregister.com';
-        $user->notify_email = $email;
+        $user->notify_email = $user->email;
         $user->token = '';
         //$user->token = $accessToken;
         if ($user->status === null) {
@@ -104,6 +105,7 @@ class LoginController extends Controller
     public function register()
     {
         $user = Sentry::loginUser();
+        $user->notify_email = Session::get('user.github.email');
         return Response::view('register', array(
             'data' => $user,
         ));
