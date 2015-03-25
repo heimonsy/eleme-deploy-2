@@ -191,6 +191,7 @@ var siteObj = {{ site | raw }};
 var siteId = {{ site.id }};
 var gitRepo = '{{ site.repo_git }}';
 
+
 var projectUrl = (function () {
     var match = gitRepo.match(/git@github.com:(.+).git/);
     if (match) {
@@ -206,6 +207,15 @@ var refreshInterval = null;
 var prevJobId = null;
 
 var labels = {"open" : "info", "closed" : "default", "Error" : "danger", "Waiting" : "default", "Success": "success", "Doing" : "info", "Fatal" : "danger", "Abort" : "warning", 'Deploying': 'info', 'Have Error': 'warning', 'Kill' : 'warning'};
+
+function escapeHtml(text) {
+  return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+}
 
 function convertDate(str)
 {
@@ -466,6 +476,12 @@ $(function () {
                         /*}*/
                     },
                     columnDefs: [
+                    {
+                        render: function (data, type, row) {
+                            return emoji.replace_colons(escapeHtml(data));
+                        },
+                        targets: 1
+                    },
                     {
                         render: function (data, type, row) {
                             return '<a href="https://github.com/' + row.repo_name + '/pull/' + row.number + '" target="_blank">' + row.number + '</a>'
