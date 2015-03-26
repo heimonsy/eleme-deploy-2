@@ -1607,7 +1607,7 @@ var DeployJobForm = React.createClass({
     },
     getInitialState: function () {
         var commit = this.props.toDeploy ? this.props.toDeploy : '';
-        return {alertType: null, alertMsg: null, commit: commit, commitError: null, deploy_kind: 'type', deploy_kindError: null, deploy_toError: null, deploy_to: null, envs: [], types: [], commits: []};
+        return {alertType: null, alertMsg: null, commit: commit, commitError: null, deploy_kind: 'env', deploy_kindError: null, deploy_toError: null, deploy_to: null, envs: [], types: [], commits: []};
     },
     handleChange: function (e) {
         var state = this.state;
