@@ -3,6 +3,7 @@
 use Deploy\Account\User;
 use Deploy\Worker\Job;
 use Deploy\Site\Site;
+use Deploy\Hosts\Host;
 
 class ManagerController extends BaseController
 {
@@ -43,5 +44,19 @@ class ManagerController extends BaseController
     public function sites()
     {
         return Response::view('manager.sites');
+    }
+
+    public function hosts(Site $site)
+    {
+        $hosts = Host::where('site_id', '=', $site->id)->with('host_type')->orderBy('type')->orderBy('name')->get();
+        $prevType = '';
+        foreach ($hosts as $host) {
+            if ($host->host_type->name !== $prevType) {
+                echo "\n<br>\n";
+            }
+            echo "{$host->host_type->name} {$host->type} {$host->name} {$host->ip} {$host->port}<br>";
+            $prevType = $host->host_type->name;
+        }
+        return '';
     }
 }

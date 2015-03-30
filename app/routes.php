@@ -128,6 +128,11 @@ Route::group(
             'before' => 'site.control',
             'uses' => 'ManagerController@site'
         ));
+
+        Route::get('/site/{site}/hosts', array(
+            'before' => 'site.control',
+            'uses' => 'ManagerController@hosts'
+        ));
     }
 );
 
