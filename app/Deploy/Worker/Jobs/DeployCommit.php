@@ -30,7 +30,7 @@ class DeployCommit extends Task
 
     public function fire($worker)
     {
-        $this->MAX_DEPLOYS = 3;
+        $this->MAX_DEPLOYS = 6;
         $this->site = Site::with('deploy_config')->findOrFail($this->message['site_id']);
         $config = DeployConfig::firstOrCreate(array('site_id' => $this->site->id));
         $this->deploy = Deploy::findOrFail($this->message['deploy_id']);
