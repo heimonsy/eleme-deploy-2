@@ -289,6 +289,10 @@ Route::group(
     }
 );
 
+Route::get('test/1', function () {
+    return "eheh";
+});
+
 Route::when('api/*', 'csrf', array('post'));
 Route::when('api/*/*', 'csrf', array('put', 'delete', 'post'));
 Route::when('api/*/*/*/*', 'csrf', array('put', 'delete', 'post'));
