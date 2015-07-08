@@ -169,8 +169,9 @@ class ApiController extends Controller
         Input::merge(array_map('trim', Input::all()));
         $deploy_config = $site->deploy_config()->first();
         try {
-            $APP_SCRIPT = DeployScript::complie(Input::get('app_script'), DeployScript::varList($site, $deploy_config));
-            $STATIC_SCRIPT = DeployScript::complie(Input::get('static_script'), DeployScript::varList($site, $deploy_config));
+            $varList = array('deploy_description' => 'complie test');
+            $APP_SCRIPT = DeployScript::complie(Input::get('app_script'), DeployScript::varList($site, $deploy_config, $varList));
+            $STATIC_SCRIPT = DeployScript::complie(Input::get('static_script'), DeployScript::varList($site, $deploy_config, $varList));
         } catch (Exception $e) {
             Log::info($e);
             return array('code' => 1, 'msg' => '脚本解析出错, ' . $e->getMessage());

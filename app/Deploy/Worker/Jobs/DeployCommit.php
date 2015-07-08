@@ -40,8 +40,11 @@ class DeployCommit extends Task
         try {
             $this->COMMIT = $this->deploy->commit;
 
-            $APP_SCRIPT = DeployScript::complie($config->app_script, DeployScript::varList($this->site, $config));
-            $STATIC_SCRIPT = DeployScript::complie($config->static_script, DeployScript::varList($this->site, $config));
+            $varList = [
+                'deploy_description' => $this->deploy->description,
+            ];
+            $APP_SCRIPT = DeployScript::complie($config->app_script, DeployScript::varList($this->site, $config, $varList));
+            $STATIC_SCRIPT = DeployScript::complie($config->static_script, DeployScript::varList($this->site, $config, $varList));
 
             $statics = DeployHost::where('deploy_id', $this->deploy->id)->static()->get();
             $apps = DeployHost::where('deploy_id', $this->deploy->id)->app()->get();
