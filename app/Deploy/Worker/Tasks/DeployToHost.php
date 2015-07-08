@@ -62,13 +62,17 @@ class DeployToHost extends Task
             $HOST_PORT = $host->host_port;
             $HOST_IP = $host->host_ip;
 
+
+            $varList = [
+                'deploy_description' => $deploy->description,
+            ];
             if ($host->type == Host::TYPE_APP) {
-                $COMMAND_SCRIPT = DeployScript::complie($config->app_script, DeployScript::varList($site, $config));
+                $COMMAND_SCRIPT = DeployScript::complie($config->app_script, DeployScript::varList($site, $config, $varList));
                 $REMOTE_DIR = $config->remote_app_dir;
                 $IS_KEEP_FILES = RsyncProcess::FORCE_DELETE;
                 $RSYNC_DIR  = $LOCAL_DIR;
             } else {
-                $COMMAND_SCRIPT = DeployScript::complie($config->static_script, DeployScript::varList($site, $config));
+                $COMMAND_SCRIPT = DeployScript::complie($config->static_script, DeployScript::varList($site, $config, $varList));
                 $REMOTE_DIR = $config->remote_static_dir;
                 $IS_KEEP_FILES = RsyncProcess::KEEP_FILES;
                 $RSYNC_DIR  = $LOCAL_DIR . '/' . $site->static_dir . '/';
