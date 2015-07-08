@@ -77,9 +77,9 @@ class DeployScript
         return $twig->render($script, $varList);
     }
 
-    public static function varList(Site $site, DeployConfig $config)
+    public static function varList(Site $site, DeployConfig $config, $extraVars = array())
     {
-        $varList = array_merge($site->getAttributes(), $config->getAttributes());
+        $varList = array_merge($site->getAttributes(), $config->getAttributes(), $extraVars);
         unset($varList['id']);
         unset($varList['name']);
         unset($varList['pull_key']);
