@@ -66,12 +66,14 @@ abstract class Task
     {
         $this->job->commandLine($originCommand);
 
+        $start = microtime(true);
         if ($must) {
             $process->setTimeout(600)->mustRun($this->job->outputCallback());
         } else {
             $process->setTimeout(600)->run($this->job->outputCallback());
         }
 
+        $this->job->commandLine('-- ' . (microtime(true) - $start) . ' seconds --');
         return $process;
     }
 }
