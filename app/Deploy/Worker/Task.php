@@ -73,7 +73,7 @@ abstract class Task
             $process->setTimeout(600)->run($this->job->outputCallback());
         }
 
-        $this->job->commandLine('-- ' . (microtime(true) - $start) . ' seconds --');
+        $this->job->outputLine('-- ' . (microtime(true) - $start) . ' seconds --');
         return $process;
     }
 }
