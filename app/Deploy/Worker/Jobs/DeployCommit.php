@@ -23,6 +23,7 @@ class DeployCommit extends Task
     private $site;
     private $deploy;
     private $hosts;
+    private $catalog;
 
     private $LOG_PREFIX;
     private $COMMIT;
@@ -39,6 +40,14 @@ class DeployCommit extends Task
 
         try {
             $this->COMMIT = $this->deploy->commit;
+
+            if ($this->deploy->deploy_kind == 'host') {
+                $this->catalog = Host::find($this->deploy->deploy_to)->host_type_catalog()->first();
+            } elseif ($this->deploy->deploy_kind == 'type') {
+                $this->catalog = HostType::find($this->deploy->deploy_to)->catalog()->first();
+            } else {
+                $this->catalog = HostTypeCatalog::find($this->deploy->deploy_to);
+            }
 
             $varList = [
                 'commit' => $this->COMMIT,
@@ -64,6 +73,9 @@ class DeployCommit extends Task
              *  执行静态文件同步
              *
              *****************************************/
+            if ($this->catalog->is_send_notify == 1) {
+                $this->process("curl -sX POST http://graphite.elenet.me/events/ -d '{\"what\": \"{$this->site->name} 发布到 {$this->deploy->description}\", \"tags\": \"{$this->site->name}\", \"data\": \"commit: {$this->COMMIT} 操作者: {$this->deploy->user->name}\"}'");
+            }
             //执行同步前本地命令
             $this->processCommands($STATIC_SCRIPT['before']['handle']);
             $this->deployPlan($this->hosts['static']);
@@ -201,15 +213,7 @@ class DeployCommit extends Task
     public function sendNotify($status)
     {
         try {
-            if ($this->deploy->deploy_kind == 'host') {
-                $catalog = Host::find($this->deploy->deploy_to)->host_type_catalog()->first();
-            } elseif ($this->deploy->deploy_kind == 'type'){
-                $catalog = HostType::find($this->deploy->deploy_to)->catalog()->first();
-            } else {
-                $catalog = HostTypeCatalog::find($this->deploy->deploy_to);
-            }
-
-            if ($catalog->is_send_notify == 1) {
+            if ($this->catalog->is_send_notify == 1) {
                 $task = Worker::createTask('Deploy\Worker\Tasks\DeployNotify', "发送notify", array(
                     'site_id' => $this->site->id,
                     'deploy_id' => $this->deploy->id,
