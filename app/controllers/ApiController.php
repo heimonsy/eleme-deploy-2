@@ -169,7 +169,11 @@ class ApiController extends Controller
         Input::merge(array_map('trim', Input::all()));
         $deploy_config = $site->deploy_config()->first();
         try {
-            $varList = array('deploy_description' => 'complie test');
+            $varList = [
+                'commit' => 'complie test',
+                'deployer' => 'complie test',
+                'deploy_description' => 'complie test',
+            ];
             $APP_SCRIPT = DeployScript::complie(Input::get('app_script'), DeployScript::varList($site, $deploy_config, $varList));
             $STATIC_SCRIPT = DeployScript::complie(Input::get('static_script'), DeployScript::varList($site, $deploy_config, $varList));
         } catch (Exception $e) {

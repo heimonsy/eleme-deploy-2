@@ -33,7 +33,7 @@ class DeployCommit extends Task
         $this->MAX_DEPLOYS = 6;
         $this->site = Site::with('deploy_config')->findOrFail($this->message['site_id']);
         $config = DeployConfig::firstOrCreate(array('site_id' => $this->site->id));
-        $this->deploy = Deploy::findOrFail($this->message['deploy_id']);
+        $this->deploy = Deploy::with('user')->findOrFail($this->message['deploy_id']);
 
         $this->LOG_PREFIX = "[Site {$this->site->name}] [Deploy Commit {$this->deploy->commit}],";
 
@@ -41,6 +41,8 @@ class DeployCommit extends Task
             $this->COMMIT = $this->deploy->commit;
 
             $varList = [
+                'commit' => $this->COMMIT,
+                'deployer' => $this->deploy->user->name,
                 'deploy_description' => $this->deploy->description,
             ];
             $APP_SCRIPT = DeployScript::complie($config->app_script, DeployScript::varList($this->site, $config, $varList));

@@ -22,7 +22,7 @@ class DeployToHost extends Task
     {
         $site = Site::with('deploy_config')->findOrFail($this->message['site_id']);
         $config = DeployConfig::firstOrCreate(array('site_id' => $site->id));
-        $deploy = Deploy::findOrFail($this->message['deploy_id']);
+        $deploy = Deploy::with('user')->findOrFail($this->message['deploy_id']);
         $host = DeployHost::findOrFail($this->message['deploy_host_id']);
 
         $worker->registFatalErrorCallback(function () use ($host, $deploy) {
@@ -64,6 +64,8 @@ class DeployToHost extends Task
 
 
             $varList = [
+                'commit' => $COMMIT,
+                'deployer' => $deploy->user->name,
                 'deploy_description' => $deploy->description,
             ];
             if ($host->type == Host::TYPE_APP) {
