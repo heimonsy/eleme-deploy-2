@@ -927,6 +927,7 @@ var SiteConfigComponent = React.createClass({
                     <Input type="text" name="hipchat_room" help="{{hipchat_room}}" defaultValue={this.props.data.hipchat_room} label="Hipchat Room" />
                     <Input type="text" name="hipchat_token" help="{{hipchat_token}}" defaultValue={this.props.data.hipchat_token} label="Hipchat Token" />
                     <Input type="text" name="github_token" help="{{github_token}}, 安全起见，应该只给repo:state权限" defaultValue={this.props.data.github_token} label="Github Token" />
+                    <Input type="text" name="appid" help="发布使用的appid" defaultValue={this.props.data.appid} label="Appid" />
                     <Button onClick={this.handleSubmit} bsStyle="primary" >保存</Button>
                     &nbsp;&nbsp;&nbsp;
                     <InlineFormAlertComponent alertType={this.state.alertType} alertMsg={this.state.alertMsg}/>

@@ -74,7 +74,11 @@ class DeployCommit extends Task
              *
              *****************************************/
             if ($this->catalog->is_send_notify == 1) {
-                $this->process("curl -sX POST http://graphite.elenet.me/events/ -d '{\"what\": \"{$this->site->name} 发布到 {$this->deploy->description}\", \"tags\": \"{$this->site->name}\", \"data\": \"commit: {$this->COMMIT} 操作者: {$this->deploy->user->name}\"}'");
+                $appid = $this->site->appid;
+                if (empty($appid)) {
+                    $appid = $this->site->name;
+                }
+                $this->process("curl -sX POST http://graphite.elenet.me/events/ -d '{\"what\": \"{$this->site->name} 发布到 {$this->deploy->description}\", \"tags\": \"{$appid}\", \"data\": \"commit: {$this->COMMIT} 操作者: {$this->deploy->user->name}\"}'");
             }
             //执行同步前本地命令
             $this->processCommands($STATIC_SCRIPT['before']['handle']);
