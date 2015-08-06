@@ -65,6 +65,14 @@ class DeployCommit extends Task
             );
 
             $worker->log("{$this->LOG_PREFIX} Start");
+            if ($this->catalog->is_send_notify == 1) {
+                Log::info("$this->LOG_PREFIX start send event");
+                $appid = $this->site->appid;
+                if (empty($appid)) {
+                    $appid = $this->site->name;
+                }
+                $this->process("curl -sX POST http://graphite.elenet.me/events/ -d '{\"what\": \"{$this->site->name} 发布到 {$this->deploy->description}\", \"tags\": \"{$appid}\", \"data\": \"commit: {$this->COMMIT} 操作者: {$this->deploy->user->name}\"}'");
+            }
 
             Log::info("$this->LOG_PREFIX Start Deploy Statics");
             $this->deploy->setStatus(Deploy::STATUS_DEPLOYING);
@@ -73,13 +81,6 @@ class DeployCommit extends Task
              *  执行静态文件同步
              *
              *****************************************/
-            if ($this->catalog->is_send_notify == 1) {
-                $appid = $this->site->appid;
-                if (empty($appid)) {
-                    $appid = $this->site->name;
-                }
-                $this->process("curl -sX POST http://graphite.elenet.me/events/ -d '{\"what\": \"{$this->site->name} 发布到 {$this->deploy->description}\", \"tags\": \"{$appid}\", \"data\": \"commit: {$this->COMMIT} 操作者: {$this->deploy->user->name}\"}'");
-            }
             //执行同步前本地命令
             $this->processCommands($STATIC_SCRIPT['before']['handle']);
             $this->deployPlan($this->hosts['static']);

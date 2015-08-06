@@ -118,7 +118,7 @@ class BuildPullRequest extends Task
                     $this->process($site->test_command, $COMMIT_PATH);
                 }
             } catch (Exception $e) {
-                $pr->setCommandStatus(PullRequestBuild::STATUS_ERROR, PullRequestBuild::STATUS_ABORT);
+                $pr->setCommandStatus(PullRequestBuild::STATUS_SUCCESS, PullRequestBuild::STATUS_ERROR);
                 $this->sendNotify('failure', 'Test Failure');
                 throw new Exception("Test Failure: " . $e->getMessage(), 1379);
             }
