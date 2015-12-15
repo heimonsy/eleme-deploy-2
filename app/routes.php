@@ -1,6 +1,9 @@
 <?php
 
 
+Route::post('/payload/golang/recive', 'SitePullRequestBuildController@golang');
+Route::post('/payload/goci_notify', 'SitePullRequestBuildController@notify');
+
 Route::post('/payload/site/{site}', 'SitePullRequestBuildController@store');
 
 Route::group(array('before' => 'guest'), function () {

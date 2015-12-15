@@ -18,7 +18,8 @@ class GithubClient
         $this->access_token = $access_token;
 
         $defaults = array(
-            'timeout' => 30
+            'timeout' => 30,
+            'connect_timeout' => 30,
         );
         if (!empty($proxy)) {
             $defaults['proxy'] = $proxy;
@@ -38,7 +39,11 @@ class GithubClient
             $url = self::API_URL . $url;
         }
 
-        $option = array('headers' => $this->getHeaders());
+        $option = array(
+            'headers' => $this->getHeaders(),
+            'timeout' => 30,
+            'connect_timeout' => 30,
+        );
 
         if ($method == 'POST') {
             $option['body'] = $params;
