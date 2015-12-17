@@ -130,6 +130,11 @@ class SitePullRequestBuildController extends Controller
                 "FAILURE" => "goci.yml doesn't exist.",
                 "ERROR" => "goci.yml parse error.",
             ],
+            'gofmt' => [
+                "PENDING" => "Gofmt Pending",
+                "SUCCESS" => "Gofmt Success",
+                "FAILURE" => "Gofmt Failure",
+            ],
         ];
 
         $token = Input::get("token");
