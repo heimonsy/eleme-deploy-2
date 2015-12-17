@@ -148,13 +148,12 @@ class SitePullRequestBuildController extends Controller
         $repoName = Input::get("repo");
         $commit = Input::get("commit");
         $result = Input::get("result");
-        Log::info("[PR Notify Recive] $repoName $citype $buildNumber $prNumber $commit [$result]");
 
         $url = Config::Get("jenkins.url")."job/$jobName/$buildNumber/console";
         $status = strtolower($result);
         $desc = $descriptions[$citype][$result];
         $context = "goci/".$citype;
-        App::finish(function () use ($repoName, $status, $commit, $url, $desc, $context){
+        App::finish(function () use ($buildNumber, $prNumber, $repoName, $status, $commit, $url, $desc, $context){
             try {
                 $proxy = Config::get('github.proxy');
                 $githubToken = Config::get("jenkins.github_token");
@@ -168,11 +167,11 @@ class SitePullRequestBuildController extends Controller
                     "context" => $context
                 )), 'POST');
 
-                Log::info("[PR Notify Recive] Send Success! [$repoName] [$commit] [{$context}]");
+                Log::info("[PR Notify Recive] Send Success! [BN $buildNumber] [PN $prNumber] [$repoName] [$commit] [{$context}] [$status]");
             } catch (Exception $e) {
                 Log::info($e);
                 Log::info($e->getResponse()->getBody(true));
-                Log::info("[PR Notify Recive] Send Error ! [$repoName] [$commit] [{$context}] ");
+                Log::info("[PR Notify Recive] Send Error! [BN $buildNumber] [PN $prNumber] [$repoName] [$commit] [{$context}] [$status]");
             }
         });
         return Response::make("\nSend Notify OK\n");
