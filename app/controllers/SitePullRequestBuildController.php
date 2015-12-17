@@ -145,7 +145,7 @@ class SitePullRequestBuildController extends Controller
         $url = Config::Get("jenkins.url")."job/$jobName/$buildNumber/console";
         $status = $result == "SUCCESS" ? "success" : "failure";
         $desc = $descriptions[$citype][$result];
-        $context = $citype."/goci";
+        $context = "goci/".$citype;
         App::finish(function () use ($repoName, $status, $commit, $url, $desc, $context){
             try {
                 $proxy = Config::get('github.proxy');
