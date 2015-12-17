@@ -168,11 +168,11 @@ class SitePullRequestBuildController extends Controller
                     "context" => $context
                 )), 'POST');
 
-                Log::info("[PR Notify Recive] Send Success! ".json_encode($response));
+                Log::info("[PR Notify Recive] Send Success! [$repoName] [$commit] [{$context}]");
             } catch (Exception $e) {
                 Log::info($e);
                 Log::info($e->getResponse()->getBody(true));
-                Log::info("Send Status Error");
+                Log::info("[PR Notify Recive] Send Error ! [$repoName] [$commit] [{$context}] ");
             }
         });
         return Response::make("\nSend Notify OK\n");
