@@ -112,14 +112,17 @@ class SitePullRequestBuildController extends Controller
     public function notify() {
         $descriptions = [
             'build' => [
+                "PENDING" => "Build Pending",
                 "SUCCESS" => "Build Success",
                 "FAILURE" => "Build Failure",
             ],
             'test' => [
+                "PENDING" => "Test Pending",
                 "SUCCESS" => "Test Success",
                 "FAILURE" => "Test Failure",
             ],
             'lint' => [
+                "PENDING" => "Golint Pending",
                 "SUCCESS" => "Golint Success",
                 "FAILURE" => "Golint Failure",
             ],
@@ -143,7 +146,7 @@ class SitePullRequestBuildController extends Controller
         Log::info("[PR Notify Recive] $repoName $citype $buildNumber $prNumber $commit [$result]");
 
         $url = Config::Get("jenkins.url")."job/$jobName/$buildNumber/console";
-        $status = $result == "SUCCESS" ? "success" : "failure";
+        $status = strtolower($result);
         $desc = $descriptions[$citype][$result];
         $context = "goci/".$citype;
         App::finish(function () use ($repoName, $status, $commit, $url, $desc, $context){
