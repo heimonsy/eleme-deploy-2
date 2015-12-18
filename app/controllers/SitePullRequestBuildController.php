@@ -154,6 +154,9 @@ class SitePullRequestBuildController extends Controller
         $desc = $descriptions[$citype][$result];
         $context = "goci/".$citype;
         App::finish(function () use ($buildNumber, $prNumber, $repoName, $status, $commit, $url, $desc, $context){
+            if ($status != "pending") {
+                sleep(3);
+            }
             try {
                 $proxy = Config::get('github.proxy');
                 $githubToken = Config::get("jenkins.github_token");
