@@ -73,6 +73,7 @@ class SitePullRequestBuildController extends Controller
             $info = json_decode(file_get_contents('php://input'));
             if ($info->action === "opened" || $info->action === "synchronize") {
                 App::finish(function() use($info) {
+                    sleep(3);
                     $number = $info->pull_request->number;
                     $repoName = $info->repository->full_name;
                     $commit = $info->pull_request->head->sha;
