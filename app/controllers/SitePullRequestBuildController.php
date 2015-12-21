@@ -182,6 +182,6 @@ class SitePullRequestBuildController extends Controller
                 Log::info("[PR Notify Recive] Send Error! [BN $buildNumber] [PN $prNumber] [$repoName] [$commit] [{$context}] [$status]");
             }
         });
-        return Response::make("\nSend Notify OK\n");
+        return Response::make("\nSend Notify \"$result\"\n");
     }
 }
