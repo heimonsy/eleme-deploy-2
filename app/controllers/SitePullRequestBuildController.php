@@ -167,7 +167,6 @@ class SitePullRequestBuildController extends Controller
                 $proxy = Config::get('github.proxy');
                 $githubToken = Config::get("jenkins.github_token");
                 $client = new GithubClient($githubToken, $proxy);
-                Log::info("repos/{$repoName}/statuses/{$commit}");
                 $response = $client->request("repos/{$repoName}/statuses/{$commit}", json_encode(array(
                     'state' => $status,
                     "target_url" => $url,
