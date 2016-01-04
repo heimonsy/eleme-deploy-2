@@ -175,10 +175,17 @@ class SitePullRequestBuildController extends Controller
                     "context" => $context
                 )), 'POST');
                 $end = microtime(true) * 1000;
-                Log::info("[PR Notify] Send Success! [BN $buildNumber] [PN $prNumber] [$repoName] [$commit] [{$context} - {$response->context}] [$status - {$response->state}] [C {$response->created_at}] [U {$response->updated_at}] ".floor($end-$start));
+                if ($response == null) {
+                    Log::info("[PR Notify] Response Decode Error: ".$client->getResponse()->getBody());
+                } else {
+                    $respContext = $response['context'];
+                    $respState = $response['state'];
+                    $createdAt = $response['created_at'];
+                    $updatedAt = $response['updated_at'];
+                    Log::info("[PR Notify] Send Success! [BN $buildNumber] [PN $prNumber] [$repoName] [$commit] [{$context} - {$respContext}] [$status - {$respState}] [C {$createdAt}] [U {$updatedAt}] ".floor($end-$start));
+                }
             } catch (Exception $e) {
                 Log::info($e);
-                Log::info($e->getResponse()->getBody(true));
                 Log::info("[PR Notify] Send Error! [BN $buildNumber] [PN $prNumber] [$repoName] [$commit] [{$context}] [$status]".floor($end-$start));
             }
         });
