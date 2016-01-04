@@ -68,12 +68,11 @@ class SitePullRequestBuildController extends Controller
 
     public function golang()
     {
-        Log::info("golang ".Request::header('X-GitHub-Event'));
         if (Request::header('X-GitHub-Event') == 'pull_request') {
             $info = json_decode(file_get_contents('php://input'));
-            if ($info->action === "opened" || $info->action === "synchronize") {
+            if ($info->action === "opened" || $info->action === "synchronize" || $info->action === "reopen") {
+                Log::info("golang ".Request::header('X-GitHub-Event'));
                 App::finish(function() use($info) {
-                    sleep(3);
                     $number = $info->pull_request->number;
                     $repoName = $info->repository->full_name;
                     $commit = $info->pull_request->head->sha;
@@ -161,13 +160,13 @@ class SitePullRequestBuildController extends Controller
         $context = "goci/".$citype;
         App::finish(function () use ($buildNumber, $prNumber, $repoName, $status, $commit, $url, $desc, $context){
             if ($status != "pending") {
-                sleep(3);
+                sleep(5);
             }
             try {
+                $start = microtime(true) * 1000;
                 $proxy = Config::get('github.proxy');
                 $githubToken = Config::get("jenkins.github_token");
                 $client = new GithubClient($githubToken, $proxy);
-
                 Log::info("repos/{$repoName}/statuses/{$commit}");
                 $response = $client->request("repos/{$repoName}/statuses/{$commit}", json_encode(array(
                     'state' => $status,
@@ -175,12 +174,12 @@ class SitePullRequestBuildController extends Controller
                     "description" => $desc,
                     "context" => $context
                 )), 'POST');
-
-                Log::info("[PR Notify Recive] Send Success! [BN $buildNumber] [PN $prNumber] [$repoName] [$commit] [{$context}] [$status]");
+                $end = microtime(true) * 1000;
+                Log::info("[PR Notify] Send Success! [BN $buildNumber] [PN $prNumber] [$repoName] [$commit] [{$context} - {$response->context}] [$status - {$response->state}] [C {$response->created_at}] [U {$response->updated_at}] ".floor($end-$start));
             } catch (Exception $e) {
                 Log::info($e);
                 Log::info($e->getResponse()->getBody(true));
-                Log::info("[PR Notify Recive] Send Error! [BN $buildNumber] [PN $prNumber] [$repoName] [$commit] [{$context}] [$status]");
+                Log::info("[PR Notify] Send Error! [BN $buildNumber] [PN $prNumber] [$repoName] [$commit] [{$context}] [$status]".floor($end-$start));
             }
         });
         return Response::make("\nSend Notify \"$result\"\n");
