@@ -162,6 +162,7 @@ class SitePullRequestBuildController extends Controller
             if ($status != "pending") {
                 sleep(5);
             }
+            $nCommit = substr($commit, 0, 7);
             try {
                 $start = microtime(true) * 1000;
                 $proxy = Config::get('github.proxy');
@@ -174,7 +175,6 @@ class SitePullRequestBuildController extends Controller
                     "context" => $context
                 )), 'POST');
                 $end = microtime(true) * 1000;
-                $nCommit = substr($commit, 0, 7);
                 if ($response == null) {
                     Log::info("[PR Notify] Response Decode Error: ".$client->getResponse()->getBody());
                 } else {
