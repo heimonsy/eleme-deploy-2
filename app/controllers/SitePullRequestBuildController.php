@@ -140,6 +140,11 @@ class SitePullRequestBuildController extends Controller
                 "SUCCESS" => "Govet Success",
                 "FAILURE" => "Govet Failure",
             ],
+            'race' => [
+                "PENDING" => "Gorace Pending",
+                "SUCCESS" => "Gorace Success",
+                "FAILURE" => "Gorace Failure",
+            ],
         ];
 
         $token = Input::get("token");
