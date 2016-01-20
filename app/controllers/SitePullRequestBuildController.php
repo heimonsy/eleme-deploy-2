@@ -108,7 +108,7 @@ class SitePullRequestBuildController extends Controller
         }
         if (Request::header('X-Github-Event') == 'push') {
             $info = json_decode(file_get_contents('php://input'));
-            $refs = split("/", $info->refs);
+            $refs = split("/", $info->ref);
             if (count($refs) != 3 || $refs[2] != $info->repository->default_branch) {
                 return Response::make("OK");
             }
