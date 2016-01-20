@@ -76,12 +76,13 @@ class SitePullRequestBuildController extends Controller
                     $number = $info->pull_request->number;
                     $repoName = $info->repository->full_name;
                     $commit = $info->pull_request->head->sha;
+                    $defaultBranch = $info->repository->default_branch;
 
                     $host = Config::get("jenkins.url");
                     $job = Config::get("jenkins.jobs");
                     $token = Config::get("jenkins.token");
 
-                    $url = "{$host}job/{$job}/buildWithParameters?token={$token}&type=pr&repo_name={$repoName}&pr_id={$number}&commit={$commit}&time=0";
+                    $url = "{$host}job/{$job}/buildWithParameters?token={$token}&default_branch={$defaultBranch}&type=pr&repo_name={$repoName}&pr_id={$number}&commit={$commit}&time=0";
                     $defaults = array(
                         'timeout' => 30,
                         'connect_timeout' => 30,
@@ -107,16 +108,21 @@ class SitePullRequestBuildController extends Controller
         }
         if (Request::header('X-Github-Event') == 'push') {
             $info = json_decode(file_get_contents('php://input'));
+            $refs = split("/", $info->refs);
+            if (count($refs) != 3 || $refs[2] != $info->repository->default_branch) {
+                return Response::make("OK");
+            }
             App::finish(function() use($info) {
                 $commit = $info->head_commit->id;
                 $createdAt = strtotime($info->head_commit->timestamp);
                 $repoName = $info->repository->full_name;
+                $defaultBranch = $info->repository->default_branch;
 
                 $host = Config::get("jenkins.url");
                 $job = Config::get("jenkins.jobs");
                 $token = Config::get("jenkins.token");
 
-                $url = "{$host}job/{$job}/buildWithParameters?token={$token}&type=commit&repo_name={$repoName}&pr_id=0&commit={$commit}&time={$createdAt}";
+                $url = "{$host}job/{$job}/buildWithParameters?token={$token}&default_branch={$defaultBranch}&type=commit&repo_name={$repoName}&pr_id=0&commit={$commit}&time={$createdAt}";
                 $defaults = array(
                     'timeout' => 30,
                     'connect_timeout' => 30,
