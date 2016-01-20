@@ -81,7 +81,7 @@ class SitePullRequestBuildController extends Controller
                     $job = Config::get("jenkins.jobs");
                     $token = Config::get("jenkins.token");
 
-                    $url = "{$host}job/{$job}/buildWithParameters?token={$token}&repo_name={$repoName}&pr_id={$number}&commit={$commit}";
+                    $url = "{$host}job/{$job}/buildWithParameters?token={$token}&type=pr&repo_name={$repoName}&pr_id={$number}&commit={$commit}&time=0";
                     $defaults = array(
                         'timeout' => 30,
                         'connect_timeout' => 30,
@@ -101,10 +101,42 @@ class SitePullRequestBuildController extends Controller
                     if ($code[0] != '2') {
                         Log::error("Send jenkins Request Error!!!!");
                         Log::error("$url $code ".$response->getBody());
-                        return Response::make("Send To Jenkins Error", 500);
                     }
                 });
             }
+        }
+        if (Request::header('X-Github-Event') == 'push') {
+            $info = json_decode(file_get_contents('php://input'));
+            App::finish(function() use($info) {
+                $commit = $info->head_commit->id;
+                $createdAt = strtotime($info->head_commit->timestamp);
+                $repoName = $info->repository->full_name;
+
+                $host = Config::get("jenkins.url");
+                $job = Config::get("jenkins.jobs");
+                $token = Config::get("jenkins.token");
+
+                $url = "{$host}job/{$job}/buildWithParameters?token={$token}&type=commit&repo_name={$repoName}&pr_id=0&commit={$commit}&time={$createdAt}";
+                $defaults = array(
+                    'timeout' => 30,
+                    'connect_timeout' => 30,
+                );
+                $client = new Client(array('defaults' => $defaults));
+
+                $user = Config::get("jenkins.user");
+                $resposne = "";
+                if (!empty($user)) {
+                    $response = $client->get($url, ['auth' => [$user, Config::get("jenkins.pass")]]);
+                } else {
+                    $response = $client->get($url);
+                }
+                Log::info("golang ".$url);
+                $code = $response->getStatusCode() . '';
+                if ($code[0] != '2') {
+                    Log::error("Send jenkins Request Error!!!!");
+                    Log::error("$url $code ".$response->getBody());
+                }
+            });
         }
         return Response::make("OK");
     }
@@ -145,6 +177,12 @@ class SitePullRequestBuildController extends Controller
                 "SUCCESS" => "Gorace Success",
                 "FAILURE" => "Gorace Failure",
             ],
+            'job' => [
+                "WORKING" => "Job Working",
+                "PENDING" => "Job Pending",
+                "SUCCESS" => "Job Success",
+                "FAILURE" => "Job Failure",
+            ],
         ];
 
         $token = Input::get("token");
@@ -158,6 +196,10 @@ class SitePullRequestBuildController extends Controller
         $repoName = Input::get("repo");
         $commit = Input::get("commit");
         $result = Input::get("result");
+
+        if ($citype == "job") {
+            return Response::make("\n");
+        }
 
         $url = Config::Get("jenkins.url")."job/$jobName/$buildNumber/console";
         $status = strtolower($result);
